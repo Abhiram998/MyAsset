@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — Field Worker Mobile View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/tokens.css">
+<style>
+  :root {
+    --mobile-width: 440px;
+  }
+  body {
+    background-color: #17201f;
+    color: var(--text-primary);
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .mobile-frame {
+    width: 100%;
+    max-width: var(--mobile-width);
+    min-height: 100vh;
+    background: var(--bg-canvas);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid rgba(255,255,255,0.05);
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .mobile-status-bar {
+    height: 38px;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-canvas);
+  }
+
+  .field-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-canvas);
+  }
+  .worker-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .worker-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 91, 79, 0.25);
+    border: 2px solid #fff;
+  }
+  .worker-details h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 2px 0;
+  }
+  .worker-details p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .site-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(0, 91, 79, 0.08);
+    color: var(--brand-primary);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .field-body {
+    flex: 1;
+    padding: 12px 20px 100px;
+    overflow-y: auto;
+  }
+
+  .scan-card {
+    background: linear-gradient(135deg, #FFA033 0%, #F56100 100%);
+    border-radius: 20px;
+    padding: 24px;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(245, 97, 0, 0.28);
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .scan-card:active { transform: scale(0.98); }
+  .scan-icon-wrap {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 14px;
+  }
+  .scan-card h2 { font-size: 20px; font-weight: 800; margin: 0 0 6px 0; }
+  .scan-card p { font-size: 13px; color: rgba(255, 255, 255, 0.9); margin: 0 0 16px 0; line-height: 1.4; }
+  .scan-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    color: #F56100;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .section-badge {
+    background: rgba(0, 91, 79, 0.1);
+    color: var(--brand-primary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .field-card {
+    background: var(--panel-bg);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 91, 79, 0.06);
+    position: relative;
+  }
+  .field-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .field-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+  }
+  .field-card-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.35;
+  }
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .status-chip.in-progress { background: rgba(0, 91, 79, 0.1); color: var(--brand-primary); }
+  .status-chip.checked-out { background: rgba(230, 162, 26, 0.12); color: #b37400; }
+  .status-chip.completed { background: rgba(16, 185, 129, 0.12); color: #047857; }
+  .status-chip.upcoming { background: rgba(104, 115, 111, 0.1); color: var(--text-secondary); }
+
+  .field-card-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 91, 79, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .field-card-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .btn-field-action {
+    background: var(--brand-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 91, 79, 0.2);
+    transition: all 0.2s ease;
+  }
+  .btn-field-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid rgba(0, 91, 79, 0.2);
+    border-radius: 18px;
+    padding: 7px 15px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .mobile-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: #FFFDF8;
+    border-top: 1px solid rgba(0, 91, 79, 0.08);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -8px 20px rgba(0,0,0,0.04);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .nav-item.active { color: var(--brand-primary); font-weight: 700; }
+  .nav-icon { font-size: 18px; }
+
+  .desktop-bar {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 999;
+  }
+  .desktop-bar a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    color: #17201F;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+
+  <div class="desktop-bar">
+    <a href="overview.html">← Back to Main Web App</a>
+  </div>
+
+  <div class="mobile-frame">
+    <!-- Status bar simulation -->
+    <div class="mobile-status-bar">
+      <span id="currentTimeDisplay">9:41</span>
+      <span>Live DB · Secured</span>
+    </div>
+
+    <!-- Header -->
+    <div class="field-header">
+      <div class="worker-info">
+        <div class="worker-avatar" id="workerInitials">FW</div>
+        <div class="worker-details">
+          <h1 id="workerFullName">Field Worker</h1>
+          <p id="workerRoleSite">Field Operations · <span class="site-pill" id="workerSite">Active Scope</span></p>
+        </div>
+      </div>
+      <div style="font-size: 20px; cursor: pointer; color: var(--text-secondary);" onclick="location.href='alerts.html'">🔔</div>
+    </div>
+
+    <!-- Body Content -->
+    <div class="field-body">
+      <!-- Quick Scan Card -->
+      <div class="scan-card" onclick="promptScanLookup()">
+        <div class="scan-icon-wrap">📱</div>
+        <h2>Manual / Tag Lookup</h2>
+        <p>Enter or scan equipment tag ID code for instant details, status tracking, or verification.</p>
+        <div class="scan-btn">⚡ Lookup Asset Code</div>
+      </div>
+
+      <!-- Currently Checked Out Equipment -->
+      <div class="section-title">
+        <span>Assigned Equipment</span>
+        <span class="section-badge" id="assetCountBadge">0 Active</span>
+      </div>
+
+      <div id="assetsContainer">
+        <div style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 20px;">Loading equipment...</div>
+      </div>
+
+      <!-- Assigned Tasks -->
+      <div style="margin-top: 24px;" class="section-title">
+        <span>My Work Orders</span>
+        <span class="section-badge" id="taskCountBadge">0 Tasks</span>
+      </div>
+
+      <div id="tasksContainer">
+        <div style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 20px;">Loading tasks...</div>
+      </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-nav">
+      <div class="nav-item active">
+        <span class="nav-icon">📋</span>
+        <span>My Day</span>
+      </div>
+      <div class="nav-item" onclick="location.href='assets.html'">
+        <span class="nav-icon">📦</span>
+        <span>Equipment</span>
+      </div>
+      <div class="nav-item" onclick="location.href='maintenance.html'">
+        <span class="nav-icon">🛠️</span>
+        <span>Service</span>
+      </div>
+      <div class="nav-item" onclick="location.href='activity.html'">
+        <span class="nav-icon">⚡</span>
+        <span>Activity</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let currentUser = null;
+  let myAssignments = [];
+  let myTasks = [];
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('currentTimeDisplay').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function loadFieldData() {
+    updateClock();
+    try {
+      // Load current user profile
+      const authRes = await fetch('/api/v1/auth/me');
+      if (authRes.ok) {
+        currentUser = await authRes.json();
+        const name = currentUser.display_name || currentUser.name || currentUser.email || 'Field Worker';
+        document.getElementById('workerFullName').textContent = name;
+        const initials = name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() || 'FW';
+        document.getElementById('workerInitials').textContent = initials;
+        document.getElementById('workerRoleSite').innerHTML = `${escapeHtml(currentUser.role_name || 'FIELD WORKER')} · <span class="site-pill">${escapeHtml(currentUser.organization_name || 'MyAsset')}</span>`;
+      }
+
+      // Load assignments & tasks (server automatically scopes for Field Worker)
+      const [asnRes, tasksRes] = await Promise.all([
+        fetch('/api/v1/assignments'),
+        fetch('/api/v1/tasks')
+      ]);
+
+      if (asnRes.ok) {
+        const allAsn = await asnRes.json();
+        // Active assignments for this worker
+        myAssignments = allAsn.filter(a => !a.returned_at);
+        document.getElementById('assetCountBadge').textContent = `${myAssignments.length} Active`;
+        renderFieldAssets(myAssignments);
+      }
+
+      if (tasksRes.ok) {
+        myTasks = await tasksRes.json();
+        document.getElementById('taskCountBadge').textContent = `${myTasks.length} Tasks`;
+        renderFieldTasks(myTasks);
+      }
+
+    } catch(e) {
+      console.error(e);
+      document.getElementById('assetsContainer').innerHTML = '<div style="color: var(--rose-crimson); font-size: 13px; text-align: center; padding: 20px;">Error connecting to database</div>';
+      document.getElementById('tasksContainer').innerHTML = '<div style="color: var(--rose-crimson); font-size: 13px; text-align: center; padding: 20px;">Error connecting to database</div>';
+    }
+  }
+
+  function renderFieldAssets(assignments) {
+    const container = document.getElementById('assetsContainer');
+    if (!assignments || assignments.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 24px; background: var(--panel-bg); border-radius: 14px;">No equipment currently checked out to your profile.</div>';
+      return;
+    }
+
+    container.innerHTML = assignments.map(a => `
+      <div class="field-card">
+        <div class="field-card-header">
+          <div>
+            <h3 class="field-card-title">${escapeHtml(a.asset_name)}</h3>
+            <p class="field-card-sub">Deployed since ${new Date(a.assigned_at).toLocaleDateString()}</p>
+          </div>
+          <span class="status-chip checked-out">Checked Out</span>
+        </div>
+        <div class="field-card-footer">
+          <span class="field-card-meta">${escapeHtml(a.tag_id)} · ${escapeHtml(a.zone_name || 'Assigned')}</span>
+          <button class="btn-field-action" onclick="returnFieldAsset(${a.id}, '${escapeHtml(a.asset_name)}')">Check In</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderFieldTasks(tasks) {
+    const container = document.getElementById('tasksContainer');
+    if (!tasks || tasks.length === 0) {
+      container.innerHTML = '<div style="color: var(--text-secondary); font-size: 13px; text-align: center; padding: 24px; background: var(--panel-bg); border-radius: 14px;">No pending work orders or tasks.</div>';
+      return;
+    }
+
+    container.innerHTML = tasks.map(task => {
+      let statusClass = 'upcoming';
+      if (task.status === 'IN PROGRESS') statusClass = 'in-progress';
+      else if (task.status === 'COMPLETED') statusClass = 'completed';
+
+      return `
+        <div class="field-card">
+          <div class="field-card-header">
+            <div>
+              <h3 class="field-card-title">${escapeHtml(task.title)}</h3>
+              <p class="field-card-sub">${escapeHtml(task.description || 'Standard task instructions')}</p>
+            </div>
+            <span class="status-chip ${statusClass}">${task.status}</span>
+          </div>
+          <div class="field-card-footer">
+            <span class="field-card-meta">${task.due_date ? 'DUE ' + new Date(task.due_date).toLocaleDateString() : 'ACTIVE'}</span>
+            ${task.status !== 'COMPLETED' ? `
+              <button class="btn-field-secondary" onclick="advanceTaskStatus(${task.id}, '${task.status}')">Update Status →</button>
+            ` : `<span style="font-size:11px; color:var(--status-ok-text); font-weight:700;">✓ Finished</span>`}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function showToast(msg, type = 'info') {
+    let toast = document.getElementById('field-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'field-toast';
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);max-width:90%;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.5);transition:all 0.25s ease;display:none;text-align:center;';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    if (type === 'success') {
+      toast.style.background = '#064e3b';
+      toast.style.color = '#6ee7b7';
+      toast.style.border = '1px solid #059669';
+    } else if (type === 'error') {
+      toast.style.background = '#7f1d1d';
+      toast.style.color = '#fca5a5';
+      toast.style.border = '1px solid #dc2626';
+    } else {
+      toast.style.background = '#1e293b';
+      toast.style.color = '#94a3b8';
+      toast.style.border = '1px solid #334155';
+    }
+    toast.style.display = 'block';
+    toast.style.opacity = '1';
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => { toast.style.display = 'none'; }, 250);
+    }, 3500);
+  }
+
+  async function returnFieldAsset(assignmentId, assetName) {
+    if (!confirm(`Confirm check-in and return for "${assetName}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/v1/assignments/${assignmentId}/return`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: 'Returned via Field Mobile View' })
+      });
+
+      if (res.ok) {
+        showToast(`"${assetName}" returned successfully.`, 'success');
+        await loadFieldData();
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to check in asset', 'error');
+      }
+    } catch(e) {
+      console.error(e);
+      showToast('Error returning asset', 'error');
+    }
+  }
+
+  async function advanceTaskStatus(taskId, currentStatus) {
+    const nextMap = {
+      'ASSIGNED': 'IN PROGRESS',
+      'IN PROGRESS': 'VERIFICATION',
+      'VERIFICATION': 'COMPLETED'
+    };
+    const nextStatus = nextMap[currentStatus] || 'COMPLETED';
+
+    if (!confirm(`Advance task lifecycle to "${nextStatus}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/v1/tasks/${taskId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus })
+      });
+
+      if (res.ok) {
+        showToast(`Task advanced to ${nextStatus}`, 'success');
+        await loadFieldData();
+      } else {
+        const err = await res.json();
+        showToast(err.error || 'Failed to update task status', 'error');
+      }
+    } catch (e) {
+      console.error(e);
+      showToast('Error updating task', 'error');
+    }
+  }
+
+  function promptScanLookup() {
+    const code = prompt('Enter Asset Tag ID to lookup (e.g. AST-0001):');
+    if (code) {
+      window.location.href = `assets.html?search=${encodeURIComponent(code.trim())}`;
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  }
+
+  window.addEventListener('DOMContentLoaded', loadFieldData);
+</script>
+</body>
+</html>

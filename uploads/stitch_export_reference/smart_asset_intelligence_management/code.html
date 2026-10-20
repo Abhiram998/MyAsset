@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-surface-variant":"#414845","surface-container-high":"#ebe8dd","on-background":"#1c1c15","inverse-on-surface":"#f4f1e6","outline":"#727975","surface":"#fcf9ee","surface-container-lowest":"#ffffff","tertiary-fixed-dim":"#95d4b3","surface-bright":"#fcf9ee","on-error-container":"#93000a","on-tertiary-fixed-variant":"#0e5138","on-error":"#ffffff","tertiary":"#001f12","on-primary-container":"#7d9d90","primary-fixed":"#c8eadb","surface-container-highest":"#e5e2d8","surface-container":"#f1eee3","surface-variant":"#e5e2d8","on-secondary":"#ffffff","error":"#ba1a1a","on-primary-fixed":"#012017","on-primary":"#ffffff","surface-dim":"#dddacf","secondary-fixed":"#ffdcc1","secondary-container":"#ffb470","surface-tint":"#466559","background":"#fcf9ee","on-secondary-container":"#794306","tertiary-fixed":"#b1f0ce","primary-container":"#16342a","on-tertiary-fixed":"#002114","secondary-fixed-dim":"#ffb779","on-tertiary":"#ffffff","surface-container-low":"#f7f4e8","primary":"#001f16","on-tertiary-container":"#65a284","inverse-primary":"#adcebf","secondary":"#895115","on-primary-fixed-variant":"#2f4d42","tertiary-container":"#003623","inverse-surface":"#313129","on-surface":"#1c1c15","on-secondary-fixed-variant":"#6c3a00","on-secondary-fixed":"#2e1500","outline-variant":"#c1c8c3","error-container":"#ffdad6","primary-fixed-dim":"#adcebf"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-2xl":"2rem","space-sm":"0.5rem","space-xs":"0.25rem","margin-mobile":"1rem","margin":"1.5rem","space-xl":"1.5rem","space-2xs":"0.125rem","gutter-mobile":"0.75rem","space-md":"0.75rem","space-lg":"1rem","gutter":"1rem"},fontFamily:{"code-sm":["JetBrains Mono"],"code-lg":["JetBrains Mono"],"headline-md":["Inter"],"body-md":["Inter"],"headline-lg-mobile":["Inter"],"label-caps":["Inter"],"code-md":["JetBrains Mono"],"body-sm":["Inter"],"body-lg":["Inter"],"body-sm-bold":["Inter"],"headline-sm":["Inter"],"headline-lg":["Inter"]},fontSize:{"code-sm":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.03em","fontWeight":"500"}],"code-lg":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.02em","fontWeight":"600"}],"headline-md":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"headline-lg-mobile":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.01em","fontWeight":"700"}],"label-caps":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.06em","fontWeight":"700"}],"code-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"body-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm-bold":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"600"}],"headline-sm":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><main class="min-h-screen w-full flex items-center justify-center p-space-md"><div class="flex flex-col w-full max-w-6xl mx-auto py-space-md">
+<!-- System Diagnostic Header Bar -->
+<div class="w-full bg-surface-container-high text-on-surface-variant px-space-md py-space-xs rounded-t flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-code-sm text-code-sm uppercase tracking-wider font-semibold text-on-surface">SYSTEM NODE: US-EAST-SYS04</span>
+<span class="text-outline text-body-sm">•</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">GATEWAY: HTTPS://AUTH.MYASSET.CORP</span>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-body-sm text-secondary">verified_user</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">EAL-6+ HARDENED ENCLAVE</span>
+</div>
+<span class="font-code-sm text-code-sm bg-surface-container px-space-xs py-space-2xs rounded text-primary">SESSION #AF-9941-X</span>
+</div>
+</div>
+<!-- Main Split Architecture Card -->
+<div class="w-full bg-surface-container-lowest rounded-b shadow-xl grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+<!-- Left Hero & Brand Context Column (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-low p-space-xl flex flex-col justify-between relative">
+<div>
+<!-- Brand Identity Header -->
+<div class="flex items-center gap-space-md mb-space-lg">
+<img alt="MyAsset Monogram Logo" class="w-12 h-12 rounded object-cover shadow-sm bg-surface-container-lowest p-space-2xs" src="https://lh3.googleusercontent.com/aida/AEtjO1UXryT30PSbCluy2upkL9TVeRNgSeUPAxQjaqi7inpdnRLfOHDEOKvgIfSE4Y6toihNGsLO54VC9dNkXYLDF6oCrIWV_CXZ3BUI8sSvJHX-UAYjONnmqCK1tuZGMh9UespjC2mI1zv1Xs7FyK4WeTz-Jg5YG4efA_DDNF2f61T1JeguORq-r4aic5zhgD_HroZKmxaLfJjAilkPmK1mQO-0jUk8_BH3cP2_n4XpT0cANZlxgXo3jKUQtzr5"/>
+<div>
+<span class="font-headline-sm text-headline-sm font-bold tracking-tight text-primary block leading-tight">MYASSET</span>
+<span class="font-label-caps text-label-caps text-secondary uppercase tracking-widest block">Universal Smart Asset Intelligence</span>
+</div>
+</div>
+<!-- Product Statement Core -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm mb-space-lg">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider block mb-space-2xs">Foundational Philosophy</span>
+<p class="font-body-lg text-body-lg font-semibold text-on-surface leading-snug">
+            “If it has value, it should have a digital identity.”
+          </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">
+            Persistent physical-to-digital twins for commercial fleets, heavy mechanical inventory, and field mission operations.
+          </p>
+</div>
+<!-- Real-time Asset Fleet Telemetry Snapshot -->
+<div class="space-y-space-xs mb-space-lg">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps">ACTIVE DIGITAL TWINS</span>
+<span class="font-code-md text-code-md font-bold text-primary">48,219 / 48,220</span>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 99.8%;"></div>
+</div>
+<div class="flex justify-between font-code-sm text-code-sm text-outline pt-space-2xs">
+<span>SYNC LATENCY: 12ms</span>
+<span class="text-primary font-semibold">99.998% OPERATIONAL</span>
+</div>
+</div>
+<!-- System Architecture Visual Matrix -->
+<div class="bg-surface-container rounded-lg p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps text-on-surface-variant">CLUSTER HEALTH</span>
+<span class="inline-flex items-center px-space-xs py-space-2xs rounded-full bg-primary-fixed text-on-primary-fixed font-label-caps text-label-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-1"></span> NOMINAL
+            </span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs font-code-sm text-code-sm">
+<div class="bg-surface-container-lowest p-space-xs rounded">
+<span class="text-outline block">RFID / BLE NODES</span>
+<span class="font-bold text-on-surface">1,402 ONLINE</span>
+</div>
+<div class="bg-surface-container-lowest p-space-xs rounded">
+<span class="text-outline block">TELEMETRY INGEST</span>
+<span class="font-bold text-on-surface">8.4k EVT/SEC</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Role Switcher for Evaluator Review -->
+<div class="mt-space-lg pt-space-md bg-surface-container-lowest rounded-lg p-space-md shadow-sm">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-caps text-label-caps text-on-surface font-bold uppercase tracking-wider flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-body-sm text-secondary">switch_account</span>
+            Demo Evaluation Switcher
+          </span>
+<span class="font-code-sm text-code-sm text-outline">AUTO-FILL PROFILE</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-2xs" id="role-selector-group">
+<button class="role-btn text-left p-space-xs rounded bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-between group" onclick="selectRole('admin')" type="button">
+<div>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface block group-hover:text-primary">Marcus Vance</span>
+<span class="font-code-sm text-code-sm text-outline">ADMINISTRATOR</span>
+</div>
+<span class="font-label-caps text-label-caps px-1 py-0.5 rounded bg-primary text-on-primary">ADMIN</span>
+</button>
+<button class="role-btn text-left p-space-xs rounded bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-between group" onclick="selectRole('ops')" type="button">
+<div>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface block group-hover:text-primary">Elena Rostova</span>
+<span class="font-code-sm text-code-sm text-outline">FLEET OPS MGR</span>
+</div>
+<span class="font-label-caps text-label-caps px-1 py-0.5 rounded bg-primary-container text-on-primary">OPS</span>
+</button>
+<button class="role-btn text-left p-space-xs rounded bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-between group" onclick="selectRole('site')" type="button">
+<div>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface block group-hover:text-primary">Dave Miller</span>
+<span class="font-code-sm text-code-sm text-outline">SITE SUPERVISOR</span>
+</div>
+<span class="font-label-caps text-label-caps px-1 py-0.5 rounded bg-surface-variant text-on-surface">SITE</span>
+</button>
+<button class="role-btn text-left p-space-xs rounded bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-between group" onclick="selectRole('tech')" type="button">
+<div>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface block group-hover:text-primary">Samir Patel</span>
+<span class="font-code-sm text-code-sm text-outline">MAINTENANCE TECH</span>
+</div>
+<span class="font-label-caps text-label-caps px-1 py-0.5 rounded bg-secondary-container text-on-secondary-container">TECH</span>
+</button>
+<button class="role-btn text-left p-space-xs rounded bg-surface-container hover:bg-surface-container-high transition-colors flex items-center justify-between group sm:col-span-2" onclick="selectRole('field')" type="button">
+<div>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface block group-hover:text-primary">Carlos Mendez</span>
+<span class="font-code-sm text-code-sm text-outline">FIELD WORKER &amp; SCANNER OPERATOR</span>
+</div>
+<span class="font-label-caps text-label-caps px-1 py-0.5 rounded bg-surface-dim text-on-surface">FIELD</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Authentication Form Column (7 cols) -->
+<div class="lg:col-span-7 p-space-xl lg:p-space-2xl bg-surface-container-lowest flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary tracking-tight">Workstation Authentication</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Input validated enterprise credentials to decrypt asset telemetry keys.</p>
+</div>
+<span class="font-code-sm text-code-sm bg-surface-container text-outline px-space-xs py-space-2xs rounded">FIPS 140-2</span>
+</div>
+<!-- Demonstration Error Alert State (Toggleable) -->
+<div class="mb-space-md p-space-sm bg-error-container text-on-error-container rounded flex items-start gap-space-sm shadow-sm" id="auth-alert">
+<span class="material-symbols-outlined text-headline-sm text-error">lock_clock</span>
+<div class="flex-1">
+<span class="font-body-sm-bold text-body-sm-bold block text-error">Security Alert • Challenge Failed</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Invalid credentials for site security token. WORKSTATION-ID #447 recorded on anomaly log.</p>
+</div>
+<button aria-label="Dismiss error notice" class="text-outline hover:text-on-surface p-space-2xs" onclick="dismissAlert()" type="button">
+<span class="material-symbols-outlined text-body-sm">close</span>
+</button>
+</div>
+<!-- Auth Form -->
+<form class="space-y-space-md" id="login-form" onsubmit="handleAuth(event)">
+<!-- Email / Workstation ID Input -->
+<div>
+<div class="flex justify-between items-center mb-space-xs">
+<label class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant" for="email">Enterprise Work Email</label>
+<span class="font-code-sm text-code-sm text-outline">SSO FEDERATION ACTIVE</span>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-sm text-on-surface-variant pointer-events-none">corporate_fare</span>
+<input class="w-full bg-surface-container-lowest text-on-surface font-code-md text-code-md pl-10 pr-space-md py-space-sm rounded bg-surface-container-low focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-sm transition-all placeholder:text-outline" id="email" placeholder="user@enterprise.org" required="" type="email" value="m.vance@industrial-corp.io"/>
+</div>
+</div>
+<!-- Password Input with Show/Hide -->
+<div>
+<div class="flex justify-between items-center mb-space-xs">
+<label class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant" for="password">Cryptographic Access Passcode</label>
+<a class="font-code-sm text-code-sm text-secondary hover:underline font-semibold" href="javascript:void(0)" onclick="triggerForgot()">Forgot password?</a>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-space-sm text-on-surface-variant pointer-events-none">key</span>
+<input class="w-full bg-surface-container-lowest text-on-surface font-code-md text-code-md pl-10 pr-10 py-space-sm rounded bg-surface-container-low focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-sm transition-all" id="password" placeholder="••••••••••••••••" required="" type="password" value="••••••••••••••••"/>
+<button aria-label="Toggle password view" class="absolute right-space-sm text-on-surface-variant hover:text-on-surface focus:outline-none" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-body-sm" id="pwd-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Remember Workstation & Security Policy -->
+<div class="flex items-center justify-between pt-space-2xs">
+<label class="flex items-center gap-space-xs cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-primary accent-primary bg-surface-container-high cursor-pointer" id="remember-device" type="checkbox"/>
+<span class="font-body-sm text-body-sm text-on-surface">Remember this workstation for 30 days</span>
+</label>
+<span class="font-code-sm text-code-sm text-outline">MFA REQUIRED</span>
+</div>
+<!-- Primary Submit CTA -->
+<div class="pt-space-xs">
+<button class="w-full bg-primary-container hover:bg-primary text-on-primary py-space-sm px-space-md rounded font-body-sm-bold text-body-sm-bold uppercase tracking-wider flex items-center justify-center gap-space-sm shadow-md transition-all active:scale-[0.99]" id="submit-btn" type="submit">
+<span id="btn-text">Sign In to Platform</span>
+<span class="material-symbols-outlined text-body-sm" id="btn-icon">arrow_forward</span>
+<!-- Hidden spinner state -->
+<span class="material-symbols-outlined text-body-sm animate-spin hidden" id="btn-spinner">sync</span>
+</button>
+</div>
+</form>
+<!-- Divider Line -->
+<div class="relative flex py-space-md items-center">
+<div class="flex-grow bg-surface-container-highest h-px"></div>
+<span class="flex-shrink mx-space-md font-label-caps text-label-caps text-outline uppercase tracking-widest">Enterprise Identity Providers</span>
+<div class="flex-grow bg-surface-container-highest h-px"></div>
+</div>
+<!-- SSO Identity Providers -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-xs">
+<button class="p-space-sm rounded bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center gap-space-xs shadow-sm transition-colors" onclick="simulateSSO('Okta SAML 2.0')" type="button">
+<span class="font-code-sm text-code-sm font-bold tracking-wider">OKTA SSO</span>
+</button>
+<button class="p-space-sm rounded bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center gap-space-xs shadow-sm transition-colors" onclick="simulateSSO('Google Workspace SAML')" type="button">
+<span class="font-code-sm text-code-sm font-bold tracking-wider">WORKSPACE</span>
+</button>
+<button class="p-space-sm rounded bg-surface-container-low hover:bg-surface-container text-on-surface flex items-center justify-center gap-space-xs shadow-sm transition-colors" onclick="simulateSSO('Azure AD / Entra ID')" type="button">
+<span class="font-code-sm text-code-sm font-bold tracking-wider">ENTRA ID</span>
+</button>
+</div>
+<!-- Hardware Token YubiKey Option -->
+<div class="mt-space-sm p-space-xs rounded bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-body-sm text-on-surface-variant">usb</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">PHYSICAL SECURITY KEY (FIDO2 / WEBAUTHN)</span>
+</div>
+<button class="font-code-sm text-code-sm text-primary font-bold hover:underline" onclick="simulateFIDO()" type="button">TOUCH KEY</button>
+</div>
+</div>
+<!-- Quick Session Hardware Telemetry -->
+<div class="pt-space-md mt-space-md border-t-0 flex flex-wrap items-center justify-between gap-space-sm text-outline">
+<div class="flex items-center gap-space-xs">
+<span class="font-code-sm text-code-sm">CLIENT ID:</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface-variant">WS-TOUGH-0941</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-code-sm text-code-sm">ENCRYPTION:</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface-variant">AES-256-GCM</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-code-sm text-code-sm">HASH:</span>
+<span class="font-code-sm text-code-sm font-semibold text-on-surface-variant">e8b7..991a</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Industrial System Status Footer Bar -->
+<footer class="w-full bg-surface-container p-space-sm rounded-b flex flex-col md:flex-row items-center justify-between gap-space-xs text-on-surface-variant shadow-inner mt-space-2xs">
+<div class="flex items-center gap-space-xs text-center md:text-left">
+<span class="material-symbols-outlined text-body-sm text-primary">terminal</span>
+<span class="font-code-sm text-code-sm">
+        Telemetry Engine <strong class="text-on-surface">v2.4.1</strong> • End-to-End Encrypted • Compliant <strong class="text-on-surface">ISO-27001</strong>
+</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center gap-1 font-code-sm text-code-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        All physical asset identities synchronized
+      </span>
+<span class="font-code-sm text-code-sm text-outline">|</span>
+<a class="font-code-sm text-code-sm text-secondary hover:underline" href="javascript:void(0)">SecOps Contact</a>
+</div>
+</footer>
+</div>
+<script>
+  // Profile Mock Directory
+  const ROLES = {
+    admin: {
+      email: 'm.vance@industrial-corp.io',
+      name: 'Marcus Vance',
+      role: 'Administrator (All Fleets Access)',
+      authHash: 'ADMIN-SESSION-8842-X'
+    },
+    ops: {
+      email: 'e.rostova@operations.industrial-corp.io',
+      name: 'Elena Rostova',
+      role: 'Fleet Operations Manager',
+      authHash: 'OPS-MGR-5512-B'
+    },
+    site: {
+      email: 'd.miller@yard7.industrial-corp.io',
+      name: 'Dave Miller',
+      role: 'Site Supervisor (North Yard)',
+      authHash: 'SITE-SUPV-0091-C'
+    },
+    tech: {
+      email: 's.patel@service.industrial-corp.io',
+      name: 'Samir Patel',
+      role: 'Maintenance Technician',
+      authHash: 'TECH-LOG-4410-T'
+    },
+    field: {
+      email: 'c.mendez@crews.industrial-corp.io',
+      name: 'Carlos Mendez',
+      role: 'Field Worker & Scanner Operator',
+      authHash: 'FIELD-OPS-7788-F'
+    }
+  };
+
+  function selectRole(key) {
+    const user = ROLES[key];
+    if (!user) return;
+    const emailInput = document.getElementById('email');
+    const pwdInput = document.getElementById('password');
+    const alertBox = document.getElementById('auth-alert');
+    
+    emailInput.value = user.email;
+    pwdInput.value = 'Passcode-' + key.toUpperCase() + '-2025';
+    
+    // Hide error banner when switching to valid mock
+    alertBox.classList.add('hidden');
+    
+    // Brief highlight animation
+    emailInput.classList.add('ring-2', 'ring-secondary');
+    setTimeout(() => {
+      emailInput.classList.remove('ring-2', 'ring-secondary');
+    }, 600);
+  }
+
+  function togglePasswordVisibility() {
+    const pwd = document.getElementById('password');
+    const icon = document.getElementById('pwd-icon');
+    if (pwd.type === 'password') {
+      pwd.type = 'text';
+      icon.textContent = 'visibility_off';
+    } else {
+      pwd.type = 'password';
+      icon.textContent = 'visibility';
+    }
+  }
+
+  function dismissAlert() {
+    document.getElementById('auth-alert').classList.add('hidden');
+  }
+
+  function triggerForgot() {
+    alert('Security Dispatch: Password reset instructions routed to assigned corporate device and site safety coordinator.');
+  }
+
+  function simulateSSO(provider) {
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const btnIcon = document.getElementById('btn-icon');
+
+    btnText.textContent = 'Redirecting to ' + provider + '...';
+    btnSpinner.classList.remove('hidden');
+    btnIcon.classList.add('hidden');
+
+    setTimeout(() => {
+      btnText.textContent = 'Identity Verified. Establishing Session...';
+      setTimeout(() => {
+        btnText.textContent = 'Sign In to Platform';
+        btnSpinner.classList.add('hidden');
+        btnIcon.classList.remove('hidden');
+        alert('Authentication Handshake Success via ' + provider + ' token.');
+      }, 900);
+    }, 1100);
+  }
+
+  function simulateFIDO() {
+    const btnText = document.getElementById('btn-text');
+    btnText.textContent = 'Awaiting Physical Security Key...';
+    setTimeout(() => {
+      btnText.textContent = 'Hardware Key Accepted!';
+      setTimeout(() => {
+        btnText.textContent = 'Sign In to Platform';
+      }, 1000);
+    }, 1200);
+  }
+
+  function handleAuth(e) {
+    e.preventDefault();
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+    const btnIcon = document.getElementById('btn-icon');
+    const alertBox = document.getElementById('auth-alert');
+
+    // Trigger visual loading indicator state
+    btnText.textContent = 'Decrypting Asset Telemetry Keys...';
+    btnSpinner.classList.remove('hidden');
+    btnIcon.classList.add('hidden');
+    alertBox.classList.add('hidden');
+
+    setTimeout(() => {
+      btnSpinner.classList.add('hidden');
+      btnIcon.classList.remove('hidden');
+      btnText.textContent = 'Sign In to Platform';
+      
+      const email = document.getElementById('email').value;
+      if (email.includes('error') || email === '') {
+        alertBox.classList.remove('hidden');
+      } else {
+        alert('Universal Smart Asset Platform authorization granted. Initializing Digital Twin matrix for ' + email);
+      }
+    }, 1200);
+  }
+</script></main></body></html>

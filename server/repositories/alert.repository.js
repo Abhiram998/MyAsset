@@ -1,0 +1,73 @@
+const { connect } = require('../db/database');
+
+class AlertRepository {
+    getAlerts(user, filters = {}) {
+        const db = connect();
+        let query = `
+            SELECT al.*, u.email as resolved_by_email,
+                   a.name as asset_name, a.tag_id as asset_tag,
+                   z.name as zone_name
+            FROM alerts al
+            LEFT JOIN users u ON al.resolved_by_id = u.id
+            LEFT JOIN assets a ON al.related_entity_id = a.id
+            LEFT JOIN zones z ON a.zone_id = z.id
+            WHERE al.organization_id = ?
+        `;
+        const params = [user.organization_id];
+
+        if (filters.status === 'unresolved') {
+            query += ` AND al.is_resolved = 0`;
+        } else if (filters.status === 'resolved') {
+            query += ` AND al.is_resolved = 1`;
+        }
+
+        if (filters.severity) {
+            query += ` AND al.severity = ?`;
+            params.push(filters.severity);
+        }
+
+        query += ` ORDER BY al.created_at DESC LIMIT 100`;
+        return db.prepare(query).all(...params);
+    }
+
+    createAlert(alertData) {
+        const db = connect();
+        const { organization_id, type, severity, message, related_entity_id } = alertData;
+
+        // Deduplication: prevent duplicate unresolved alerts for the same entity and type
+        if (related_entity_id) {
+            const existing = db.prepare(`
+                SELECT id FROM alerts 
+                WHERE organization_id = ? AND type = ? AND related_entity_id = ? AND is_resolved = 0
+            `).get(organization_id, type, related_entity_id);
+            if (existing) {
+                return { id: existing.id, isDuplicate: true };
+            }
+        }
+
+        const result = db.prepare(`
+            INSERT INTO alerts (organization_id, type, severity, message, related_entity_id, is_resolved)
+            VALUES (?, ?, ?, ?, ?, 0)
+        `).run(organization_id, type, severity || 'MEDIUM', message, related_entity_id || null);
+        return { id: result.lastInsertRowid, isDuplicate: false };
+    }
+
+    getStats(user) {
+        const db = connect();
+        const orgId = user.organization_id;
+
+        const total = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ?`).get(orgId).count;
+        const unresolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = 0`).get(orgId).count;
+        const resolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = 1`).get(orgId).count;
+        const highSeverity = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = 0 AND severity = 'HIGH'`).get(orgId).count;
+
+        return {
+            total,
+            unresolved,
+            resolved,
+            highSeverity
+        };
+    }
+}
+
+module.exports = new AlertRepository();

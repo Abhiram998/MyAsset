@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — One tag. Any asset. Anywhere.</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --moss: #16342A;
+    --moss-soft: #2F5A46;
+    --copper: #BE7C3E;
+    --copper-bright: #E2A15C;
+    --paper: #F1EEE3;
+    --paper-warm: #E9E4D3;
+    --ink: #1C1F1B;
+    --ink-soft: #55584F;
+    --line: #D4CDB8;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family:'Work Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .display{ font-family:'Fraunces', serif; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+  a{ text-decoration:none; color:inherit; }
+
+  section{ padding: 100px 8vw; }
+  .container{ max-width: 1180px; margin:0 auto; }
+
+  /* ---------- NAV ---------- */
+  nav{
+    position: sticky; top:0; z-index: 50;
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 22px 8vw;
+    background: rgba(241,238,227,0.88);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .logo{ display:flex; align-items:center; gap:10px; }
+  .logo-mark{
+    width:26px; height:26px;
+    border:2px solid var(--copper);
+    border-radius:5px;
+    position:relative;
+  }
+  .logo-mark::before{
+    content:''; position:absolute; inset:5px;
+    border-radius:2px; background: var(--moss);
+  }
+  .logo-text{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:16px; letter-spacing:0.3px; }
+  .logo-text span{ color: var(--copper); }
+
+  .nav-links{ display:flex; gap:34px; font-size:14px; font-weight:500; color: var(--ink-soft); }
+  .nav-links a:hover{ color: var(--moss); }
+
+  .nav-cta{
+    background: var(--moss);
+    color: var(--paper);
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    display:grid;
+    grid-template-columns: 1fr 0.9fr;
+    gap: 40px;
+    align-items:center;
+    padding-top: 90px;
+    padding-bottom: 70px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color: var(--copper);
+    display:flex; align-items:center; gap:8px;
+    margin-bottom: 22px;
+  }
+  .eyebrow::before{ content:''; width:16px; height:1.5px; background: var(--copper); }
+
+  .hero h1{
+    font-size: clamp(38px, 4.6vw, 62px);
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -1px;
+    margin-bottom: 22px;
+  }
+  .hero h1 em{ font-style:italic; color: var(--moss-soft); }
+
+  .hero p.lede{
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 460px;
+    line-height:1.65;
+    margin-bottom: 34px;
+  }
+
+  .hero-ctas{ display:flex; gap:14px; margin-bottom: 44px; }
+  .btn-primary{
+    background: var(--ink);
+    color: var(--paper);
+    padding: 14px 24px;
+    border-radius: 7px;
+    font-size: 14px; font-weight:600;
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .btn-primary::after{ content:'→'; color: var(--copper-bright); }
+  .btn-secondary{
+    border: 1.5px solid var(--ink);
+    padding: 14px 24px;
+    border-radius: 7px;
+    font-size: 14px; font-weight:600;
+  }
+
+  .hero-meta{
+    display:flex; gap:34px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .hero-meta b{ display:block; font-size:20px; color:var(--ink); font-weight:700; }
+
+  /* ---------- Hero tag stack visual ---------- */
+  .tag-stack{ position:relative; height: 420px; }
+  .tag-card{
+    position:absolute;
+    width: 250px;
+    background: white;
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 20px 40px -12px rgba(28,31,27,0.18);
+    border: 1px solid var(--line);
+    transition: transform 0.35s ease;
+  }
+  .tag-card:hover{ transform: translateY(-6px) rotate(0deg) !important; }
+  .tag-card .perf{
+    position:absolute; top:0; left:20px; right:20px; height:1px;
+    background-image: linear-gradient(90deg, var(--line) 50%, transparent 50%);
+    background-size: 8px 1px;
+    top: -1px;
+  }
+  .tag-card .perf-dots{
+    position:absolute; left:-5px; right:-5px; top:-5px;
+    display:flex; justify-content:space-between;
+  }
+  .tag-card .qr{
+    width: 46px; height:46px;
+    background:
+      linear-gradient(90deg, var(--ink) 0 45%, transparent 45%) top left / 65% 65% no-repeat,
+      linear-gradient(90deg, var(--ink) 0 45%, transparent 45%) top right / 65% 65% no-repeat,
+      linear-gradient(90deg, var(--ink) 0 45%, transparent 45%) bottom left / 65% 65% no-repeat,
+      var(--paper-warm);
+    border-radius:6px;
+    margin-bottom: 14px;
+  }
+  .tag-card .tag-id{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-soft);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .tag-card .tag-name{ font-weight:600; font-size:15px; margin-bottom:10px; }
+  .tag-card .tag-status{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px; text-transform:uppercase; letter-spacing:0.5px;
+    color: var(--moss-soft);
+  }
+  .tag-status::before{ content:''; width:6px; height:6px; border-radius:50%; background: var(--moss-soft); }
+
+  .tc1{ top: 10px; left: 40px; transform: rotate(-6deg); z-index:3; }
+  .tc2{ top: 130px; left: 150px; transform: rotate(4deg); z-index:2; }
+  .tc3{ top: 250px; left: 20px; transform: rotate(-3deg); z-index:1; }
+  .tc3 .tag-status{ color:#A83D2C; }
+  .tc3 .tag-status::before{ background:#A83D2C; }
+
+  /* ---------- INDUSTRIES STRIP ---------- */
+  .industries{
+    background: var(--moss);
+    color: var(--paper);
+    padding: 46px 8vw;
+  }
+  .industries .container{
+    display:flex; flex-wrap:wrap; align-items:center; gap: 14px 30px;
+    justify-content: space-between;
+  }
+  .industries-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 1.5px; text-transform:uppercase;
+    color: rgba(241,238,227,0.55);
+    flex-basis: 100%;
+    margin-bottom: 6px;
+  }
+  .ind-list{ display:flex; flex-wrap:wrap; gap: 10px 28px; }
+  .ind-item{ font-size: 14px; color: rgba(241,238,227,0.85); font-weight:500; }
+
+  /* ---------- FEATURES ---------- */
+  .section-head{ max-width: 620px; margin-bottom: 56px; }
+  .section-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing:2px; text-transform:uppercase;
+    color: var(--copper); margin-bottom:14px;
+  }
+  .section-head h2{
+    font-size: clamp(28px, 3vw, 38px);
+    font-weight:600; letter-spacing:-0.5px; line-height:1.15;
+  }
+
+  .feature-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow:hidden;
+  }
+  .feature{
+    background: var(--paper);
+    padding: 32px 28px;
+    transition: background 0.2s;
+  }
+  .feature:hover{ background: white; }
+  .feature .num{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--copper); margin-bottom: 18px;
+  }
+  .feature h3{ font-size: 17px; font-weight:600; margin-bottom: 10px; }
+  .feature p{ font-size: 13.5px; color: var(--ink-soft); line-height:1.6; }
+
+  /* ---------- HOW IT WORKS ---------- */
+  .flow{
+    display:flex;
+    justify-content: space-between;
+    gap: 4px;
+    position: relative;
+    margin-top: 20px;
+  }
+  .flow::before{
+    content:'';
+    position:absolute;
+    top: 20px; left: 5%; right:5%;
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
+    z-index:0;
+  }
+  .flow-step{
+    text-align:center;
+    flex:1;
+    position:relative;
+    z-index:1;
+  }
+  .flow-step .dot{
+    width: 40px; height:40px;
+    border-radius:50%;
+    background: var(--paper);
+    border: 2px solid var(--moss);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700; font-size: 13px; color: var(--moss);
+    margin: 0 auto 14px;
+  }
+  .flow-step h4{ font-size: 13.5px; font-weight:600; margin-bottom:4px; }
+  .flow-step p{ font-size:11.5px; color:var(--ink-soft); max-width:110px; margin:0 auto; }
+
+  /* ---------- CTA BAND ---------- */
+  .cta-band{
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 18px;
+    padding: 64px 60px;
+    display:flex; justify-content:space-between; align-items:center;
+    gap: 40px;
+  }
+  .cta-band h2{ font-size: 30px; font-weight:600; max-width:420px; line-height:1.2; }
+  .cta-band .btn-primary{ background: var(--copper-bright); color: var(--ink); flex-shrink:0; }
+  .cta-band .btn-primary::after{ color: var(--ink); }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding: 40px 8vw;
+    display:flex; justify-content:space-between; align-items:center;
+    border-top: 1px solid var(--line);
+    font-size: 13px; color: var(--ink-soft);
+  }
+
+  @media (max-width: 900px){
+    .hero{ grid-template-columns:1fr; }
+    .tag-stack{ height:320px; margin-top:20px; }
+    .feature-grid{ grid-template-columns:1fr; }
+    .nav-links{ display:none; }
+    .cta-band{ flex-direction:column; text-align:center; }
+    .flow{ flex-wrap:wrap; }
+    .flow::before{ display:none; }
+    .flow-step{ flex-basis: 45%; margin-bottom:24px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-mark"></div>
+    <div class="logo-text">MY<span>ASSET</span></div>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#industries">Industries</a>
+  </div>
+  <a href="#" class="nav-cta">Get a demo</a>
+</nav>
+
+<section class="hero container" style="padding-left:0; padding-right:0;">
+  <div>
+    <div class="eyebrow">Universal Asset Intelligence</div>
+    <h1 class="display">One tag.<br><em>Any</em> asset.<br>Anywhere.</h1>
+    <p class="lede">MyAsset is a single platform to register, assign, monitor and protect every physical asset you own — a potted plant, a laptop, a pruning tool, a hospital bed. Same tag. Same system.</p>
+    <div class="hero-ctas">
+      <a href="#" class="btn-primary">See it in action</a>
+      <a href="#how" class="btn-secondary">How it works</a>
+    </div>
+    <div class="hero-meta">
+      <div><b>12+</b>industries supported</div>
+      <div><b>&lt;2min</b>to register an asset</div>
+      <div><b>1</b>system for every type</div>
+    </div>
+  </div>
+
+  <div class="tag-stack">
+    <div class="tag-card tc3">
+      <div class="qr"></div>
+      <div class="tag-id">TAG-000042</div>
+      <div class="tag-name">Pruning Shears</div>
+      <div class="tag-status">unauthorized move</div>
+    </div>
+    <div class="tag-card tc2">
+      <div class="qr"></div>
+      <div class="tag-id">TAG-000019</div>
+      <div class="tag-name">ThinkPad L14</div>
+      <div class="tag-status">checked out</div>
+    </div>
+    <div class="tag-card tc1">
+      <div class="qr"></div>
+      <div class="tag-id">TAG-000003</div>
+      <div class="tag-name">Tomato Plant #21</div>
+      <div class="tag-status">active</div>
+    </div>
+  </div>
+</section>
+
+<div class="industries" id="industries">
+  <div class="container">
+    <div class="industries-label">Built for every kind of physical asset</div>
+    <div class="ind-list">
+      <div class="ind-item">Offices</div>
+      <div class="ind-item">Hospitals</div>
+      <div class="ind-item">Schools &amp; Colleges</div>
+      <div class="ind-item">Factories</div>
+      <div class="ind-item">Warehouses</div>
+      <div class="ind-item">Agriculture &amp; Nurseries</div>
+      <div class="ind-item">Laboratories</div>
+      <div class="ind-item">Hotels</div>
+      <div class="ind-item">Construction</div>
+      <div class="ind-item">Government</div>
+    </div>
+  </div>
+</div>
+
+<section id="features" class="container">
+  <div class="section-head">
+    <div class="section-tag">What it does</div>
+    <h2 class="display">Six modules. One architecture — whether it's a plant or a laptop.</h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feature">
+      <div class="num mono">01</div>
+      <h3>Universal Tagging</h3>
+      <p>Every asset — fixed or mobile — gets a QR or NFC tag the moment it's registered. No asset type needs custom setup.</p>
+    </div>
+    <div class="feature">
+      <div class="num mono">02</div>
+      <h3>Access Control</h3>
+      <p>Only the assigned person can log an action on an asset. Every other attempt is recorded, not silently blocked.</p>
+    </div>
+    <div class="feature">
+      <div class="num mono">03</div>
+      <h3>Activity Timeline</h3>
+      <p>Every scan builds a full history — who touched what, when, and what they did to it.</p>
+    </div>
+    <div class="feature">
+      <div class="num mono">04</div>
+      <h3>Maintenance Scheduling</h3>
+      <p>Time-based or usage-based rules trigger reminders automatically — water a plant, service a machine, sharpen a tool.</p>
+    </div>
+    <div class="feature">
+      <div class="num mono">05</div>
+      <h3>Movement &amp; Theft Alerts</h3>
+      <p>Assets that leave their expected zone without an authorized log trigger a real-time alert.</p>
+    </div>
+    <div class="feature">
+      <div class="num mono">06</div>
+      <h3>Reports &amp; Dashboard</h3>
+      <p>A live view of every asset's status, location, and history — filterable by zone, employee, or asset type.</p>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="container">
+  <div class="section-head">
+    <div class="section-tag">The flow</div>
+    <h2 class="display">Register once. Track forever.</h2>
+  </div>
+  <div class="flow">
+    <div class="flow-step"><div class="dot">1</div><h4>Register</h4><p>Add the asset &amp; print its tag</p></div>
+    <div class="flow-step"><div class="dot">2</div><h4>Assign</h4><p>Link it to an employee or zone</p></div>
+    <div class="flow-step"><div class="dot">3</div><h4>Monitor</h4><p>Every scan logs activity</p></div>
+    <div class="flow-step"><div class="dot">4</div><h4>Maintain</h4><p>Auto reminders keep it healthy</p></div>
+    <div class="flow-step"><div class="dot">5</div><h4>Protect</h4><p>Unexpected movement triggers alerts</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="cta-band">
+      <h2 class="display">One tag away from knowing where everything is.</h2>
+      <a href="#" class="btn-primary">Get a demo</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="logo-text mono">MY<span style="color:var(--copper)">ASSET</span></div>
+  <div>Universal Asset Intelligence Platform</div>
+</footer>
+
+</body>
+</html>

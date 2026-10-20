@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-surface-variant":"#414845","surface-container-high":"#ebe8dd","on-background":"#1c1c15","inverse-on-surface":"#f4f1e6","outline":"#727975","surface":"#fcf9ee","surface-container-lowest":"#ffffff","tertiary-fixed-dim":"#95d4b3","surface-bright":"#fcf9ee","on-error-container":"#93000a","on-tertiary-fixed-variant":"#0e5138","on-error":"#ffffff","tertiary":"#001f12","on-primary-container":"#7d9d90","primary-fixed":"#c8eadb","surface-container-highest":"#e5e2d8","surface-container":"#f1eee3","surface-variant":"#e5e2d8","on-secondary":"#ffffff","error":"#ba1a1a","on-primary-fixed":"#012017","on-primary":"#ffffff","surface-dim":"#dddacf","secondary-fixed":"#ffdcc1","secondary-container":"#ffb470","surface-tint":"#466559","background":"#fcf9ee","on-secondary-container":"#794306","tertiary-fixed":"#b1f0ce","primary-container":"#16342a","on-tertiary-fixed":"#002114","secondary-fixed-dim":"#ffb779","on-tertiary":"#ffffff","surface-container-low":"#f7f4e8","primary":"#001f16","on-tertiary-container":"#65a284","inverse-primary":"#adcebf","secondary":"#895115","on-primary-fixed-variant":"#2f4d42","tertiary-container":"#003623","inverse-surface":"#313129","on-surface":"#1c1c15","on-secondary-fixed-variant":"#6c3a00","on-secondary-fixed":"#2e1500","outline-variant":"#c1c8c3","error-container":"#ffdad6","primary-fixed-dim":"#adcebf"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"space-2xl":"2rem","space-sm":"0.5rem","space-xs":"0.25rem","margin-mobile":"1rem","margin":"1.5rem","space-xl":"1.5rem","space-2xs":"0.125rem","gutter-mobile":"0.75rem","space-md":"0.75rem","space-lg":"1rem","gutter":"1rem"},fontFamily:{"code-sm":["JetBrains Mono"],"code-lg":["JetBrains Mono"],"headline-md":["Inter"],"body-md":["Inter"],"headline-lg-mobile":["Inter"],"label-caps":["Inter"],"code-md":["JetBrains Mono"],"body-sm":["Inter"],"body-lg":["Inter"],"body-sm-bold":["Inter"],"headline-sm":["Inter"],"headline-lg":["Inter"]},fontSize:{"code-sm":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.03em","fontWeight":"500"}],"code-lg":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.02em","fontWeight":"600"}],"headline-md":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"headline-lg-mobile":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.01em","fontWeight":"700"}],"label-caps":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.06em","fontWeight":"700"}],"code-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"body-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm-bold":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"600"}],"headline-sm":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container border-r border-outline-variant z-50 flex flex-col justify-between select-none"><div class="flex flex-col flex-1 overflow-y-auto"><div class="p-space-md border-b border-outline-variant bg-surface-container-high"><div class="flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="MyAsset Monogram Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UXryT30PSbCluy2upkL9TVeRNgSeUPAxQjaqi7inpdnRLfOHDEOKvgIfSE4Y6toihNGsLO54VC9dNkXYLDF6oCrIWV_CXZ3BUI8sSvJHX-UAYjONnmqCK1tuZGMh9UespjC2mI1zv1Xs7FyK4WeTz-Jg5YG4efA_DDNF2f61T1JeguORq-r4aic5zhgD_HroZKmxaLfJjAilkPmK1mQO-0jUk8_BH3cP2_n4XpT0cANZlxgXo3jKUQtzr5"/><div class="flex flex-col"><div class="flex items-center gap-space-xs"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-primary">MYASSET</span><span class="px-1.5 py-0.5 rounded bg-primary-container text-surface font-code-sm text-code-sm">v2.4</span></div><span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Asset Intelligence</span></div></div></div><div class="mt-space-sm p-space-xs rounded bg-surface border border-outline-variant"><div class="flex items-center justify-between"><div class="flex flex-col"><span class="font-body-sm-bold text-body-sm-bold text-on-surface truncate max-w-[190px]">Verdant Commercial</span><div class="flex items-center gap-1.5 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-variant animate-pulse"></span><span class="font-code-sm text-code-sm text-on-surface-variant uppercase">Telemetry Active</span></div></div><span class="material-symbols-outlined text-outline text-[18px]">unfold_more</span></div></div><div class="mt-space-xs pt-space-xs flex items-center justify-between border-t border-outline-variant/60"><span class="font-label-caps text-label-caps uppercase text-outline">Simulated View</span><span class="font-code-sm text-code-sm font-semibold px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed-variant">OPERATIONS MGR</span></div></div><nav class="flex-1 px-space-xs py-space-sm space-y-0.5" data-active-classes="bg-primary-container text-surface font-medium border-l-2 border-secondary"><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-body-md text-body-md">Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="assets" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">precision_manufacturing</span><span class="font-body-md text-body-md">Assets</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-semibold">1,428</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="employees" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">badge</span><span class="font-body-md text-body-md">Employees</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-semibold">42</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="locations" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">location_on</span><span class="font-body-md text-body-md">Locations</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-semibold">8 sites</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="tasks" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">task_alt</span><span class="font-body-md text-body-md">Tasks</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-primary-fixed-dim text-on-primary-fixed font-semibold">19</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="maintenance" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">build</span><span class="font-body-md text-body-md">Maintenance</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-semibold">3 due</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="activity" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">history</span><span class="font-body-md text-body-md">Activity</span></div></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="alerts" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">warning</span><span class="font-body-md text-body-md">Alerts</span></div><span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-bold">2</span></a><a class="flex items-center justify-between px-space-sm py-1.5 rounded text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" data-path="reports" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">analytics</span><span class="font-body-md text-body-md">Reports</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-1.5 rounded transition-colors bg-primary-container text-surface font-medium border-l-2 border-secondary" data-path="settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">settings</span><span class="font-body-md text-body-md">Settings</span></div></a></nav></div><div class="p-space-sm border-t border-outline-variant bg-surface-container-high"><div class="flex items-center justify-between gap-space-xs"><div class="flex items-center gap-space-sm min-w-0"><img alt="Profile" class="w-8 h-8 rounded-full object-cover border border-outline-variant shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9OOqJUWYOARlyGQFmrt94ay5pPuFtw6FLuud6Cn0FCqvCovrzPAcIo_EFVeyXr5aJX714gQMzzjEITwqNZNR_3PPQoZu1kKtbUEMCOTtmNV-CqiSFSM6VXuuCXIsQgm0dKUE6tzh1LcsutzRmFRzIsRLVrUYVehPc0AQdL2gUuuQK3NTeJVPlToPUI8ynlHDiliKAclCKAojMHWuQGS04ERyMlCS2oEQHL5TazcwROuJQjvq4Jemmjg"/><div class="flex flex-col min-w-0"><span class="font-body-sm-bold text-body-sm-bold text-on-surface truncate">Marcus Vance</span><span class="font-code-sm text-code-sm text-outline truncate">North Fleet &amp; Nursery</span></div></div><a class="p-1 text-on-surface-variant hover:text-error hover:bg-surface rounded transition-colors" data-path="login" href="#" title="Sign Out"><span class="material-symbols-outlined text-[18px]">logout</span></a></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-14 bg-surface border-b border-outline-variant z-40 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-md min-w-0"><div class="flex items-center gap-2 font-code-sm text-code-sm text-on-surface-variant"><span class="material-symbols-outlined text-outline text-[18px]">domain</span><span class="text-on-surface font-semibold">Verdant HQ - Site 04</span><span class="text-outline">/</span><span class="text-tertiary-container font-medium flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>Live Synced 12s ago</span></div></div><div class="flex-1 max-w-xl mx-space-md"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-2.5 text-outline text-[18px]">search</span><input class="w-full h-8 pl-8 pr-16 bg-surface-container-low border border-outline-variant rounded font-code-sm text-code-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:bg-surface-container-lowest" placeholder="Search by Asset ID (#AST-), QR/NFC, serial, employee or site..." type="text"/><kbd class="absolute right-2 px-1.5 py-0.5 text-[10px] font-code-sm font-semibold text-outline bg-surface-container border border-outline-variant rounded">Ctrl+K</kbd></div></div><div class="flex items-center gap-space-sm shrink-0"><div class="hidden xl:flex items-center gap-1.5 px-2 py-1 rounded bg-surface-container border border-outline-variant"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-variant animate-pulse"></span><span class="font-code-sm text-code-sm text-on-surface-variant uppercase font-semibold">Telemetry Online</span></div><a class="relative p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded transition-colors" data-path="alerts" href="#"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-error text-on-error font-code-sm text-[10px] font-bold flex items-center justify-center">2</span></a><button class="h-8 px-space-sm bg-secondary text-on-secondary rounded font-label-caps text-label-caps uppercase flex items-center gap-1 hover:bg-on-secondary-container transition-colors"><span class="material-symbols-outlined text-[16px]">add</span><span>Register Asset</span></button><a class="p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded transition-colors" href="#" title="Documentation"><span class="material-symbols-outlined text-[20px]">help_outline</span></a></div></header><main class="w-full pt-14 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Top Context Header Bar -->
+<div class="px-space-md py-space-sm bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-space-sm shadow-sm">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 font-code-sm text-code-sm text-on-surface-variant">
+<span>Verdant Commercial</span>
+<span class="text-outline">/</span>
+<span>Operations</span>
+<span class="text-outline">/</span>
+<span class="text-primary font-semibold">Intelligence &amp; Reports</span>
+</div>
+<div class="flex items-center gap-3 mt-1">
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">Operational Reports &amp; Compliance Audits</h1>
+<span class="px-2 py-0.5 rounded bg-primary-container text-surface font-code-sm text-code-sm font-semibold tracking-wide">ISO-55001 COMPLIANT</span>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="flex items-center flex-wrap gap-space-xs">
+<button class="h-8 px-3 rounded bg-surface-container-lowest text-on-surface shadow-sm font-code-sm text-code-sm font-semibold flex items-center gap-1.5 hover:bg-surface-container-highest transition-colors" onclick="alert('Exporting current view to CSV...')">
+<span class="material-symbols-outlined text-[16px] text-outline">table_view</span>
+<span>Export CSV</span>
+</button>
+<button class="h-8 px-3 rounded bg-surface-container-lowest text-on-surface shadow-sm font-code-sm text-code-sm font-semibold flex items-center gap-1.5 hover:bg-surface-container-highest transition-colors" onclick="alert('Generating signed Executive PDF...')">
+<span class="material-symbols-outlined text-[16px] text-secondary">picture_as_pdf</span>
+<span>Export Executive PDF</span>
+</button>
+<button class="h-8 px-3 rounded bg-secondary text-on-secondary font-label-caps text-label-caps uppercase flex items-center gap-1.5 hover:bg-on-secondary-container transition-colors shadow-sm" onclick="alert('Opening scheduled digest cadence manager...')">
+<span class="material-symbols-outlined text-[16px]">schedule_send</span>
+<span>Schedule Automated Digest</span>
+</button>
+</div>
+</div>
+<!-- Main View Grid -->
+<div class="p-space-md flex flex-col gap-space-md">
+<!-- Report Type Sub-Navigation Tabs -->
+<div class="flex items-center gap-1 overflow-x-auto pb-1 bg-surface-container-low p-1 rounded shadow-sm">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded bg-primary-container text-surface font-body-sm-bold text-body-sm-bold shadow-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">inventory_2</span>
+<span>1. Asset Register &amp; Depreciation</span>
+<span class="px-1.5 py-0.2 rounded bg-tertiary-container text-tertiary-fixed font-code-sm text-code-sm">LIVE</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>2. Maintenance SLA &amp; Work Order History</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">share_location</span>
+<span>3. Movement Events &amp; Geofence Alerts</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">badge</span>
+<span>4. Employee Field Activity &amp; Shift Log</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-body-sm text-body-sm whitespace-nowrap">
+<span class="material-symbols-outlined text-[16px]">warehouse</span>
+<span>5. Zone Utilization &amp; Yard Occupancy</span>
+</button>
+</div>
+<!-- Filter Console Toolbar -->
+<div class="p-space-sm bg-surface-container-lowest rounded shadow-sm flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- Date Range Filter -->
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline mb-0.5">Audit Window</span>
+<div class="flex items-center gap-2 h-8 px-2.5 rounded bg-surface-container-low text-on-surface font-code-sm text-code-sm cursor-pointer hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px] text-secondary">date_range</span>
+<span>Last 30 Days (Jan 18, 2025 - Feb 17, 2025)</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+<!-- Site Filter -->
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline mb-0.5">Operational Perimeter</span>
+<div class="flex items-center gap-2 h-8 px-2.5 rounded bg-surface-container-low text-on-surface font-code-sm text-code-sm cursor-pointer hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline">hub</span>
+<span>All Sites (8 Commercial Properties)</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+<!-- Category Filter -->
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline mb-0.5">Asset Taxonomy</span>
+<div class="flex items-center gap-2 h-8 px-2.5 rounded bg-surface-container-low text-on-surface font-code-sm text-code-sm cursor-pointer hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline">category</span>
+<span>All Categories (Living, Heavy Fleet, Tools, IT)</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+<!-- Grouping Filter -->
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline mb-0.5">Grouping Vector</span>
+<div class="flex items-center gap-2 h-8 px-2.5 rounded bg-surface-container-low text-on-surface font-code-sm text-code-sm cursor-pointer hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline">account_tree</span>
+<span>By Custodian &amp; Yard Location</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Quick Search / Reset -->
+<div class="flex items-center gap-2 self-end">
+<button class="h-8 px-3 rounded bg-surface-container-low text-on-surface-variant font-code-sm text-code-sm hover:bg-surface-container hover:text-on-surface transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+<span>Reset Filters</span>
+</button>
+<div class="h-8 px-2.5 rounded bg-primary text-on-primary font-code-sm text-code-sm font-semibold flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed">tune</span>
+<span>Apply 4 Filters</span>
+</div>
+</div>
+</div>
+<!-- Executive Summary Metric Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-sm">
+<!-- Card 1 -->
+<div class="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline">Total Capitalized Asset Value</span>
+<span class="font-headline-lg text-headline-lg text-primary font-bold mt-1 tracking-tight">$2,418,900</span>
+</div>
+<span class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">account_balance</span>
+</span>
+</div>
+<div class="mt-3 pt-2 border-t-0 flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">1,428 Active Entities</span>
+<span class="text-on-tertiary-fixed-variant font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>+3.4% MoM
+          </span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline">Maintenance SLA Compliance</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-lg text-headline-lg text-primary font-bold tracking-tight">94.2%</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium">Target 92%</span>
+</div>
+</div>
+<span class="w-8 h-8 rounded bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</span>
+</div>
+<div class="mt-3 flex flex-col gap-1">
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 94.2%"></div>
+</div>
+<div class="flex justify-between font-code-sm text-code-sm text-on-surface-variant">
+<span>226 Work Orders Closed</span>
+<span class="text-error font-semibold">14 Pending</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline">Geofence Security Incidents</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-lg text-headline-lg text-secondary font-bold tracking-tight">3 Flagged</span>
+<span class="font-code-sm text-code-sm text-on-tertiary-container font-semibold">3 Resolved</span>
+</div>
+</div>
+<span class="w-8 h-8 rounded bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">fmd_bad</span>
+</span>
+</div>
+<div class="mt-3 pt-2 flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Zero Current Breaches</span>
+<span class="px-1.5 py-0.2 rounded bg-tertiary-fixed text-on-tertiary-fixed font-semibold">100% Retained</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-space-md rounded bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase text-outline">Max Utilized Fleet Asset</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary mt-1 truncate">CAT 308 Mini Excavator</span>
+<span class="font-code-sm text-code-sm text-outline">#AST-0419 • Engine Telemetry</span>
+</div>
+<span class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">precision_manufacturing</span>
+</span>
+</div>
+<div class="mt-3 pt-2 flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-on-surface-variant">Active Run Time</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">148.4 <span class="font-code-sm text-code-sm text-outline font-normal">hrs</span></span>
+</div>
+</div>
+</div>
+<!-- Visual Analytics & Fleet Density Spread -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-sm">
+<!-- Depreciation & Asset Classification Chart -->
+<div class="lg:col-span-8 p-space-md bg-surface-container-lowest rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary">Asset Capitalization vs. Useful Life Depreciation</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">MACRS 7-Year &amp; Living Stock Biological Valuation (FY 2024-2025)</span>
+</div>
+<div class="flex items-center gap-3 font-code-sm text-code-sm">
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 bg-primary-container rounded-sm"></span>
+<span>Acquisition Book</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 bg-secondary rounded-sm"></span>
+<span>Current Residual</span>
+</div>
+</div>
+</div>
+<!-- Lightweight Inline Visual Chart -->
+<div class="w-full h-44 flex items-end justify-between gap-3 pt-4 px-2 bg-surface-container-low rounded">
+<!-- Heavy Fleet -->
+<div class="flex-1 flex flex-col items-center h-full justify-end gap-1">
+<span class="font-code-sm text-code-sm text-outline">$1.42M</span>
+<div class="w-full max-w-[48px] flex items-end justify-center gap-1 h-32">
+<div class="w-1/2 bg-primary-container rounded-t h-[92%]" title="Book Value: $1,420,000"></div>
+<div class="w-1/2 bg-secondary rounded-t h-[76%]" title="Depreciated Value: $1,170,000"></div>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface truncate mt-1">Heavy Fleet</span>
+</div>
+<!-- Living Stock -->
+<div class="flex-1 flex flex-col items-center h-full justify-end gap-1">
+<span class="font-code-sm text-code-sm text-outline">$480K</span>
+<div class="w-full max-w-[48px] flex items-end justify-center gap-1 h-32">
+<div class="w-1/2 bg-primary-container rounded-t h-[35%]" title="Book Value: $480,000"></div>
+<div class="w-1/2 bg-secondary rounded-t h-[52%]" title="Appreciated Value: $612,000 (Biological growth)"></div>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface truncate mt-1">Living Stock</span>
+</div>
+<!-- Power Equipment -->
+<div class="flex-1 flex flex-col items-center h-full justify-end gap-1">
+<span class="font-code-sm text-code-sm text-outline">$295K</span>
+<div class="w-full max-w-[48px] flex items-end justify-center gap-1 h-32">
+<div class="w-1/2 bg-primary-container rounded-t h-[48%]" title="Book Value: $295,000"></div>
+<div class="w-1/2 bg-secondary rounded-t h-[31%]" title="Depreciated Value: $192,000"></div>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface truncate mt-1">Power Tools</span>
+</div>
+<!-- IT & Telemetry -->
+<div class="flex-1 flex flex-col items-center h-full justify-end gap-1">
+<span class="font-code-sm text-code-sm text-outline">$162K</span>
+<div class="w-full max-w-[48px] flex items-end justify-center gap-1 h-32">
+<div class="w-1/2 bg-primary-container rounded-t h-[32%]" title="Book Value: $162,000"></div>
+<div class="w-1/2 bg-secondary rounded-t h-[18%]" title="Depreciated Value: $91,000"></div>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface truncate mt-1">Telemetry/IT</span>
+</div>
+<!-- Support Trailers & Yard -->
+<div class="flex-1 flex flex-col items-center h-full justify-end gap-1">
+<span class="font-code-sm text-code-sm text-outline">$61K</span>
+<div class="w-full max-w-[48px] flex items-end justify-center gap-1 h-32">
+<div class="w-1/2 bg-primary-container rounded-t h-[20%]" title="Book Value: $61,000"></div>
+<div class="w-1/2 bg-secondary rounded-t h-[14%]" title="Depreciated Value: $43,000"></div>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-on-surface truncate mt-1">Trailers</span>
+</div>
+</div>
+<div class="mt-3 flex items-center justify-between font-code-sm text-code-sm text-on-surface-variant">
+<span>*Living stock valuation includes certified horticultural root-growth appraisal index.</span>
+<span class="font-semibold text-primary">Cumulative Net Book: $2,108,000</span>
+</div>
+</div>
+<!-- Yard Occupancy & Hub Telemetry Card -->
+<div class="lg:col-span-4 p-space-md bg-surface-container-lowest rounded shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-primary">Deployment Hubs</span>
+<span class="font-code-sm text-code-sm text-outline">Real-time yard inventory load</span>
+</div>
+<span class="material-symbols-outlined text-secondary">warehouse</span>
+</div>
+<div class="flex flex-col gap-2.5 my-2">
+<!-- Site 04 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="font-semibold text-on-surface">Site 04 - Verdant Central HQ</span>
+<span class="text-primary font-bold">542 Assets (78%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 78%"></div>
+</div>
+</div>
+<!-- Site 08 Nursery -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="font-semibold text-on-surface">Site 08 - North Botanical Nursery</span>
+<span class="text-primary font-bold">489 Assets (91%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 91%"></div>
+</div>
+</div>
+<!-- Site 02 Industrial -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="font-semibold text-on-surface">Site 02 - Heavy Maintenance Depot</span>
+<span class="text-primary font-bold">198 Assets (44%)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 44%"></div>
+</div>
+</div>
+<!-- In Field Transit -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="font-semibold text-on-surface">Active En Route / Job Sites</span>
+<span class="text-on-secondary-container font-bold">199 Assets (Active)</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full" style="width: 62%"></div>
+</div>
+</div>
+</div>
+<div class="pt-2 flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-outline">Total Tracked Perimeters</span>
+<span class="font-semibold text-primary">8 Sites Configured</span>
+</div>
+</div>
+</div>
+<!-- Interactive Report Preview Table -->
+<div class="bg-surface-container-lowest rounded shadow-sm overflow-hidden">
+<!-- Table Header Title Bar -->
+<div class="px-space-md py-space-sm bg-surface-container-high flex flex-col md:flex-row md:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">table_chart</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase tracking-wider">Asset Register &amp; Custody Audit Report</span>
+<span class="font-code-sm text-code-sm text-outline">• Displaying 6 of 1,428 Verified Entities</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-code-sm text-code-sm text-outline">Columns Locked: 9</span>
+<button class="px-2 py-1 rounded bg-surface-container text-on-surface font-code-sm text-code-sm hover:bg-surface transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">view_column</span>
+<span>Customize Columns</span>
+</button>
+</div>
+</div>
+<!-- Ultra-dense Table Data View -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container font-label-caps text-label-caps uppercase text-on-surface-variant select-none">
+<th class="py-2 px-3 tracking-wider">Asset ID</th>
+<th class="py-2 px-3 tracking-wider">Digital Twin Specification</th>
+<th class="py-2 px-3 tracking-wider">Taxonomy Class</th>
+<th class="py-2 px-3 tracking-wider">Acquired &amp; Book Value</th>
+<th class="py-2 px-3 tracking-wider">Primary Location</th>
+<th class="py-2 px-3 tracking-wider">Assigned Custodian</th>
+<th class="py-2 px-3 tracking-wider">Maintenance State</th>
+<th class="py-2 px-3 tracking-wider">Identity Medium</th>
+<th class="py-2 px-3 tracking-wider text-right">Verification Stamp</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm divide-y-0">
+<!-- Row 1: Caterpillar 308 CR -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px] text-secondary">precision_manufacturing</span>
+<span>#AST-0419</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Caterpillar 308 CR Mini Excavator</span>
+<span class="font-code-sm text-code-sm text-outline">Cat C3.3B DIT • Hydro-Blade • Telematics En</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-medium text-on-surface">Heavy Fleet</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<div class="flex flex-col">
+<span class="font-semibold text-primary">$68,500.00</span>
+<span class="text-outline">Acq: 2023-04-12</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<span class="text-on-surface">Site 04 - Sector West</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-primary-container text-surface flex items-center justify-center font-code-sm text-[10px] font-bold">MV</span>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Marcus Vance</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-label-caps uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-fixed"></span>
+<span>Healthy</span>
+</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm text-outline">
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">Laser QR</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">NFC</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap text-right font-code-sm text-code-sm">
+<span class="text-outline">SHA:e7a9..12</span>
+<span class="text-on-surface block">12 mins ago</span>
+</td>
+</tr>
+<!-- Row 2: Japanese Maple Living Stock -->
+<tr class="hover:bg-surface-container transition-colors bg-surface-container-low/40">
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px] text-tertiary-container">park</span>
+<span>#AST-8831</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Japanese Maple 15-Gal B&amp;B Batch</span>
+<span class="font-code-sm text-code-sm text-outline">Acer palmatum • Specimen Grade A • Tagged Lot 4</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-code-sm text-code-sm font-medium">Living Stock</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<div class="flex flex-col">
+<span class="font-semibold text-primary">$4,200.00</span>
+<span class="text-outline">Acq: 2024-09-18</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<span class="text-on-surface">Site 08 - Nursery Greenhouse B</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-secondary text-surface flex items-center justify-center font-code-sm text-[10px] font-bold">ER</span>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Elena Rostova</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-label-caps uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-fixed"></span>
+<span>Healthy</span>
+</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm text-outline">
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">NFC Plant Tag</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap text-right font-code-sm text-code-sm">
+<span class="text-outline">SHA:38c1..94</span>
+<span class="text-on-surface block">1 hr ago</span>
+</td>
+</tr>
+<!-- Row 3: Stihl MS 261 Chainsaw -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px] text-secondary">handyman</span>
+<span>#AST-1102</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Stihl MS 261 C-M Chainsaw</span>
+<span class="font-code-sm text-code-sm text-outline">50.2cc • 20" Rollomatic E Bar • M-Tronic 3.0</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-medium text-on-surface">Power Equipment</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<div class="flex flex-col">
+<span class="font-semibold text-primary">$780.00</span>
+<span class="text-outline">Acq: 2023-11-04</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<span class="text-on-surface">Trailer #3 (Fleet Mobile)</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="font-code-sm text-code-sm text-outline italic">Unassigned (Pool)</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-caps text-label-caps uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Due in 5 days</span>
+</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm text-outline">
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">Laser QR</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap text-right font-code-sm text-code-sm">
+<span class="text-outline">SHA:9a22..bf</span>
+<span class="text-on-surface block">3 hrs ago</span>
+</td>
+</tr>
+<!-- Row 4: Trimble RTK GPS Terminal -->
+<tr class="hover:bg-surface-container transition-colors bg-surface-container-low/40">
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px] text-primary">sensors</span>
+<span>#AST-0104</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Trimble RTK GPS Field Terminal</span>
+<span class="font-code-sm text-code-sm text-outline">TDC650 GNSS • Sub-meter Sub-centimeter accuracy</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-medium text-on-surface">IT &amp; Telemetry</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<div class="flex flex-col">
+<span class="font-semibold text-primary">$5,400.00</span>
+<span class="text-outline">Acq: 2024-02-01</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<span class="text-on-surface">Site 04 - Survey Lab</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-tertiary-container text-surface flex items-center justify-center font-code-sm text-[10px] font-bold">CM</span>
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Carlos Mendez</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-label-caps uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-fixed"></span>
+<span>Healthy</span>
+</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm text-outline">
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">UHF RFID</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">QR</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap text-right font-code-sm text-code-sm">
+<span class="text-outline">SHA:51e8..77</span>
+<span class="text-on-surface block">24 mins ago</span>
+</td>
+</tr>
+<!-- Row 5: Buxus Sempervirens Topiary -->
+<tr class="hover:bg-surface-container transition-colors">
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px] text-tertiary-container">psychiatry</span>
+<span>#AST-1290</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Buxus Sempervirens Topiary Spiral</span>
+<span class="font-code-sm text-code-sm text-outline">English Boxwood 7ft • Sculpted Spiral specimen</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-code-sm text-code-sm font-medium">Living Stock</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<div class="flex flex-col">
+<span class="font-semibold text-primary">$1,850.00</span>
+<span class="text-outline">Acq: 2024-06-10</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<span class="text-on-surface">Site 08 - Nursery Bay 3</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="font-code-sm text-code-sm text-outline italic">Horticulture Pool</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-caps text-label-caps uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-fixed"></span>
+<span>Healthy</span>
+</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm text-outline">
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">NFC Tag</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap text-right font-code-sm text-code-sm">
+<span class="text-outline">SHA:10bd..3c</span>
+<span class="text-on-surface block">2 days ago</span>
+</td>
+</tr>
+<!-- Row 6: John Deere ProGator Utility Vehicle -->
+<tr class="hover:bg-surface-container transition-colors bg-surface-container-low/40">
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-semibold text-primary">
+<span class="material-symbols-outlined text-[14px] text-error">commute</span>
+<span>#AST-0552</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<div class="flex flex-col">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">John Deere ProGator 2030A Utility Vehicle</span>
+<span class="font-code-sm text-code-sm text-outline">Diesel 4WD • Heavy payload bed • Auxiliary hydraulics</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="px-2 py-0.5 rounded bg-surface-container font-code-sm text-code-sm font-medium text-on-surface">Fleet</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<div class="flex flex-col">
+<span class="font-semibold text-primary">$18,200.00</span>
+<span class="text-outline">Acq: 2022-08-30</span>
+</div>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm">
+<span class="text-on-surface">Site 02 - Maintenance Bay 1</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="font-code-sm text-code-sm text-error font-semibold">Service Tech Bay</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-caps text-label-caps uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span>Overdue (3d)</span>
+</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap font-code-sm text-code-sm text-outline">
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">Laser QR</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container text-on-surface">NFC</span>
+</td>
+<td class="py-2 px-3 whitespace-nowrap text-right font-code-sm text-code-sm">
+<span class="text-outline">SHA:d412..08</span>
+<span class="text-on-surface block">6 mins ago</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination Bar -->
+<div class="px-space-md py-space-sm bg-surface-container-high flex flex-col md:flex-row md:items-center justify-between gap-2 font-code-sm text-code-sm">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span>Displaying records 1-6 of 1,428</span>
+<span class="text-outline">|</span>
+<span>Rows per audit page:</span>
+<select class="bg-surface-container-lowest text-on-surface rounded px-2 py-0.5 font-code-sm text-code-sm">
+<option>25 rows</option>
+<option>50 rows</option>
+<option>100 rows</option>
+<option>All active records</option>
+</select>
+</div>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded bg-surface-container-lowest text-outline hover:text-on-surface cursor-pointer shadow-sm">First</button>
+<button class="px-2 py-1 rounded bg-surface-container-lowest text-outline hover:text-on-surface cursor-pointer shadow-sm">Prev</button>
+<span class="px-3 py-1 rounded bg-primary text-on-primary font-bold">1</span>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface shadow-sm">2</button>
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface shadow-sm">3</button>
+<span class="px-1 text-outline">...</span>
+<button class="px-2 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface shadow-sm">Next</button>
+<button class="px-2 py-1 rounded bg-surface-container-lowest text-on-surface hover:bg-surface shadow-sm">Last (58)</button>
+</div>
+</div>
+</div>
+<!-- Bottom Audit Signoff & Cryptographic Telemetry Panel -->
+<div class="p-space-md bg-surface-container-high rounded shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-[24px] text-primary mt-0.5">verified</span>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-body-sm-bold text-body-sm-bold text-primary">Cryptographic Verification &amp; Auditor Attestation</span>
+<span class="px-1.5 py-0.2 rounded bg-tertiary-container text-tertiary-fixed font-code-sm text-code-sm font-semibold">VALIDATED</span>
+</div>
+<p class="font-code-sm text-code-sm text-on-surface-variant mt-0.5">
+            Report compiled by <span class="text-on-surface font-semibold">Marcus Vance (Operations Manager)</span> • Cryptographic checksum SHA-256: <span class="text-primary font-bold">8f92b7c4d109ae4871e0c83a129ef90c3716d90184c8a2ef01a</span> • Compliance Standard: <span class="text-on-surface font-semibold">ISO-55001 Asset Management Framework</span>.
+          </p>
+</div>
+</div>
+<!-- Direct Telemetric Validation Stamp -->
+<div class="flex items-center gap-2 shrink-0 self-end md:self-auto">
+<div class="flex flex-col text-right font-code-sm text-code-sm">
+<span class="text-outline">Sync Status: Real-time</span>
+<span class="text-primary font-bold">UTC 2025-02-17 14:48:12</span>
+</div>
+<button class="h-8 px-3 rounded bg-primary text-on-primary font-code-sm text-code-sm font-semibold flex items-center gap-1 hover:bg-surface-tint transition-colors shadow-sm" onclick="alert('Audit stamp hash re-calculated: OK (No modifications detected)')">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed">lock</span>
+<span>Verify Integrity</span>
+</button>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

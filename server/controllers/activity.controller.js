@@ -1,0 +1,34 @@
+const activityRepository = require('../repositories/activity.repository');
+
+class ActivityController {
+    getActivities(req, res) {
+        try {
+            const filters = {
+                action: req.query.action,
+                employee_id: req.query.employee_id,
+                date_range: req.query.date_range,
+                search: req.query.search
+            };
+            const activities = activityRepository.getActivities(req.user, filters);
+            res.json(activities);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    logActivity(req, res) {
+        try {
+            const activityData = {
+                organization_id: req.user.organization_id,
+                employee_id: req.user.employee_id,
+                ...req.body
+            };
+            const id = activityRepository.logActivity(activityData);
+            res.status(201).json({ id, message: 'Activity logged' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+}
+
+module.exports = new ActivityController();

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — System Settings &amp; Configuration</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<style>
+  .settings-layout { display: grid; grid-template-columns: 200px 1fr; gap: 20px; }
+  .settings-nav-btn { width: 100%; text-align: left; padding: 10px 14px; border-radius: var(--radius-pill); border: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+  .settings-nav-btn.active, .settings-nav-btn:hover { background: #FFFFFF; color: var(--text-primary); box-shadow: 2px 3px 8px var(--shadow-dark); }
+  .settings-section-title { font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); margin: 16px 0 6px 14px; letter-spacing: 0.05em; }
+  .settings-panel { display: none; }
+  .settings-panel.active { display: block; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(18, 24, 20, 0.55);
+    backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-card {
+    background: var(--panel-bg); border-radius: var(--radius-lg); border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 10px 16px 36px var(--shadow-dark); width: 100%; max-width: 480px; padding: 24px;
+  }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="app-sidebar" id="appSidebar" aria-label="Sidebar"></aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button type="button" class="app-icon-btn app-menu-btn" id="appMenuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+      <div class="app-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search settings...">
+      </div>
+
+      <div class="app-topbar-actions">
+        <a href="alerts.html" class="app-icon-btn" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></a>
+        <div class="app-user" id="appUser" hidden>
+          <span class="app-avatar" aria-hidden="true"></span>
+          <span class="app-user-name"></span>
+        </div>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+          <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Settings</h1>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Manage system preferences, company details, hardware RFID gateways, and security.</p>
+        </div>
+      </div>
+
+      <div class="settings-layout">
+        <!-- Settings Nav -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div class="settings-section-title">COMPANY</div>
+          <button class="settings-nav-btn active" data-target="company">Company Profile</button>
+          
+          <div class="settings-section-title">ACCESS</div>
+          <button class="settings-nav-btn" data-target="users">Users</button>
+          <button class="settings-nav-btn" data-target="roles">Roles</button>
+          
+          <div class="settings-section-title">OPERATIONS</div>
+          <button class="settings-nav-btn" data-target="notifications">Notifications</button>
+          
+          <div class="settings-section-title">HARDWARE</div>
+          <button class="settings-nav-btn" data-target="rfid">RFID / Hardware</button>
+        </div>
+
+        <!-- Settings Form Panel -->
+        <div class="neu-panel" style="overflow: hidden;">
+          
+          <!-- Company Profile Panel -->
+          <div class="settings-panel active" id="panel-company" style="padding: 20px;">
+            <h2 style="font-size: 18px; margin-bottom: 16px; font-family: 'Outfit', sans-serif;">Company Profile</h2>
+            <form onsubmit="handleSaveCompany(event)" style="display: flex; flex-direction: column; gap: 14px; max-width: 500px;">
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Organization Name</label>
+                <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+                  <input type="text" id="settingOrgName" required placeholder="Company Name" style="border:none; background:transparent; outline:none; width:100%; font-family:'Inter',sans-serif;">
+                </div>
+              </div>
+              <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Organization Code</label>
+                <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+                  <input type="text" id="settingOrgCode" readonly style="border:none; background:transparent; outline:none; width:100%; font-family:'Inter',sans-serif; color:var(--text-tertiary);">
+                </div>
+              </div>
+              <button type="submit" class="pill-btn pill-btn-emerald" style="width: fit-content; margin-top: 10px;">Save Profile</button>
+            </form>
+          </div>
+
+          <!-- Users Panel -->
+          <div class="settings-panel" id="panel-users">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 18px; border-bottom: 1px solid var(--status-neutral-bg);">
+              <div>
+                <h2 style="font-size: 18px; font-family: 'Outfit', sans-serif;">System Users</h2>
+                <div style="font-size: 12px; color: var(--text-secondary);">Authenticated user accounts authorized in database.</div>
+              </div>
+              <button class="pill-btn pill-btn-emerald" style="padding: 6px 14px; font-size: 12px;" onclick="openAddUserModal()">+ Add User</button>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+              <thead>
+                <tr style="background: rgba(234, 230, 220, 0.4); text-align: left; font-size: 11.5px; color: var(--text-secondary); text-transform: uppercase;">
+                  <th style="padding: 14px 18px;">Email Account</th>
+                  <th style="padding: 14px 18px;">Assigned Role</th>
+                  <th style="padding: 14px 18px;">Linked Employee</th>
+                  <th style="padding: 14px 18px;">Created</th>
+                </tr>
+              </thead>
+              <tbody id="settingsUsersBody">
+                <tr><td colspan="4" style="text-align: center; padding: 24px;">Loading users...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Roles Panel -->
+          <div class="settings-panel" id="panel-roles" style="padding: 20px;">
+            <h2 style="font-size: 18px; margin-bottom: 16px; font-family: 'Outfit', sans-serif;">Standard System Roles (5 MVP Roles)</h2>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="neu-inset" style="padding: 14px;"><strong>ADMIN</strong>: Full operational, personnel, settings, and workspace authority.</div>
+              <div class="neu-inset" style="padding: 14px;"><strong>OPERATIONS MANAGER</strong>: Company-wide operational visibility, assets, assignments, maintenance, and reports.</div>
+              <div class="neu-inset" style="padding: 14px;"><strong>SITE / CREW SUPERVISOR</strong>: Scoped strictly to assigned sites/zones and own authorized crew.</div>
+              <div class="neu-inset" style="padding: 14px;"><strong>MAINTENANCE STAFF</strong>: Dedicated maintenance schedules, requests, and service records.</div>
+              <div class="neu-inset" style="padding: 14px;"><strong>FIELD WORKER</strong>: Explicitly assigned tasks, assigned assets, and activity tracking.</div>
+            </div>
+          </div>
+
+          <!-- Notifications Panel -->
+          <div class="settings-panel" id="panel-notifications" style="padding: 20px;">
+            <h2 style="font-size: 18px; margin-bottom: 16px; font-family: 'Outfit', sans-serif;">Operational Alerts &amp; Notifications</h2>
+            <form onsubmit="handleSaveNotifications(event)" style="display: flex; flex-direction: column; gap: 14px; max-width: 500px;">
+              <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer;">
+                <input type="checkbox" id="notifOverdue" checked style="width: 16px; height: 16px;">
+                <span>Notify supervisors when asset checkouts become overdue</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer;">
+                <input type="checkbox" id="notifMaintenance" checked style="width: 16px; height: 16px;">
+                <span>Alert maintenance team on service due dates and critical requests</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 10px; font-size: 13.5px; cursor: pointer;">
+                <input type="checkbox" id="notifAudit" checked style="width: 16px; height: 16px;">
+                <span>Log activity audit records for all equipment assignments</span>
+              </label>
+              <button type="submit" class="pill-btn pill-btn-emerald" style="width: fit-content; margin-top: 10px;">Save Notification Preferences</button>
+            </form>
+          </div>
+
+          <!-- RFID Panel -->
+          <div class="settings-panel" id="panel-rfid" style="padding: 20px;">
+            <div style="background: rgba(234,230,220,0.4); padding: 16px; border-radius: var(--radius-md); border-left: 4px solid var(--emerald-deep); margin-bottom: 20px;">
+              <h2 style="font-size: 18px; margin-bottom: 6px; font-family: 'Outfit', sans-serif;">RFID not yet connected</h2>
+              <p style="color: var(--text-secondary); font-size: 13.5px; margin: 0;">No RFID devices configured yet. Hardware integration is planned for a future phase.</p>
+            </div>
+            
+            <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 10px;">Planned Hardware Gateways</h3>
+            <div id="plannedRfidList" style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="color: var(--text-tertiary); font-size: 13px;">No planned devices.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800;">Create System User Account</h3>
+      <button onclick="closeAddUserModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+    <form onsubmit="handleCreateUser(event)">
+      <div class="modal-field">
+        <label>Email Address *</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="email" id="newUserEmail" required placeholder="user@company.com" style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Password *</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="password" id="newUserPassword" required placeholder="Minimum 6 characters" style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Role *</label>
+        <select class="filter-select" id="newUserRole" style="width: 100%;" required>
+          <option value="FIELD WORKER">FIELD WORKER</option>
+          <option value="SITE / CREW SUPERVISOR">SITE / CREW SUPERVISOR</option>
+          <option value="MAINTENANCE STAFF">MAINTENANCE STAFF</option>
+          <option value="OPERATIONS MANAGER">OPERATIONS MANAGER</option>
+          <option value="ADMIN">ADMIN</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="pill-btn pill-btn-emerald" style="flex: 1; justify-content: center;">Create User</button>
+        <button type="button" class="pill-btn pill-btn-light" onclick="closeAddUserModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let allUsers = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const btns = document.querySelectorAll('.settings-nav-btn');
+    const panels = document.querySelectorAll('.settings-panel');
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        btns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        panels.forEach(p => p.classList.remove('active'));
+        const target = btn.getAttribute('data-target');
+        document.getElementById('panel-' + target).classList.add('active');
+      });
+    });
+  });
+
+  async function loadSettings() {
+    await Promise.all([loadCompanySettings(), loadUsers(), loadRfid()]);
+  }
+
+  async function loadCompanySettings() {
+    try {
+      const res = await fetch('/api/v1/settings');
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('settingOrgName').value = data.organization_name || '';
+        document.getElementById('settingOrgCode').value = data.organization_code || 'ORG-PRIMARY';
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleSaveCompany(e) {
+    e.preventDefault();
+    const organization_name = document.getElementById('settingOrgName').value.trim();
+
+    try {
+      const res = await fetch('/api/v1/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organization_name })
+      });
+
+      if (res.ok) {
+        window.showToast?.('Company profile saved', 'success');
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to save settings', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Error saving settings', 'error');
+    }
+  }
+
+  async function handleSaveNotifications(e) {
+    e.preventDefault();
+    window.showToast?.('Notification preferences saved', 'success');
+  }
+
+  async function loadUsers() {
+    try {
+      const res = await fetch('/api/v1/users');
+      if (res.ok) {
+        allUsers = await res.json();
+        const tbody = document.getElementById('settingsUsersBody');
+        if (allUsers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px;">No users found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = allUsers.map(u => `
+          <tr style="border-bottom: 1px solid var(--status-neutral-bg);">
+            <td style="padding: 14px 18px;"><strong>${escapeHtml(u.email)}</strong></td>
+            <td style="padding: 14px 18px;"><span class="pill-badge pill-neutral">${escapeHtml(u.role_name)}</span></td>
+            <td style="padding: 14px 18px;">${u.employee_name ? escapeHtml(u.employee_name) : '<span style="color:var(--text-tertiary);">Direct Account</span>'}</td>
+            <td style="padding: 14px 18px;">${new Date(u.created_at).toLocaleDateString()}</td>
+          </tr>
+        `).join('');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function openAddUserModal() {
+    document.getElementById('addUserModal').classList.add('open');
+  }
+
+  function closeAddUserModal() {
+    document.getElementById('addUserModal').classList.remove('open');
+  }
+
+  async function handleCreateUser(e) {
+    e.preventDefault();
+    const email = document.getElementById('newUserEmail').value.trim();
+    const password = document.getElementById('newUserPassword').value;
+    const role_name = document.getElementById('newUserRole').value;
+
+    try {
+      const res = await fetch('/api/v1/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role_name })
+      });
+
+      if (res.ok) {
+        window.showToast?.('User created successfully', 'success');
+        closeAddUserModal();
+        document.getElementById('newUserEmail').value = '';
+        document.getElementById('newUserPassword').value = '';
+        await loadUsers();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to create user', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Error creating user', 'error');
+    }
+  }
+
+  async function loadRfid() {
+    try {
+      const res = await fetch('/api/v1/rfid');
+      if (res.ok) {
+        const rfidList = await res.json();
+        const container = document.getElementById('plannedRfidList');
+        if (rfidList.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-tertiary); font-size:13px;">No planned devices configured. (Planned for future phase)</div>';
+          return;
+        }
+        container.innerHTML = rfidList.map(r => `
+          <div style="background: rgba(234,230,220,0.3); padding: 10px 14px; border-radius: 8px; font-size: 13px;">
+            <strong>${escapeHtml(r.device_name || 'Gateway')}</strong> (${escapeHtml(r.device_uid)}) · Status: <em>${escapeHtml(r.status || 'PLANNED')}</em>
+          </div>
+        `).join('');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  }
+
+  window.addEventListener('shell-ready', loadSettings);
+</script>
+<script src="../js/shell.js"></script>
+</body>
+</html>

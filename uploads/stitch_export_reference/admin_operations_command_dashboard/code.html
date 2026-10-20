@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode":"class","theme":{"extend":{"colors":{"background":"#fcf9ee","on-surface":"#1c1c15","on-background":"#1c1c15","surface-tint":"#466559","on-primary":"#ffffff","on-tertiary":"#ffffff","inverse-on-surface":"#f4f1e6","secondary-fixed-dim":"#ffb779","error-container":"#ffdad6","surface-container-highest":"#e5e2d8","on-primary-fixed-variant":"#2f4d42","secondary-fixed":"#ffdcc1","surface-variant":"#e5e2d8","outline":"#727975","on-error":"#ffffff","surface-container-lowest":"#ffffff","error":"#ba1a1a","secondary":"#895115","surface-dim":"#dddacf","surface-bright":"#fcf9ee","tertiary-fixed":"#b1f0ce","on-secondary-container":"#794306","on-secondary-fixed-variant":"#6c3a00","on-tertiary-fixed":"#002114","on-primary-fixed":"#012017","surface-container-low":"#f7f4e8","on-tertiary-fixed-variant":"#0e5138","outline-variant":"#c1c8c3","primary-fixed-dim":"#adcebf","on-primary-container":"#7d9d90","tertiary":"#001f12","on-secondary":"#ffffff","inverse-primary":"#adcebf","on-tertiary-container":"#65a284","on-surface-variant":"#414845","surface-container":"#f1eee3","secondary-container":"#ffb470","on-error-container":"#93000a","on-secondary-fixed":"#2e1500","primary-fixed":"#c8eadb","primary":"#001f16","surface":"#fcf9ee","primary-container":"#16342a","inverse-surface":"#313129","surface-container-high":"#ebe8dd","tertiary-container":"#003623","tertiary-fixed-dim":"#95d4b3"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"margin-mobile":"1rem","space-xs":"0.25rem","margin":"1.5rem","space-md":"0.75rem","space-sm":"0.5rem","gutter-mobile":"0.75rem","gutter":"1rem","space-2xs":"0.125rem","space-lg":"1rem","space-2xl":"2rem","space-xl":"1.5rem"},"fontFamily":{"code-md":["JetBrains Mono"],"code-lg":["JetBrains Mono"],"label-caps":["Inter"],"headline-sm":["Inter"],"headline-md":["Inter"],"headline-lg-mobile":["Inter"],"body-sm-bold":["Inter"],"body-md":["Inter"],"body-sm":["Inter"],"body-lg":["Inter"],"headline-lg":["Inter"],"code-sm":["JetBrains Mono"]},"fontSize":{"code-md":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"500"}],"code-lg":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0.02em","fontWeight":"600"}],"label-caps":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.06em","fontWeight":"700"}],"headline-sm":["1.25rem",{"lineHeight":"1.75rem","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-md":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.015em","fontWeight":"600"}],"headline-lg-mobile":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.01em","fontWeight":"700"}],"body-sm-bold":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"600"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"400"}],"body-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.01em","fontWeight":"400"}],"body-lg":["1rem",{"lineHeight":"1.5rem","letterSpacing":"0em","fontWeight":"400"}],"headline-lg":["2rem",{"lineHeight":"2.5rem","letterSpacing":"-0.02em","fontWeight":"700"}],"code-sm":["0.6875rem",{"lineHeight":"0.875rem","letterSpacing":"0.03em","fontWeight":"500"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container border-r border-outline-variant/30 z-50 flex flex-col justify-between select-none"><div class="flex flex-col"><div class="h-16 px-space-xl flex items-center justify-between border-b border-outline-variant/30 bg-surface-container-high/40"><div class="flex items-center gap-space-sm"><img alt="Minimal geometric brand logo for MyAsset: an isometric interlocking cube/asset tag monogram forming an 'M' and geometric digital identity chip, in deep moss green #16342A and copper #BE7C3E with white accents. Clean, sharp enterprise SaaS mark.. Brand logo. - Primary color: #16342a
+- Font: inter
+- Mode: light
+- Roundness: rounded-sm
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UXryT30PSbCluy2upkL9TVeRNgSeUPAxQjaqi7inpdnRLfOHDEOKvgIfSE4Y6toihNGsLO54VC9dNkXYLDF6oCrIWV_CXZ3BUI8sSvJHX-UAYjONnmqCK1tuZGMh9UespjC2mI1zv1Xs7FyK4WeTz-Jg5YG4efA_DDNF2f61T1JeguORq-r4aic5zhgD_HroZKmxaLfJjAilkPmK1mQO-0jUk8_BH3cP2_n4XpT0cANZlxgXo3jKUQtzr5"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm font-bold tracking-tight text-primary leading-none">MyAsset</span><span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider mt-space-2xs">Enterprise Twin</span></div></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded-lg bg-surface-container-highest text-on-surface-variant font-semibold border border-outline-variant/50">v2.6</span></div><div class="px-space-md py-space-sm border-b border-outline-variant/30 bg-surface-container-low"><label class="font-label-caps text-label-caps uppercase text-on-surface-variant mb-space-2xs block">Simulated Access Role</label><div class="relative"><select class="w-full appearance-none h-8 px-space-sm pr-8 bg-surface-container-lowest border border-outline-variant/60 rounded-xl font-code-sm text-code-sm text-primary font-semibold focus:outline-none focus:border-primary-container transition-colors cursor-pointer"><option value="ADMIN">ADMIN (Level 5 Core)</option><option selected="" value="OPERATIONS_MGR">OPERATIONS MGR (Site Lead)</option><option value="SUPERVISOR">SITE SUPERVISOR (Field Ops)</option><option value="MAINT_TECH">MAINT TECH (Hardware/Shop)</option><option value="FIELD_WORKER">FIELD WORKER (Mobile Tag)</option></select><span class="material-symbols-outlined absolute right-2 top-1.5 text-on-surface-variant pointer-events-none text-base">swap_vert</span></div></div><div class="px-space-md pt-space-md"><span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant px-space-sm pb-space-xs block">Operational Matrix</span></div><nav class="px-space-sm flex flex-col gap-space-2xs overflow-y-auto max-h-[calc(100vh-320px)]" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-[0_1px_4px_rgba(22,52,42,0.1)]"><a aria-current="page" class="flex items-center justify-between px-space-md py-2 rounded-xl transition-all group bg-primary-container text-on-primary font-semibold shadow-[0_1px_4px_rgba(22,52,42,0.1)]" data-path="dashboard" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">dashboard</span><span class="font-body-md text-body-md">Dashboard</span></div></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="assets" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">precision_manufacturing</span><span class="font-body-md text-body-md">Assets</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">1,428</span></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="employees" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">badge</span><span class="font-body-md text-body-md">Employees</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">42</span></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="locations" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">location_on</span><span class="font-body-md text-body-md">Locations</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">8 sites</span></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="tasks" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">checklist</span><span class="font-body-md text-body-md">Tasks</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-medium">19</span></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="maintenance" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">build_circle</span><span class="font-body-md text-body-md">Maintenance</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-secondary-container/60 text-on-secondary-container font-semibold">3 due</span></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="activity" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">sensors</span><span class="font-body-md text-body-md">Activity</span></div></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="alerts" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">warning</span><span class="font-body-md text-body-md">Alerts</span></div><span class="font-code-sm text-code-sm px-space-xs py-0.5 rounded bg-error/15 text-error font-semibold">2</span></a><div class="my-space-xs border-t border-outline-variant/30"></div><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="reports" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">query_stats</span><span class="font-body-md text-body-md">Reports</span></div></a><a class="flex items-center justify-between px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="settings" href="#"><div class="flex items-center gap-space-md"><span class="material-symbols-outlined text-lg">settings</span><span class="font-body-md text-body-md">Settings</span></div></a></nav></div><div class="p-space-md border-t border-outline-variant/30 bg-surface-container-high/30"><div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-lowest border border-outline-variant/50"><div class="flex items-center gap-space-sm min-w-0"><div class="relative flex-shrink-0"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1UZIoV5ZP1Y5hNMwOfiyT98xQa1bDA44t6hKR-YDLaag0r72RHyULS_5QHnMEJpADintFZ6ZadBKdyQVTh1JyL_ojAu6tP9O0ZO3Ry46FajgzPvmWxEpbXd22v4XF7FiWQ515wCiqk6Z5dWXzgnyQH4WyGfVjeDfT3fSzYwYmTaHBSfLSlEmw1QTCTMp_VGnwUssTj7gdcvY4n2LZLHih26ZOYeE3ydGEknifJ2KJ-Z7htH06HfAKtq_SYE"/><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-surface-tint ring-1 ring-surface-container-lowest"></span></div><div class="flex flex-col min-w-0"><span class="font-body-sm-bold text-body-sm-bold text-on-surface truncate">Marcus Vance</span><span class="font-code-sm text-code-sm text-secondary font-semibold uppercase truncate">Operations Mgr</span></div></div><button class="p-space-xs text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-lg transition-colors flex-shrink-0" title="Sign out"><span class="material-symbols-outlined text-lg">logout</span></button></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 z-40 flex items-center justify-between px-space-xl"><div class="flex items-center gap-space-lg flex-1 max-w-2xl"><div class="relative flex-1"><div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="material-symbols-outlined text-on-surface-variant text-lg">search</span></div><input class="w-full h-9 pl-9 pr-14 bg-surface-container-lowest border border-outline-variant/60 rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container transition-all" placeholder="Search asset tag, serial, employee, hardware ID..." type="text"/><div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none"><kbd class="font-code-sm text-code-sm px-1.5 py-0.5 rounded border border-outline-variant bg-surface-container text-on-surface-variant font-medium">Ctrl+K</kbd></div></div><div class="hidden lg:flex items-center gap-space-xs px-space-sm py-1 rounded-xl bg-surface-container border border-outline-variant/40"><span class="material-symbols-outlined text-sm text-primary-container">domain</span><span class="font-body-sm-bold text-body-sm-bold text-on-surface">Verdant HQ</span><span class="font-code-sm text-code-sm px-1.5 py-0.2 bg-surface-container-highest text-on-surface-variant rounded">Site 04</span><span class="material-symbols-outlined text-sm text-on-surface-variant">expand_more</span></div></div><div class="flex items-center gap-space-md"><div class="hidden sm:flex items-center gap-2 px-space-sm py-1 rounded-full bg-surface-container border border-outline-variant/40"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-surface-tint opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-surface-tint"></span></span><span class="font-code-sm text-code-sm text-on-surface-variant">Live Synced <strong class="text-on-surface font-semibold">12s ago</strong></span></div><div class="relative"><button class="w-9 h-9 flex items-center justify-center rounded-xl bg-surface-container-lowest border border-outline-variant/50 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Notifications"><span class="material-symbols-outlined text-lg">notifications</span></button><span class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-error text-on-error font-code-sm text-[0.625rem] font-bold ring-2 ring-surface">2</span></div><button class="h-9 px-space-md bg-primary-container hover:bg-primary-container/90 text-on-primary rounded-xl font-body-sm-bold text-body-sm-bold flex items-center gap-space-xs shadow-[0_2px_4px_rgba(22,52,42,0.12)] transition-all active:translate-y-px"><span class="material-symbols-outlined text-base">add</span><span>Register Asset</span></button></div></header><main class="main-content relative pt-16 w-full bg-surface min-h-[calc(100vh-4rem)] px-space-xl py-space-xl"><div class="flex flex-col w-full gap-space-lg">
+<!-- TOP BREADCRUMB & METRIC HEADER CONTEXT -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm pb-space-xs">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-code-sm text-code-sm">
+<span class="hover:text-on-surface cursor-pointer">VERDANT INFRASTRUCTURE ENTERPRISE</span>
+<span>/</span>
+<span class="text-primary font-semibold">OPS-GOV-CENTRAL</span>
+<span class="px-1.5 py-0.2 rounded-sm bg-surface-container-highest text-on-surface font-code-sm text-[0.625rem]">ZONE-PACIFIC-09</span>
+</div>
+<div class="flex items-baseline gap-space-md mt-0.5">
+<h1 class="font-headline-md text-headline-md font-bold tracking-tight text-primary">Executive Operations &amp; Telemetry Matrix</h1>
+<span class="font-code-sm text-code-sm text-on-surface-variant flex items-center gap-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-surface-tint"></span>
+          Cluster Poll Rate: 4Hz (Low Latency)
+        </span>
+</div>
+</div>
+<!-- Quick Actions Top Bar -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<button class="h-8 px-space-sm bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-body-sm-bold text-body-sm-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-base text-secondary">person_add</span>
+<span>+ Add Employee</span>
+</button>
+<button class="h-8 px-space-sm bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-body-sm-bold text-body-sm-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-base text-secondary">add_location_alt</span>
+<span>+ Add Location</span>
+</button>
+<button class="h-8 px-space-sm bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-body-sm-bold text-body-sm-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-base text-secondary">add_task</span>
+<span>+ Create Task</span>
+</button>
+<button class="h-8 px-space-sm bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-body-sm-bold text-body-sm-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-base text-secondary">verified_user</span>
+<span>Compliance Audit</span>
+</button>
+<button class="h-8 px-space-md bg-primary-container hover:bg-primary-container/90 text-on-primary font-body-sm-bold text-body-sm-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-all">
+<span class="material-symbols-outlined text-base text-tertiary-fixed">add_circle</span>
+<span>+ Add Asset</span>
+</button>
+</div>
+</div>
+<!-- 1. EXECUTIVE METRICS BAR (6 Dense Telemetric Cards) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-space-sm">
+<!-- KPI 1: Total Assets -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Total Twin Registry</span>
+<span class="material-symbols-outlined text-base text-primary-container">inventory_2</span>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-primary font-code-md">1,428</span>
+<span class="font-code-sm text-code-sm text-surface-tint font-bold flex items-center">
+<span class="material-symbols-outlined text-xs">arrow_upward</span>+14
+        </span>
+</div>
+<div class="mt-space-xs pt-space-xs bg-surface-container-low px-space-xs rounded flex items-center justify-between">
+<span class="font-code-sm text-[0.625rem] text-on-surface-variant">Gross Value: $8.42M</span>
+<span class="font-code-sm text-[0.625rem] text-primary-container font-semibold">100% Tagged</span>
+</div>
+</div>
+<!-- KPI 2: Assigned Assets -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Assigned Fleet</span>
+<span class="material-symbols-outlined text-base text-secondary">handyman</span>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-primary font-code-md">1,182</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant font-semibold">82.7%</span>
+</div>
+<div class="mt-space-xs w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 82.7%"></div>
+</div>
+</div>
+<!-- KPI 3: Maintenance Due -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Maint. Latency</span>
+<span class="material-symbols-outlined text-base text-secondary">build</span>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-secondary font-code-md">3 <span class="text-xs font-normal text-on-surface-variant">/ 12</span></span>
+<span class="font-code-sm text-code-sm px-1.5 py-0.5 rounded bg-secondary-container/50 text-on-secondary-container font-bold">3 CRIT</span>
+</div>
+<div class="mt-space-xs flex items-center justify-between text-on-surface-variant font-code-sm text-[0.625rem]">
+<span>Avg TAT: 18.4 hrs</span>
+<span class="text-error font-bold">SLA: 94%</span>
+</div>
+</div>
+<!-- KPI 4: Active Crew & Techs -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Field Personnel</span>
+<span class="material-symbols-outlined text-base text-primary-container">groups</span>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-primary font-code-md">38 <span class="text-xs font-normal text-on-surface-variant">/ 42</span></span>
+<span class="font-code-sm text-code-sm text-surface-tint font-bold">90.5% IN</span>
+</div>
+<div class="mt-space-xs pt-space-xs bg-surface-container-low px-space-xs rounded flex items-center justify-between text-[0.625rem] font-code-sm">
+<span class="text-on-surface-variant">4 On Standby / Off</span>
+<span class="text-primary font-bold">6 Crews Out</span>
+</div>
+</div>
+<!-- KPI 5: Active Geofenced Zones -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Geofenced Sites</span>
+<span class="material-symbols-outlined text-base text-primary">polyline</span>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-primary font-code-md">8</span>
+<span class="font-label-caps text-label-caps px-1.5 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-semibold">ALL ARMED</span>
+</div>
+<div class="mt-space-xs flex items-center justify-between text-on-surface-variant font-code-sm text-[0.625rem]">
+<span>4 Depots / 4 Workfronts</span>
+<span>100% Sat lock</span>
+</div>
+</div>
+<!-- KPI 6: Active Breaches / Alerts -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-caps text-label-caps uppercase tracking-wider">Breach Incidents</span>
+<span class="material-symbols-outlined text-base text-error">fmd_bad</span>
+</div>
+<div class="mt-space-sm flex items-baseline justify-between">
+<span class="font-headline-md text-headline-md font-bold tracking-tight text-error font-code-md">2</span>
+<span class="font-label-caps text-label-caps px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-bold animate-pulse">ACTIVE SEC</span>
+</div>
+<div class="mt-space-xs pt-space-xs bg-error-container/30 px-space-xs rounded flex items-center justify-between text-[0.625rem] font-code-sm text-error">
+<span>Site 04 &amp; Yard 01</span>
+<span class="font-bold">Investigating</span>
+</div>
+</div>
+</div>
+<!-- 2. MAIN ANALYTICS & OPERATIONAL SPLIT VIEW -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- ==================== LEFT COLUMN (65% / 8 COLS) ==================== -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- Dynamic Role Governance Banner -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary-container text-xl">admin_panel_settings</span>
+<div>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant block">Enterprise Access Level</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary" id="role-title">ADMIN: ROOT ENTERPRISE TWIN (Level 5 Scope)</span>
+</div>
+</div>
+<!-- Perspective Selector Segmented Switch -->
+<div class="inline-flex bg-surface-container rounded-lg p-0.5 self-start sm:self-auto">
+<button class="px-space-sm py-1 rounded font-code-sm text-code-sm font-semibold bg-primary-container text-on-primary transition-all shadow-sm" id="scope-btn-admin" onclick="setGovernanceScope('ADMIN')">
+              ADMIN
+            </button>
+<button class="px-space-sm py-1 rounded font-code-sm text-code-sm font-semibold text-on-surface-variant hover:text-on-surface transition-all" id="scope-btn-ops" onclick="setGovernanceScope('OPS')">
+              OPS MGR
+            </button>
+<button class="px-space-sm py-1 rounded font-code-sm text-code-sm font-semibold text-on-surface-variant hover:text-on-surface transition-all" id="scope-btn-super" onclick="setGovernanceScope('SUPER')">
+              SUPERVISOR
+            </button>
+</div>
+</div>
+<div class="bg-surface-container-low px-space-md py-space-xs rounded-lg flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm" id="role-desc-banner">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-base text-primary">policy</span>
+<span class="truncate" id="role-desc-text">Unrestricted global fleet governance across all 8 satellite sites, financial depreciation models, biometric checkout validation, and lockout release overrides.</span>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-secondary font-bold shrink-0 ml-2">OVERRIDE PERMITTED</span>
+</div>
+</div>
+<!-- Live Geo-Tracking & Depot Radar Preview -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- Radar Map Header Bar -->
+<div class="px-space-md py-space-sm bg-surface-container flex flex-wrap items-center justify-between gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary-container text-lg">radar</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase tracking-wide">Live Enterprise Geo-Depot Radar &amp; Telemetry Mesh</span>
+</div>
+<div class="flex items-center gap-space-xs font-code-sm text-code-sm">
+<span class="flex items-center gap-1 text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-surface-tint"></span> 1,182 Active Transponders
+            </span>
+<span class="text-outline-variant">|</span>
+<span class="flex items-center gap-1 text-error font-bold">
+<span class="w-2 h-2 rounded-full bg-error animate-ping"></span> 2 Fence Breaches
+            </span>
+</div>
+</div>
+<!-- Radar Interactive Canvas Box -->
+<div class="relative w-full h-80 bg-surface-container-high overflow-hidden select-none">
+<!-- Background Location Map Static Representation -->
+<div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-multiply" data-location="Denver Industrial Fleet Yard, Colorado, USA" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBomYKs9SD9bxuJDg6Vr2Qajj4QJbOqG290JGF16SEkBypWs015NIOXE6TN0bmr3hpROr0qFX2rjNzIIWJzeJ9U1jRcdYbarhBRUAAyi6gNwXz32Twv1zz4_YqhGXK7H1daOrIZ80-NOz2f9rUlCc8ylWL6AicfP_ymxCad_05t_BOhTeu70RU3ekc3J1ldec1rljcIezgCpGcnPf9uE9R3PEPlrMjknLz0SlpaIpmZn5U9nX7TuZK3Sg');"></div>
+<!-- Synthetic Tactical Grid & Radar Sweeper Overlay -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<pattern height="40" id="tactical-grid" patternunits="userSpaceOnUse" width="40">
+<path class="text-outline-variant/30" d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" stroke-width="0.8"></path>
+</pattern>
+</defs>
+<rect fill="url(#tactical-grid)" height="100%" width="100%"></rect>
+<!-- Geofence Zone 04: Industrial Quarry -->
+<polygon class="text-surface-tint" fill="currentColor" points="120,40 320,50 360,180 160,220" stroke="currentColor" stroke-dasharray="4,4" stroke-width="1.5"></polygon>
+<!-- Geofence Zone 01: Verdant Central Depot -->
+<polygon class="text-primary" fill="currentColor" points="460,90 740,70 780,260 520,290" stroke="currentColor" stroke-width="1.5"></polygon>
+<!-- Incident Movement Vector (Red) -->
+<polyline class="text-error" fill="none" points="290,130 330,150 370,140 430,220 460,280" stroke="currentColor" stroke-dasharray="2,2" stroke-width="2"></polyline>
+</svg>
+<!-- Zone 04 Label -->
+<div class="absolute top-12 left-36 px-space-xs py-0.5 rounded bg-surface/90 text-primary-container font-code-sm text-[0.625rem] font-bold shadow-sm">
+            ZONE-04 : QUARRY NORTH (GEOFENCE ARMED)
+          </div>
+<!-- Zone 01 Label -->
+<div class="absolute top-20 right-48 px-space-xs py-0.5 rounded bg-surface/90 text-primary-container font-code-sm text-[0.625rem] font-bold shadow-sm">
+            ZONE-01 : VERDANT DEPOT METRO
+          </div>
+<!-- Pin 1: Caterpillar 308 (Breaching Alert!) -->
+<div class="absolute top-48 left-1/2 -translate-x-12 z-20 cursor-pointer group" onclick="highlightAsset('AST-9921')">
+<div class="relative flex items-center justify-center">
+<span class="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-error opacity-60"></span>
+<div class="w-7 h-7 rounded-full bg-error text-on-error flex items-center justify-center shadow-lg font-code-sm text-xs font-bold">
+                !
+              </div>
+</div>
+<!-- Tooltip -->
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col bg-inverse-surface text-inverse-on-surface px-space-sm py-1 rounded shadow-lg min-w-48 pointer-events-none z-30">
+<span class="font-code-sm text-[0.625rem] text-secondary-fixed">BREACH INCIDENT #AL-902</span>
+<span class="font-body-sm-bold text-body-sm-bold leading-tight">CAT 308 CR Mini Excavator</span>
+<span class="font-code-sm text-[0.625rem] text-on-surface-variant">Spd: 14 km/h • Heading: SE 142°</span>
+</div>
+</div>
+<!-- Pin 2: Toro Z-Master Cluster -->
+<div class="absolute top-32 right-36 z-10 cursor-pointer group">
+<div class="px-2 py-1 rounded bg-primary-container text-on-primary font-code-sm text-xs font-bold flex items-center gap-1 shadow-md hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-xs text-tertiary-fixed">precision_manufacturing</span>
+<span>18 ASSETS</span>
+</div>
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:flex flex-col bg-inverse-surface text-inverse-on-surface p-1.5 rounded text-[0.625rem] font-code-sm min-w-36 pointer-events-none">
+<span>Crew: Alpha Landscape</span>
+<span>Lead: Dave Kowalski</span>
+<span>Status: Active Site Operation</span>
+</div>
+</div>
+<!-- Pin 3: John Deere 4066R Tractor -->
+<div class="absolute bottom-16 left-60 z-10 cursor-pointer group">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest text-primary flex items-center justify-center shadow-md hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-sm text-surface-tint">agriculture</span>
+</div>
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:flex flex-col bg-inverse-surface text-inverse-on-surface p-1.5 rounded text-[0.625rem] font-code-sm min-w-40 pointer-events-none">
+<span class="font-bold">#AST-4412 (JD 4066R)</span>
+<span>Eng: 1,842 hrs • Fuel 78%</span>
+</div>
+</div>
+<!-- Floating Radar Controls -->
+<div class="absolute bottom-3 right-3 flex items-center gap-1 bg-surface/90 backdrop-blur-sm p-1 rounded-lg shadow-sm">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-on-surface transition-colors" title="Zoom In">
+<span class="material-symbols-outlined text-base">add</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-on-surface transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined text-base">remove</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container text-on-surface transition-colors" title="Layer Filter">
+<span class="material-symbols-outlined text-base">layers</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded bg-primary-container text-on-primary transition-colors" title="Center Fleet">
+<span class="material-symbols-outlined text-base">my_location</span>
+</button>
+</div>
+<!-- Live Feed Ticker across bottom of map -->
+<div class="absolute bottom-3 left-3 bg-surface/90 backdrop-blur-sm px-space-sm py-1 rounded-lg shadow-sm flex items-center gap-space-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-surface-tint animate-pulse"></span>
+<span class="font-code-sm text-[0.6875rem] text-on-surface">GPS PING RX: <strong>Site 04 Tower (98.2% signal)</strong></span>
+</div>
+</div>
+<!-- Radar Footer Diagnostics -->
+<div class="px-space-md py-space-xs bg-surface-container-low flex flex-wrap items-center justify-between gap-space-sm text-on-surface-variant font-code-sm text-code-sm">
+<div class="flex items-center gap-space-md">
+<span>Geofence Pulse: <strong class="text-primary font-semibold">Active</strong></span>
+<span>Unscheduled Transit: <strong class="text-error font-semibold">1 Detected</strong></span>
+<span>Depot Dwell Variance: <strong class="text-primary font-semibold">+4.2m</strong></span>
+</div>
+<button class="text-secondary hover:text-secondary-fixed-dim font-bold flex items-center gap-1 text-xs uppercase transition-colors">
+<span>Expand Global GIS Engine</span>
+<span class="material-symbols-outlined text-xs">open_in_new</span>
+</button>
+</div>
+</div>
+<!-- Asset Inventory Distribution Matrix (Categories + Status Breakdown) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Sub-Panel A: Category Distribution Progress Meters -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-lg">category</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase">Asset Allocation By Class</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant font-semibold">1,428 Total</span>
+</div>
+<!-- Progress Meters List -->
+<div class="flex flex-col gap-space-sm mt-space-sm">
+<!-- Class 1 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-secondary">local_shipping</span> Heavy Fleet &amp; Machinery
+                </span>
+<span class="font-bold text-primary">342 <span class="text-on-surface-variant font-normal">(24.0%)</span></span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 24%"></div>
+</div>
+</div>
+<!-- Class 2 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-surface-tint">potted_plant</span> Living Botanical Stock
+                </span>
+<span class="font-bold text-primary">584 <span class="text-on-surface-variant font-normal">(40.9%)</span></span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-surface-tint h-full rounded-full" style="width: 40.9%"></div>
+</div>
+</div>
+<!-- Class 3 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-primary-container">carpenter</span> Powered Rigging &amp; Hand Tools
+                </span>
+<span class="font-bold text-primary">380 <span class="text-on-surface-variant font-normal">(26.6%)</span></span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 26.6%"></div>
+</div>
+</div>
+<!-- Class 4 -->
+<div class="flex flex-col gap-1">
+<div class="flex justify-between font-code-sm text-code-sm">
+<span class="text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-sm text-outline">water_drop</span> Subsurface Infrastructure &amp; Pumps
+                </span>
+<span class="font-bold text-primary">122 <span class="text-on-surface-variant font-normal">(8.5%)</span></span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+<div class="bg-outline h-full rounded-full" style="width: 8.5%"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs flex justify-between items-center text-[0.6875rem] font-code-sm text-on-surface-variant">
+<span>Re-stocking Threshold: Safe</span>
+<span class="text-primary font-semibold">Scan Velocity: 4.8 tags/sec</span>
+</div>
+</div>
+<!-- Sub-Panel B: Asset Lifecycle & Status Distribution -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary-container text-lg">pie_chart</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase">Status &amp; Health Split</span>
+</div>
+<span class="font-code-sm text-code-sm text-surface-tint font-bold">93.0% Utilization</span>
+</div>
+<!-- Status Segment Bar -->
+<div class="mt-space-xs">
+<div class="w-full h-3 rounded-full flex overflow-hidden bg-surface-container-high">
+<div class="bg-primary-container" style="width: 82.0%" title="Active (82%)"></div>
+<div class="bg-surface-container-highest" style="width: 11.0%" title="Available (11%)"></div>
+<div class="bg-secondary-container" style="width: 3.5%" title="In Maintenance (3.5%)"></div>
+<div class="bg-error" style="width: 1.2%" title="Damaged / Lockout (1.2%)"></div>
+<div class="bg-outline" style="width: 0.3%" title="Lost / Unresolved (0.3%)"></div>
+<div class="bg-inverse-surface" style="width: 2.0%" title="Decommissioned"></div>
+</div>
+</div>
+<!-- Status Interactive Pill Cloud -->
+<div class="grid grid-cols-2 gap-space-xs mt-space-sm">
+<!-- Active Pill -->
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-surface-tint"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface">Active / Service</span>
+</div>
+<span class="font-code-sm text-code-sm font-bold text-primary">82.0%</span>
+</div>
+<!-- Available Pill -->
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-on-surface-variant"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface">Available Depot</span>
+</div>
+<span class="font-code-sm text-code-sm font-bold text-primary">11.0%</span>
+</div>
+<!-- In Maintenance Pill -->
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps uppercase text-secondary font-semibold">In Maintenance</span>
+</div>
+<span class="font-code-sm text-code-sm font-bold text-secondary">3.5%</span>
+</div>
+<!-- Damaged / Lockout -->
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-label-caps text-label-caps uppercase text-error font-semibold">Damaged / Lock</span>
+</div>
+<span class="font-code-sm text-code-sm font-bold text-error">1.2%</span>
+</div>
+<!-- Lost Pill -->
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Lost / Flagged</span>
+</div>
+<span class="font-code-sm text-code-sm font-bold text-on-surface">0.3%</span>
+</div>
+<!-- In Transit -->
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface">Transit Inter-Depot</span>
+</div>
+<span class="font-code-sm text-code-sm font-bold text-primary">2.0%</span>
+</div>
+</div>
+<div class="mt-space-sm pt-space-xs flex justify-between items-center text-[0.6875rem] font-code-sm text-on-surface-variant">
+<span>Scheduled Retirements: 4 this quarter</span>
+<button class="text-primary hover:underline font-semibold">Download State CSV</button>
+</div>
+</div>
+</div>
+<!-- Quick Recent Asset Roster Strip -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="px-space-md py-space-sm bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-base text-primary-container">tab_duplicate</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase">Critical Fleet Monitored Registry (Sample)</span>
+</div>
+<a class="font-code-sm text-code-sm text-secondary hover:underline font-bold" href="#">View All 1,428 Assets →</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-on-surface border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase h-8">
+<th class="px-space-md py-1">Asset Tag &amp; Twin ID</th>
+<th class="px-space-md py-1">Hardware / Model</th>
+<th class="px-space-md py-1">Assigned Custodian</th>
+<th class="px-space-md py-1">Telemetry Status</th>
+<th class="px-space-md py-1">Current Zone</th>
+<th class="px-space-md py-1 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm">
+<!-- Row 1 -->
+<tr class="h-10 hover:bg-surface-container-low transition-colors bg-error-container/20" id="row-AST-9921">
+<td class="px-space-md py-1 font-code-sm text-code-sm font-bold text-error">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-error">warning</span>
+<span>#AST-9921</span>
+</div>
+</td>
+<td class="px-space-md py-1 font-body-sm-bold text-body-sm-bold text-on-surface">Caterpillar 308 CR Mini Excavator</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-on-surface">UNASSIGNED (Transit)</td>
+<td class="px-space-md py-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-caps text-label-caps uppercase font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span> Lockout / Breach
+                  </span>
+</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-error font-semibold">Ext. Site 04 Vector</td>
+<td class="px-space-md py-1 text-right">
+<button class="h-6 px-2 bg-error text-on-error rounded font-code-sm text-[0.6875rem] font-bold shadow-sm hover:bg-error/90 transition-all">Lock Engine</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-10 hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-1 font-code-sm text-code-sm font-semibold text-primary">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-primary">qr_code_2</span>
+<span>#AST-4412</span>
+</div>
+</td>
+<td class="px-space-md py-1 font-body-sm-bold text-body-sm-bold text-on-surface">John Deere 4066R Utility Tractor</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-on-surface">M. Jenkins [EMP-104]</td>
+<td class="px-space-md py-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-surface-tint font-label-caps text-label-caps uppercase font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-tint"></span> Active / Telemetric
+                  </span>
+</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-on-surface-variant">Site 01 (Central Depot)</td>
+<td class="px-space-md py-1 text-right">
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-highest text-on-surface rounded font-code-sm text-[0.6875rem] transition-colors">Inspect</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-10 hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-1 font-code-sm text-code-sm font-semibold text-primary">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-secondary">sensors</span>
+<span>#AST-1102</span>
+</div>
+</td>
+<td class="px-space-md py-1 font-body-sm-bold text-body-sm-bold text-on-surface">Stihl MS 261 C-M Chainsaw</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-secondary font-semibold">H. Larson [EMP-119]</td>
+<td class="px-space-md py-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/60 text-on-secondary-container font-label-caps text-label-caps uppercase font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> NFC Flagged
+                  </span>
+</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-on-surface-variant">Trailer Rig #08</td>
+<td class="px-space-md py-1 text-right">
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-highest text-on-surface rounded font-code-sm text-[0.6875rem] transition-colors">Resolve</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="h-10 hover:bg-surface-container-low transition-colors">
+<td class="px-space-md py-1 font-code-sm text-code-sm font-semibold text-primary">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm text-outline">nature</span>
+<span>#AST-7821</span>
+</div>
+</td>
+<td class="px-space-md py-1 font-body-sm-bold text-body-sm-bold text-on-surface">Quercus Alba (Specimen White Oak 4")</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-on-surface">Crew Charlie (Nursery Lead)</td>
+<td class="px-space-md py-1">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-caps text-label-caps uppercase font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Monitored Bio-Stock
+                  </span>
+</td>
+<td class="px-space-md py-1 font-code-sm text-code-sm text-on-surface-variant">Nursery Nursery Lot C</td>
+<td class="px-space-md py-1 text-right">
+<button class="h-6 px-2 bg-surface-container hover:bg-surface-container-highest text-on-surface rounded font-code-sm text-[0.6875rem] transition-colors">Water Log</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- ==================== RIGHT COLUMN (35% / 4 COLS) ==================== -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Panel 1: Critical Alerts & Hardware Telemetry Stream -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="px-space-md py-space-sm bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-error text-lg animate-pulse">crisis_alert</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase">Critical Fleet Alerts</span>
+</div>
+<span class="font-code-sm text-code-sm px-1.5 py-0.2 rounded bg-error-container text-on-error-container font-bold">2 Active</span>
+</div>
+<div class="p-space-md flex flex-col gap-space-sm">
+<!-- Alert Item 1: High Severity Breached Geofence -->
+<div class="bg-error-container/20 rounded-lg p-space-sm flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-[0.625rem] px-1.5 py-0.2 rounded bg-error text-on-error font-bold">ALERT #AL-902</span>
+<span class="font-code-sm text-[0.625rem] text-error font-bold">06:14 AM TODAY</span>
+</div>
+<p class="font-body-sm-bold text-body-sm-bold text-on-surface leading-snug">
+              Unauthorized transit detected: Caterpillar 308 Excavator breached Site 04 perimeter without digital job-dispatch token.
+            </p>
+<div class="flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm pt-1">
+<span>Telemetry: Satellite GPS (HDOP 0.9)</span>
+<span class="text-error font-bold">Vector: 3.4 mi off-site</span>
+</div>
+<div class="flex items-center gap-space-xs mt-1">
+<button class="h-7 px-2 bg-error text-on-error rounded font-code-sm text-code-sm font-bold hover:bg-error/90 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">power_settings_new</span> Remote E-Stop
+              </button>
+<button class="h-7 px-2 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface rounded font-code-sm text-code-sm font-semibold transition-colors">
+                Contact Yard Lead
+              </button>
+</div>
+</div>
+<!-- Alert Item 2: NFC Tag Mismatch -->
+<div class="bg-secondary-container/20 rounded-lg p-space-sm flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-[0.625rem] px-1.5 py-0.2 rounded bg-secondary text-on-secondary font-bold">FLAG #FL-440</span>
+<span class="font-code-sm text-[0.625rem] text-secondary font-semibold">07:52 AM TODAY</span>
+</div>
+<p class="font-body-sm-bold text-body-sm-bold text-on-surface leading-snug">
+              NFC Tag Mismatch: Stihl Chainsaw #AST-1102 scanned by Rig 08 loader but registered to Crew Alpha trunk locker.
+            </p>
+<div class="flex items-center justify-between text-on-surface-variant font-code-sm text-code-sm pt-1">
+<span>Scanned by: H. Larson (EMP-119)</span>
+<span class="text-secondary font-bold">Handshake: Failed</span>
+</div>
+<div class="flex items-center gap-space-xs mt-1">
+<button class="h-7 px-2 bg-secondary text-on-secondary rounded font-code-sm text-code-sm font-bold hover:bg-secondary/90 transition-colors">
+                Authorize Handover
+              </button>
+<button class="h-7 px-2 bg-surface-container-lowest hover:bg-surface-container-high text-on-surface rounded font-code-sm text-code-sm font-semibold transition-colors">
+                Dismiss Flag
+              </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel 2: Overdue Tasks & Maintenance SLAs Widget -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="px-space-md py-space-sm bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-lg">build_circle</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase">Maintenance &amp; Task SLA Health</span>
+</div>
+<span class="font-code-sm text-code-sm text-secondary font-bold">3 Due Critical</span>
+</div>
+<div class="p-space-md flex flex-col gap-space-sm">
+<!-- Task Item 1 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-primary font-bold">Hydraulic Fluid Flush &amp; Filter Cycle</span>
+<span class="px-1.5 py-0.2 rounded bg-error/15 text-error font-bold text-[0.625rem]">48H OVERDUE</span>
+</div>
+<div class="text-on-surface font-body-sm text-body-sm">
+              Asset: Kubota SVL95-2S Skid Steer <span class="font-code-sm text-code-sm text-on-surface-variant">(#AST-2091)</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-code-sm text-[0.6875rem] pt-1">
+<span>Station: Shop Bay 2</span>
+<span>Tech: R. Chen</span>
+<button class="text-primary font-bold hover:underline">Mark Done</button>
+</div>
+</div>
+<!-- Task Item 2 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-primary font-bold">Tree Rootball &amp; Moisture Tensiometer Check</span>
+<span class="px-1.5 py-0.2 rounded bg-secondary-container/60 text-on-secondary-container font-bold text-[0.625rem]">DUE TODAY</span>
+</div>
+<div class="text-on-surface font-body-sm text-body-sm">
+              Batch: 45x Acer Rubrum (Red Maple Specimen lot)
+            </div>
+<div class="flex items-center justify-between text-on-surface-variant font-code-sm text-[0.6875rem] pt-1">
+<span>Yard Lot: North Nursery</span>
+<span>Tech: Crew C</span>
+<button class="text-primary font-bold hover:underline">Log Moisture</button>
+</div>
+</div>
+<!-- Task Item 3 -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-primary font-bold">Chainsaw Chain Tension &amp; Bar Oil Safety</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-on-surface-variant font-semibold text-[0.625rem]">TOMORROW</span>
+</div>
+<div class="text-on-surface font-body-sm text-body-sm">
+              Assets: Rig 04 Hand Tools Batch (12 units)
+            </div>
+<div class="flex items-center justify-between text-on-surface-variant font-code-sm text-[0.6875rem] pt-1">
+<span>Station: Mobile Rig #04</span>
+<span>Tech: Auto-Assign</span>
+<button class="text-primary font-bold hover:underline">Assign</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Panel 3: Live Company Operational Feed (Real-Time Events) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="px-space-md py-space-sm bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-lg">stream</span>
+<span class="font-body-sm-bold text-body-sm-bold text-primary uppercase">Real-Time Operational Wire</span>
+</div>
+<span class="flex items-center gap-1 font-code-sm text-code-sm text-surface-tint">
+<span class="w-1.5 h-1.5 rounded-full bg-surface-tint animate-ping"></span> Live
+          </span>
+</div>
+<div class="p-space-md flex flex-col gap-space-md max-h-80 overflow-y-auto">
+<!-- Wire Event 1 -->
+<div class="flex items-start gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center shrink-0 mt-0.5 text-primary">
+<span class="material-symbols-outlined text-sm">qr_code_scanner</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Asset Check-Out Verified</span>
+<span class="font-code-sm text-[0.625rem] text-on-surface-variant">12s ago</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">
+                D. Vance checked out <strong class="text-primary">Toro GrandStand (#AST-1823)</strong> at Bay 04.
+              </span>
+</div>
+</div>
+<!-- Wire Event 2 -->
+<div class="flex items-start gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-error-container/40 flex items-center justify-center shrink-0 mt-0.5 text-error">
+<span class="material-symbols-outlined text-sm">wrong_location</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-body-sm-bold text-body-sm-bold text-error">GPS Geofence Boundary Trip</span>
+<span class="font-code-sm text-[0.625rem] text-on-surface-variant">2m ago</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">
+                #AST-9921 (Excavator) crossed North Line Gate 3 with zero transit permit.
+              </span>
+</div>
+</div>
+<!-- Wire Event 3 -->
+<div class="flex items-start gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center shrink-0 mt-0.5 text-surface-tint">
+<span class="material-symbols-outlined text-sm">battery_charging_full</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Depot Solar Station Sync</span>
+<span class="font-code-sm text-[0.625rem] text-on-surface-variant">7m ago</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">
+                E-Battery Bank Rig 02 reached 100% (48V / 24kWh available).
+              </span>
+</div>
+</div>
+<!-- Wire Event 4 -->
+<div class="flex items-start gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center shrink-0 mt-0.5 text-secondary">
+<span class="material-symbols-outlined text-sm">checklist_rtl</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-body-sm-bold text-body-sm-bold text-on-surface">Pre-Trip Inspection Logged</span>
+<span class="font-code-sm text-[0.625rem] text-on-surface-variant">14m ago</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">
+                Site Supervisor M. Vance approved safety checklist for Ford F-550 Crew Rig (#AST-008).
+              </span>
+</div>
+</div>
+</div>
+<div class="px-space-md py-space-xs bg-surface-container-low text-center">
+<button class="font-code-sm text-code-sm text-primary hover:underline font-semibold">
+            Open Continuous Audit Log (Syslog 38.9k entries) →
+          </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro-Interactions Script -->
+<script>
+  function setGovernanceScope(role) {
+    const titleEl = document.getElementById('role-title');
+    const descText = document.getElementById('role-desc-text');
+    const btnAdmin = document.getElementById('scope-btn-admin');
+    const btnOps = document.getElementById('scope-btn-ops');
+    const btnSuper = document.getElementById('scope-btn-super');
+
+    // Reset styles
+    [btnAdmin, btnOps, btnSuper].forEach(b => {
+      b.className = "px-space-sm py-1 rounded font-code-sm text-code-sm font-semibold text-on-surface-variant hover:text-on-surface transition-all";
+    });
+
+    if (role === 'ADMIN') {
+      btnAdmin.className = "px-space-sm py-1 rounded font-code-sm text-code-sm font-semibold bg-primary-container text-on-primary shadow-sm transition-all";
+      titleEl.innerText = "ADMIN: ROOT ENTERPRISE TWIN (Level 5 Scope)";
+      descText.innerText = "Unrestricted global fleet governance across all 8 satellite sites, financial depreciation models, biometric checkout validation, and lockout release overrides.";
+    } else if (role === 'OPS') {
+      btnOps.className = "px-space-sm py-1 rounded font-code-sm text-code-sm font-semibold bg-primary-container text-on-primary shadow-sm transition-all";
+      titleEl.innerText = "OPERATIONS MANAGER: MULTI-DEPOT LOGISTICS (Level 3 Scope)";
+      descText.innerText = "Site orchestration limited to Colorado & Pacific Rim depots. Real-time geofence scheduling, work-order routing, and driver crew reassignments enabled.";
+    } else if (role === 'SUPER') {
+      btnSuper.className = "px-space-sm py-1 rounded font-code-sm text-code-sm font-semibold bg-primary-container text-on-primary shadow-sm transition-all";
+      titleEl.innerText = "SITE SUPERVISOR: ACTIVE SECTOR FOCUS (Level 2 Scope)";
+      descText.innerText = "Localized operational view pinned to Zone 04 Quarry & Rig 08 fleet. Immediate tool handoffs, daily inspections, and operator badge verifications.";
+    }
+  }
+
+  function highlightAsset(tag) {
+    const targetRow = document.getElementById('row-' + tag);
+    if (targetRow) {
+      targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      targetRow.classList.add('ring-2', 'ring-error');
+      setTimeout(() => {
+        targetRow.classList.remove('ring-2', 'ring-error');
+      }, 2500);
+    }
+  }
+</script></main></div></body></html>

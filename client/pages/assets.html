@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — Equipment &amp; Asset Management</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<style>
+
+  /* Toolbar Controls */
+  .toolbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-search {
+    flex: 1;
+    min-width: 260px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    background: #EAE6DC;
+    border-radius: var(--radius-pill);
+    box-shadow: 
+      inset 2px 3px 6px var(--inset-dark),
+      inset -2px -3px 6px var(--inset-light);
+    border: 1px solid rgba(200, 192, 175, 0.3);
+  }
+
+  .toolbar-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    width: 100%;
+  }
+
+  .filter-select {
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: var(--panel-bg);
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    box-shadow: 2px 3px 8px var(--shadow-dark);
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* Filters Bar */
+  .filters-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-family: 'Outfit', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--panel-bg);
+    border: 1px solid rgba(255,255,255,0.85);
+    box-shadow: 3px 4px 10px var(--shadow-dark);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+  }
+
+  .filter-chip.active, .filter-chip:hover {
+    background: var(--emerald-deep);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(0, 77, 64, 0.3);
+  }
+
+  /* Dense SaaS Data Table */
+  .asset-table-card {
+    background: var(--panel-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 
+      10px 12px 24px var(--shadow-dark),
+      -8px -8px 20px var(--shadow-light);
+    overflow: hidden;
+  }
+
+  table.asset-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  table.asset-table th {
+    text-align: left;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    padding: 14px 16px;
+    background: rgba(234, 230, 220, 0.5);
+    border-bottom: 1px solid rgba(200, 192, 175, 0.4);
+  }
+
+  table.asset-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid rgba(200, 192, 175, 0.3);
+    vertical-align: middle;
+    color: var(--text-primary);
+  }
+
+  table.asset-table tr:hover td {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  table.asset-table tr.selected td {
+    background: rgba(0, 77, 64, 0.06);
+  }
+
+  .asset-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(200,192,175,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* Three-dot Action Dropdown */
+  .action-menu-btn {
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+  }
+
+  .action-menu-btn:hover {
+    background: rgba(0,0,0,0.06);
+    color: var(--text-primary);
+  }
+
+  .dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: #FFFFFF;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border: 1px solid rgba(200,192,175,0.4);
+    width: 170px;
+    padding: 6px 0;
+    z-index: 50;
+    display: none;
+  }
+
+  .dropdown-menu.open {
+    display: block;
+  }
+
+  .dropdown-item {
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .dropdown-item:hover {
+    background: var(--status-neutral-bg);
+  }
+
+  /* Floating Bulk Actions Bar */
+  .bulk-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--emerald-deep);
+    color: #FFFFFF;
+    padding: 12px 24px;
+    border-radius: var(--radius-pill);
+    box-shadow: 0 14px 30px rgba(0, 77, 64, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .bulk-bar.active {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Slide-over Asset Creation Drawer / Modal */
+  .drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 32, 29, 0.45);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .drawer-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .drawer-content {
+    background: var(--podium-bg);
+    width: 100%;
+    max-width: 540px;
+    height: 100vh;
+    box-shadow: -15px 0 40px rgba(0,0,0,0.25);
+    padding: 32px 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .drawer-overlay.open .drawer-content {
+    transform: translateX(0);
+  }
+
+  .form-section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--emerald-deep);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid rgba(0, 77, 64, 0.2);
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="app-sidebar" id="appSidebar" aria-label="Sidebar"></aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button type="button" class="app-icon-btn app-menu-btn" id="appMenuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+      <div class="app-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search assets, employees, locations..." readonly onclick="openAddDrawer()">
+      <span class="pill-badge pill-neutral" style="font-size:10px;">⌘K</span>
+      </div>
+
+      <div class="app-topbar-actions">
+        <a href="alerts.html" class="app-icon-btn" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></a>
+        <div class="app-user" id="appUser" hidden>
+          <span class="app-avatar" aria-hidden="true"></span>
+          <span class="app-user-name"></span>
+        </div>
+      <button class="pill-btn pill-btn-emerald app-cta" onclick="openAddDrawer()" aria-label="Add Asset">
+        <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Add Asset</span>
+      </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      
+      <!-- PAGE HEADER -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+          <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Assets</h1>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Manage and monitor all registered assets.</p>
+        </div>
+
+        <button class="pill-btn pill-btn-emerald" onclick="openAddDrawer()">
+          <span>+ Add Asset</span>
+        </button>
+      </div>
+
+      <!-- TOOLBAR CONTAINER -->
+      <div class="toolbar-container">
+        <!-- Live Search -->
+        <div class="toolbar-search">
+          <span>🔍</span>
+          <input type="text" id="tableSearchInput" placeholder="Search assets by name, ID, serial number..." onkeyup="filterTable()">
+        </div>
+
+        <!-- Filter Dropdowns & Controls -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+          <select class="filter-select" id="sortSelect" onchange="sortTable()">
+            <option value="activity">Sort by: Last Activity</option>
+            <option value="name">Sort by: Asset Name A-Z</option>
+            <option value="id">Sort by: Asset Tag ID</option>
+          </select>
+
+          <select class="filter-select" id="locationFilter" onchange="filterTable()">
+            <option value="all">All Locations</option>
+            <option value="Site 04">Site 04 Greenfield</option>
+            <option value="Pacific Yard">Pacific Yard</option>
+            <option value="Verdant HQ">Verdant HQ</option>
+            <option value="Depot">Central Depot</option>
+            <option value="North Nursery">North Nursery Lot</option>
+          </select>
+
+          <select class="filter-select" id="maintFilter" onchange="filterTable()">
+            <option value="all">All Maintenance</option>
+            <option value="Up to Date">Up to Date</option>
+            <option value="Service Due">Service Due</option>
+            <option value="Maintenance Logged">Maintenance Logged</option>
+          </select>
+
+          <button class="pill-btn pill-btn-light" style="padding: 8px 16px; font-size: 12.5px;" onclick="exportCSV()">
+            <span>📥 Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTERS BAR CHIPS -->
+      <div class="filters-row">
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">Status Filter:</span>
+        <div class="filter-chip active" onclick="setFilterStatus('all', this)">All (248)</div>
+        <div class="filter-chip" onclick="setFilterStatus('available', this)">Available</div>
+        <div class="filter-chip" onclick="setFilterStatus('checked out', this)">Checked Out</div>
+        <div class="filter-chip" onclick="setFilterStatus('maintenance', this)">Maintenance</div>
+        <div class="filter-chip" onclick="setFilterStatus('retired', this)">Retired</div>
+        <div class="filter-chip" onclick="setFilterStatus('alert', this)">Alert</div>
+      </div>
+
+      <!-- DENSE SAAS DATA TABLE -->
+      <div class="asset-table-card">
+        <table class="asset-table" id="assetDataTable">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">
+                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" style="cursor: pointer;">
+              </th>
+              <th>Asset</th>
+              <th>Asset ID</th>
+              <th>Category</th>
+              <th>Location</th>
+              <th>Assigned To</th>
+              <th>Last Activity</th>
+              <th>Status</th>
+              <th style="width: 60px; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="9" style="text-align: center; padding: 30px;">Loading assets from database...</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination Footer -->
+        <div style="padding: 14px 20px; background: rgba(234, 230, 220, 0.3); border-top: 1px solid rgba(200, 192, 175, 0.4); display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: var(--text-secondary);">
+          <div id="paginationSummary">Showing <strong>0</strong> registered assets</div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- FLOATING BULK ACTIONS BAR -->
+<div class="bulk-bar" id="bulkActionsBar">
+  <span style="font-weight: 700; font-size: 13.5px;"><span id="selectedCount">0</span> Assets Selected</span>
+  <button class="pill-btn pill-btn-light" style="padding: 6px 14px; font-size: 12px;" onclick="exportCSV()">Export All CSV</button>
+  <button style="background:none; border:none; color:#FFF; font-size:12px; text-decoration:underline; cursor:pointer;" onclick="clearSelection()">Deselect</button>
+</div>
+
+<!-- SLIDE-OVER ASSET CREATION/EDIT DRAWER -->
+<div class="drawer-overlay" id="addAssetDrawer">
+  <div class="drawer-content">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--emerald-deep); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">⚡</div>
+          <div>
+            <h2 style="font-size: 20px; font-family: 'Outfit', sans-serif;" id="drawerTitle">Register New Asset Unit</h2>
+            <p style="font-size: 12px; color: var(--text-secondary);">Enter equipment telemetry and assignment details.</p>
+          </div>
+        </div>
+        <button onclick="closeAddDrawer()" style="border:none; background:none; font-size:22px; cursor:pointer;">✕</button>
+      </div>
+
+      <form id="assetCreationForm" onsubmit="handleFormSubmit(event)">
+        <input type="hidden" id="editingAssetId">
+        
+        <!-- SECTION 1: BASIC INFO -->
+        <div class="form-section-title">1. Basic Identification</div>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Equipment Name *</label>
+            <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+              <input type="text" id="inputName" required placeholder="e.g. Caterpillar 320 Hydraulic Excavator" style="border:none; background:transparent; outline:none; width:100%; font-family:'Inter',sans-serif;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Category / Type *</label>
+              <select class="filter-select" id="inputCategory" style="width: 100%; margin-top: 4px;" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Asset Tag ID Code *</label>
+              <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+                <input type="text" id="inputTag" required placeholder="e.g. AST-0890" class="mono" style="border:none; background:transparent; outline:none; width:100%;">
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Serial / Model Number</label>
+              <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+                <input type="text" id="inputSerial" placeholder="e.g. S/N: CAT-2026-992" style="border:none; background:transparent; outline:none; width:100%;">
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Condition</label>
+              <select class="filter-select" id="inputCondition" style="width: 100%; margin-top: 4px;">
+                <option value="EXCELLENT">Excellent</option>
+                <option value="GOOD" selected>Good</option>
+                <option value="FAIR">Fair</option>
+                <option value="POOR">Poor</option>
+                <option value="DAMAGED">Damaged</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: LOCATION & STATUS -->
+        <div class="form-section-title">2. Location &amp; Status</div>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Primary Site / Zone</label>
+              <select class="filter-select" id="inputLocation" style="width: 100%; margin-top: 4px;">
+                <option value="">— Unassigned —</option>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Status</label>
+              <select class="filter-select" id="inputStatus" style="width: 100%; margin-top: 4px;">
+                <option value="AVAILABLE">Available</option>
+                <option value="ASSIGNED">Assigned</option>
+                <option value="IN_MAINTENANCE">In Maintenance</option>
+                <option value="RETIRED">Retired</option>
+                <option value="MISSING">Missing</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Notes</label>
+            <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+              <input type="text" id="inputNotes" placeholder="Operational notes or specifications..." style="border:none; background:transparent; outline:none; width:100%;">
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBMIT & ACTION BUTTONS -->
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="submit" class="pill-btn pill-btn-emerald" id="saveAssetBtn" style="flex: 1; justify-content: center;">
+            Save &amp; Register Asset
+          </button>
+          <button type="button" class="pill-btn pill-btn-light" onclick="closeAddDrawer()">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allAssets = [];
+  let assetTypes = [];
+  let allZones = [];
+  let currentStatusFilter = 'all';
+
+  window.addEventListener('shell-ready', async () => {
+    await Promise.all([loadAssetTypes(), loadZones()]);
+    await loadAssets();
+  });
+
+  async function loadAssetTypes() {
+    try {
+      const res = await fetch('/api/v1/assets/types');
+      if (res.ok) {
+        assetTypes = await res.json();
+        const catSelect = document.getElementById('inputCategory');
+        catSelect.innerHTML = assetTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+      }
+    } catch (err) {
+      console.error('Failed to load asset types:', err);
+    }
+  }
+
+  async function loadZones() {
+    try {
+      const res = await fetch('/api/v1/zones');
+      if (res.ok) {
+        allZones = await res.json();
+        const locSelect = document.getElementById('inputLocation');
+        locSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
+          allZones.map(z => `<option value="${z.id}">${z.name}</option>`).join('');
+
+        const locFilter = document.getElementById('locationFilter');
+        if (locFilter) {
+          locFilter.innerHTML = '<option value="all">All Locations</option>' + 
+            allZones.map(z => `<option value="${z.name}">${z.name}</option>`).join('');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load zones:', err);
+    }
+  }
+
+  async function loadAssets() {
+    try {
+      const response = await fetch('/api/v1/assets');
+      if (response.ok) {
+        allAssets = await response.json();
+        renderAssetsTable(allAssets);
+        updateStatusFilterCounts();
+      } else {
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--rose-crimson); padding: 24px;">Failed to load assets from server.</td></tr>';
+      }
+    } catch (error) {
+      console.error('Error fetching assets:', error);
+      document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--rose-crimson); padding: 24px;">Error connecting to API.</td></tr>';
+    }
+  }
+
+  function renderAssetsTable(assets) {
+    const tableBody = document.getElementById('tableBody');
+    tableBody.innerHTML = '';
+    
+    if (!assets || assets.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--text-tertiary);">No assets found matching the criteria. Click "+ Add Asset" to register one.</td></tr>';
+      document.getElementById('paginationSummary').innerHTML = 'Showing <strong>0</strong> registered assets';
+      return;
+    }
+
+    const statusBadgeClass = {
+      'AVAILABLE': 'pill-ok',
+      'ASSIGNED': 'pill-neutral',
+      'IN_MAINTENANCE': 'pill-attn',
+      'RETIRED': 'pill-neutral',
+      'MISSING': 'pill-alert'
+    };
+
+    assets.forEach(asset => {
+      const row = document.createElement('tr');
+      row.dataset.id = asset.id;
+      row.dataset.status = (asset.status || 'AVAILABLE').toUpperCase();
+      row.dataset.location = asset.zone_name || 'Unassigned';
+      const badgeClass = statusBadgeClass[asset.status] || 'pill-neutral';
+
+      row.innerHTML = `
+        <td style="text-align: center;"><input type="checkbox" class="row-checkbox" value="${asset.id}" onchange="updateBulkBar()"></td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="viewAssetDetails(${asset.id})">
+            <div class="asset-icon-box">📦</div>
+            <div>
+              <div style="font-weight: 700; font-size: 13.5px; color: var(--text-primary);"><strong style="font-weight:700;">${escapeHtml(asset.name)}</strong></div>
+              <div style="font-size: 11.5px; color: var(--text-secondary);">${escapeHtml(asset.type_name || 'General')}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="mono" style="font-weight: 700; color: var(--emerald-deep); cursor: pointer;" onclick="viewAssetDetails(${asset.id})">${escapeHtml(asset.tag_id)}</span></td>
+        <td>${escapeHtml(asset.type_name || '—')}</td>
+        <td>${escapeHtml(asset.zone_name || '—')}</td>
+        <td>${asset.assigned_employee ? escapeHtml(asset.assigned_employee) : '<span style="color:var(--text-tertiary);">—</span>'}</td>
+        <td>
+          <div>${asset.updated_at ? new Date(asset.updated_at).toLocaleDateString() : (asset.created_at ? new Date(asset.created_at).toLocaleDateString() : '—')}</div>
+          <div style="font-size: 11px; color: var(--text-tertiary);">${asset.condition || 'Operational'}</div>
+        </td>
+        <td><span class="pill-badge ${badgeClass}">${asset.status || 'AVAILABLE'}</span></td>
+        <td style="text-align: center;">
+          <div class="dropdown-wrapper">
+            <button class="action-menu-btn" onclick="toggleDropdown(this)">•••</button>
+            <div class="dropdown-menu">
+              <div class="dropdown-item" onclick="viewAssetDetails(${asset.id})">👁️ View Details</div>
+              <div class="dropdown-item" onclick="openEditDrawer(${asset.id})">✏️ Edit Asset</div>
+              <div class="dropdown-item" onclick="archiveAsset(${asset.id}, '${escapeHtml(asset.name)}')">🗑️ Archive Asset</div>
+            </div>
+          </div>
+        </td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    document.getElementById('paginationSummary').innerHTML = `Showing <strong>${assets.length}</strong> of <strong>${allAssets.length}</strong> registered assets`;
+  }
+
+  function updateStatusFilterCounts() {
+    const total = allAssets.length;
+    const filterRow = document.querySelector('.filters-row');
+    if (!filterRow) return;
+
+    filterRow.innerHTML = `
+      <span style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">Status Filter:</span>
+      <div class="filter-chip ${currentStatusFilter === 'all' ? 'active' : ''}" onclick="setFilterStatus('all', this)">All (${total})</div>
+      <div class="filter-chip ${currentStatusFilter === 'AVAILABLE' ? 'active' : ''}" onclick="setFilterStatus('AVAILABLE', this)">Available (${allAssets.filter(a => a.status === 'AVAILABLE').length})</div>
+      <div class="filter-chip ${currentStatusFilter === 'ASSIGNED' ? 'active' : ''}" onclick="setFilterStatus('ASSIGNED', this)">Assigned (${allAssets.filter(a => a.status === 'ASSIGNED').length})</div>
+      <div class="filter-chip ${currentStatusFilter === 'IN_MAINTENANCE' ? 'active' : ''}" onclick="setFilterStatus('IN_MAINTENANCE', this)">Maintenance (${allAssets.filter(a => a.status === 'IN_MAINTENANCE').length})</div>
+      <div class="filter-chip ${currentStatusFilter === 'RETIRED' ? 'active' : ''}" onclick="setFilterStatus('RETIRED', this)">Retired (${allAssets.filter(a => a.status === 'RETIRED').length})</div>
+      <div class="filter-chip ${currentStatusFilter === 'MISSING' ? 'active' : ''}" onclick="setFilterStatus('MISSING', this)">Missing (${allAssets.filter(a => a.status === 'MISSING').length})</div>
+    `;
+  }
+
+  function viewAssetDetails(id) {
+    window.location.href = `asset-details.html?id=${id}`;
+  }
+
+  function openAddDrawer() {
+    document.getElementById('editingAssetId').value = '';
+    document.getElementById('drawerTitle').textContent = 'Register New Asset Unit';
+    document.getElementById('saveAssetBtn').textContent = 'Save & Register Asset';
+    document.getElementById('assetCreationForm').reset();
+    document.getElementById('inputTag').value = 'AST-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('addAssetDrawer').classList.add('open');
+  }
+
+  function openEditDrawer(id) {
+    const asset = allAssets.find(a => a.id === id);
+    if (!asset) return;
+    document.getElementById('editingAssetId').value = asset.id;
+    document.getElementById('drawerTitle').textContent = `Edit Asset (${asset.tag_id})`;
+    document.getElementById('saveAssetBtn').textContent = 'Update Asset Details';
+    document.getElementById('inputName').value = asset.name || '';
+    document.getElementById('inputTag').value = asset.tag_id || '';
+    document.getElementById('inputCategory').value = asset.asset_type_id || '';
+    document.getElementById('inputSerial').value = asset.serial_number || '';
+    document.getElementById('inputLocation').value = asset.zone_id || '';
+    document.getElementById('inputStatus').value = asset.status || 'AVAILABLE';
+    document.getElementById('inputCondition').value = asset.condition || 'GOOD';
+    document.getElementById('inputNotes').value = asset.notes || '';
+    document.getElementById('addAssetDrawer').classList.add('open');
+  }
+
+  function closeAddDrawer() {
+    document.getElementById('addAssetDrawer').classList.remove('open');
+  }
+
+  async function handleFormSubmit(e) {
+    e.preventDefault();
+    const editingId = document.getElementById('editingAssetId').value;
+    const payload = {
+      name: document.getElementById('inputName').value.trim(),
+      asset_type_id: Number(document.getElementById('inputCategory').value),
+      tag_id: document.getElementById('inputTag').value.trim(),
+      serial_number: document.getElementById('inputSerial').value.trim(),
+      zone_id: document.getElementById('inputLocation').value ? Number(document.getElementById('inputLocation').value) : null,
+      status: document.getElementById('inputStatus').value,
+      condition: document.getElementById('inputCondition').value,
+      notes: document.getElementById('inputNotes').value.trim()
+    };
+
+    try {
+      const url = editingId ? `/api/v1/assets/${editingId}` : '/api/v1/assets';
+      const method = editingId ? 'PATCH' : 'POST';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to save asset', 'error');
+        return;
+      }
+
+      window.showToast?.(editingId ? 'Asset updated successfully' : 'Asset registered successfully', 'success');
+      closeAddDrawer();
+      await loadAssets();
+    } catch (err) {
+      console.error('Error saving asset:', err);
+      window.showToast?.('Network error saving asset', 'error');
+    }
+  }
+
+  async function archiveAsset(id, name) {
+    if (!confirm(`Are you sure you want to archive asset "${name}"? Historical records will be safely preserved.`)) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/v1/assets/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        window.showToast?.(`Asset "${name}" archived`, 'success');
+        await loadAssets();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to archive asset', 'error');
+      }
+    } catch (err) {
+      console.error('Error archiving asset:', err);
+      window.showToast?.('Error archiving asset', 'error');
+    }
+  }
+
+  function setFilterStatus(status, chip) {
+    currentStatusFilter = status;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    if (chip) chip.classList.add('active');
+    filterTable();
+  }
+
+  function filterTable() {
+    const q = (document.getElementById('tableSearchInput')?.value || '').toLowerCase();
+    const loc = (document.getElementById('locationFilter')?.value || 'all').toLowerCase();
+
+    const filtered = allAssets.filter(asset => {
+      const text = `${asset.name} ${asset.tag_id} ${asset.serial_number || ''} ${asset.type_name || ''}`.toLowerCase();
+      const matchesSearch = !q || text.includes(q);
+      const matchesStatus = (currentStatusFilter === 'all' || asset.status === currentStatusFilter);
+      const matchesLoc = (loc === 'all' || (asset.zone_name || '').toLowerCase().includes(loc));
+      return matchesSearch && matchesStatus && matchesLoc;
+    });
+
+    renderAssetsTable(filtered);
+  }
+
+  function sortTable() {
+    const val = document.getElementById('sortSelect').value;
+    let sorted = [...allAssets];
+
+    if (val === 'name') {
+      sorted.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (val === 'id') {
+      sorted.sort((a, b) => a.tag_id.localeCompare(b.tag_id));
+    } else {
+      sorted.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+    }
+
+    allAssets = sorted;
+    filterTable();
+  }
+
+  function exportCSV() {
+    window.location.href = '/api/v1/reports/asset-register?format=csv';
+  }
+
+  function toggleSelectAll(master) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => {
+      cb.checked = master.checked;
+      const row = cb.closest('tr');
+      if (master.checked) row.classList.add('selected');
+      else row.classList.remove('selected');
+    });
+    updateBulkBar();
+  }
+
+  function updateBulkBar() {
+    const checked = document.querySelectorAll('.row-checkbox:checked');
+    const bulkBar = document.getElementById('bulkActionsBar');
+    const countSpan = document.getElementById('selectedCount');
+    
+    checked.forEach(cb => cb.closest('tr')?.classList.add('selected'));
+    document.querySelectorAll('.row-checkbox:not(:checked)').forEach(cb => cb.closest('tr')?.classList.remove('selected'));
+
+    if (checked.length > 0) {
+      countSpan.textContent = checked.length;
+      bulkBar.classList.add('active');
+    } else {
+      bulkBar.classList.remove('active');
+    }
+  }
+
+  function clearSelection() {
+    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+    const selectAll = document.getElementById('selectAllCheckbox');
+    if (selectAll) selectAll.checked = false;
+    updateBulkBar();
+  }
+
+  function toggleDropdown(btn) {
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+      if (m !== btn.nextElementSibling) m.classList.remove('open');
+    });
+    btn.nextElementSibling.classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('action-menu-btn')) {
+      document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  }
+</script>
+<script src="../js/shell.js"></script>
+</body>
+</html>

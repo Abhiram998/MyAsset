@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — Equipment Assignments &amp; Checked Out</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<style>
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  
+  .filters-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-family: 'Outfit', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--panel-bg);
+    border: 1px solid rgba(255,255,255,0.85);
+    box-shadow: 2px 3px 8px var(--shadow-dark);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+  }
+  .filter-chip.active, .filter-chip:hover {
+    background: var(--emerald-deep);
+    color: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(0, 77, 64, 0.3);
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 24, 20, 0.55);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-card {
+    background: var(--panel-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 10px 16px 36px var(--shadow-dark);
+    width: 100%;
+    max-width: 480px;
+    padding: 24px;
+  }
+  .modal-field {
+    margin-bottom: 14px;
+  }
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="app-sidebar" id="appSidebar" aria-label="Sidebar"></aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button type="button" class="app-icon-btn app-menu-btn" id="appMenuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+      <div class="app-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Search assignments by asset, personnel, site..." onkeyup="filterAssignments()">
+      </div>
+
+      <div class="app-topbar-actions">
+        <a href="alerts.html" class="app-icon-btn" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></a>
+        <div class="app-user" id="appUser" hidden>
+          <span class="app-avatar" aria-hidden="true"></span>
+          <span class="app-user-name"></span>
+        </div>
+        <button class="pill-btn pill-btn-emerald app-cta" onclick="openCheckoutModal()" aria-label="Assign Equipment">
+          <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Check Out Asset</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+          <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Checked Out &amp; Assignments</h1>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Track active equipment checkouts, expected returns, and personnel accountability.</p>
+        </div>
+
+        <button class="pill-btn pill-btn-emerald" onclick="openCheckoutModal()">
+          <span>+ Check Out Asset</span>
+        </button>
+      </div>
+
+      <!-- DYNAMIC DATABASE KPIS -->
+      <section class="kpi-row">
+        <div class="neu-panel" style="padding: 16px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Currently Checked Out</span>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; color: var(--text-primary); margin-top: 2px;" id="kpiCheckedOut">0</div>
+          <span class="pill-badge pill-neutral" style="margin-top: 4px;">Active Deployments</span>
+        </div>
+
+        <div class="neu-panel" style="padding: 16px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Overdue Returns</span>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; color: var(--status-alert-text); margin-top: 2px;" id="kpiOverdue">0</div>
+          <span class="pill-badge pill-alert" style="margin-top: 4px;">Attention Required</span>
+        </div>
+
+        <div class="neu-panel" style="padding: 16px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Due Today</span>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; color: var(--text-primary); margin-top: 2px;" id="kpiDueToday">0</div>
+          <span class="pill-badge pill-attn" style="margin-top: 4px;">Expected Today</span>
+        </div>
+
+        <div class="neu-panel" style="padding: 16px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Returned Today</span>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; color: var(--status-ok-text); margin-top: 2px;" id="kpiReturnedToday">0</div>
+          <span class="pill-badge pill-ok" style="margin-top: 4px;">Completed Checks</span>
+        </div>
+      </section>
+
+      <!-- FILTER BAR -->
+      <div class="filters-row">
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">Filter:</span>
+        <div class="filter-chip active" id="filterAll" onclick="setFilter('all', this)">All Assignments (<span id="countAll">0</span>)</div>
+        <div class="filter-chip" id="filterActive" onclick="setFilter('active', this)">Active Only (<span id="countActive">0</span>)</div>
+        <div class="filter-chip" id="filterReturned" onclick="setFilter('returned', this)">Returned (<span id="countReturned">0</span>)</div>
+      </div>
+
+      <!-- ASSIGNMENTS TABLE CARD -->
+      <div class="neu-panel" style="padding: 0; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: rgba(234, 230, 220, 0.4); text-align: left; font-size: 11.5px; color: var(--text-secondary); text-transform: uppercase;">
+              <th style="padding: 14px 18px;">Asset</th>
+              <th style="padding: 14px 18px;">Assigned Personnel</th>
+              <th style="padding: 14px 18px;">Site / Zone</th>
+              <th style="padding: 14px 18px;">Assigned Time</th>
+              <th style="padding: 14px 18px;">Expected Return</th>
+              <th style="padding: 14px 18px;">Status</th>
+              <th style="padding: 14px 18px; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="assignmentsTableBody">
+            <tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-secondary);">Loading assignments from database...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800;">Check Out Equipment</h3>
+      <button onclick="closeCheckoutModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+    <form onsubmit="handleCheckoutSubmit(event)">
+      <div class="modal-field">
+        <label>Available Asset *</label>
+        <select class="filter-select" id="assetSelect" required style="width: 100%;">
+          <option value="">Loading available assets...</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Assign To Personnel *</label>
+        <select class="filter-select" id="employeeSelect" required style="width: 100%;">
+          <option value="">Loading employees...</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Expected Return Date</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="date" id="expectedReturnDate" style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Assignment Notes</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="text" id="assignmentNotes" placeholder="Project name or purpose..." style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="pill-btn pill-btn-emerald" style="flex: 1; justify-content: center;">Confirm Checkout</button>
+        <button type="button" class="pill-btn pill-btn-light" onclick="closeCheckoutModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let allAssignments = [];
+  let currentFilter = 'all';
+
+  async function loadData() {
+    await Promise.all([loadStats(), loadAssignments()]);
+  }
+
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/v1/assignments/stats');
+      if (res.ok) {
+        const stats = await res.json();
+        document.getElementById('kpiCheckedOut').textContent = stats.checked_out || 0;
+        document.getElementById('kpiOverdue').textContent = stats.overdue || 0;
+        document.getElementById('kpiDueToday').textContent = stats.due_today || 0;
+        document.getElementById('kpiReturnedToday').textContent = stats.returned_today || 0;
+      }
+    } catch (e) {
+      console.error('Failed to load stats:', e);
+    }
+  }
+
+  async function loadAssignments() {
+    try {
+      const res = await fetch('/api/v1/assignments');
+      if (!res.ok) throw new Error("Failed to load");
+      allAssignments = await res.json();
+      
+      const activeCount = allAssignments.filter(a => !a.returned_at).length;
+      const returnedCount = allAssignments.filter(a => a.returned_at).length;
+      document.getElementById('countAll').textContent = allAssignments.length;
+      document.getElementById('countActive').textContent = activeCount;
+      document.getElementById('countReturned').textContent = returnedCount;
+
+      renderAssignments();
+    } catch(e) {
+      console.error(e);
+      document.getElementById('assignmentsTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--rose-crimson);">Error connecting to database.</td></tr>';
+    }
+  }
+
+  function setFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderAssignments();
+  }
+
+  function filterAssignments() {
+    renderAssignments();
+  }
+
+  function renderAssignments() {
+    const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    const tbody = document.getElementById('assignmentsTableBody');
+
+    const filtered = allAssignments.filter(a => {
+      const matchesFilter = 
+        (currentFilter === 'all') ||
+        (currentFilter === 'active' && !a.returned_at) ||
+        (currentFilter === 'returned' && a.returned_at);
+
+      const text = `${a.asset_name || ''} ${a.tag_id || ''} ${a.employee_name || ''} ${a.zone_name || ''} ${a.notes || ''}`.toLowerCase();
+      const matchesSearch = !q || text.includes(q);
+
+      return matchesFilter && matchesSearch;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--text-tertiary);">No assignment records found.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(a => {
+      const isActive = !a.returned_at;
+      const isOverdue = isActive && a.expected_return && new Date(a.expected_return) < new Date();
+      let statusBadge = '<span class="pill-badge pill-ok">Active</span>';
+      if (!isActive) {
+        statusBadge = '<span class="pill-badge pill-neutral">Returned</span>';
+      } else if (isOverdue) {
+        statusBadge = '<span class="pill-badge pill-alert">Overdue</span>';
+      }
+
+      return `
+        <tr style="border-bottom: 1px solid var(--status-neutral-bg);">
+          <td style="padding: 14px 18px;">
+            <a href="asset-details.html?id=${a.asset_id}" style="color:var(--text-primary); text-decoration:none; font-weight:700;">${escapeHtml(a.asset_name)}</a>
+            <br><span class="mono" style="font-size:11.5px; color:var(--emerald-deep);">${escapeHtml(a.tag_id)}</span>
+          </td>
+          <td style="padding: 14px 18px; font-weight:600;">${escapeHtml(a.employee_name)}</td>
+          <td style="padding: 14px 18px;">${escapeHtml(a.zone_name || '—')}</td>
+          <td style="padding: 14px 18px;">${new Date(a.assigned_at).toLocaleString()}</td>
+          <td style="padding: 14px 18px;">${a.expected_return ? new Date(a.expected_return).toLocaleDateString() : '—'}</td>
+          <td style="padding: 14px 18px;">${statusBadge}</td>
+          <td style="padding: 14px 18px; text-align: center;">
+            ${isActive ? `<button class="pill-btn pill-btn-emerald" style="padding: 5px 12px; font-size: 11.5px;" onclick="returnAssignment(${a.id}, '${escapeHtml(a.asset_name)}')">Return</button>` : `<span style="font-size:11px; color:var(--text-tertiary);">${new Date(a.returned_at).toLocaleDateString()}</span>`}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function openCheckoutModal() {
+    document.getElementById('checkoutModal').classList.add('open');
+    const assetSelect = document.getElementById('assetSelect');
+    const employeeSelect = document.getElementById('employeeSelect');
+
+    assetSelect.innerHTML = '<option value="">Loading available assets...</option>';
+    employeeSelect.innerHTML = '<option value="">Loading employees...</option>';
+
+    try {
+      const [assetsRes, empsRes] = await Promise.all([
+        fetch('/api/v1/assets?status=AVAILABLE'),
+        fetch('/api/v1/employees')
+      ]);
+
+      if (assetsRes.ok && empsRes.ok) {
+        const assets = await assetsRes.json();
+        const emps = await empsRes.json();
+
+        if (assets.length === 0) {
+          assetSelect.innerHTML = '<option value="">No assets currently available for checkout</option>';
+        } else {
+          assetSelect.innerHTML = '<option value="">Select Asset...</option>' + 
+            assets.map(a => `<option value="${a.id}">${a.name} (${a.tag_id})</option>`).join('');
+        }
+
+        employeeSelect.innerHTML = '<option value="">Select Personnel...</option>' + 
+          emps.map(e => `<option value="${e.id}">${e.first_name} ${e.last_name} (${e.job_title || 'Staff'})</option>`).join('');
+      }
+    } catch (e) {
+      console.error(e);
+      window.showToast?.('Error loading selection data', 'error');
+    }
+  }
+
+  function closeCheckoutModal() {
+    document.getElementById('checkoutModal').classList.remove('open');
+  }
+
+  async function handleCheckoutSubmit(e) {
+    e.preventDefault();
+    const asset_id = Number(document.getElementById('assetSelect').value);
+    const employee_id = Number(document.getElementById('employeeSelect').value);
+    const expected_return = document.getElementById('expectedReturnDate').value || null;
+    const notes = document.getElementById('assignmentNotes').value.trim();
+
+    if (!asset_id || !employee_id) {
+      window.showToast?.('Please select both an asset and an employee', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/v1/assignments/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ asset_id, employee_id, expected_return, notes })
+      });
+
+      if (res.ok) {
+        window.showToast?.('Equipment successfully checked out', 'success');
+        closeCheckoutModal();
+        await loadData();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to checkout asset', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Error checking out asset', 'error');
+    }
+  }
+
+  async function returnAssignment(assignmentId, assetName) {
+    if (!confirm(`Confirm check-in and return for "${assetName}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/v1/assignments/${assignmentId}/return`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: 'Returned via assignments list' })
+      });
+
+      if (res.ok) {
+        window.showToast?.(`"${assetName}" returned and inventory updated`, 'success');
+        await loadData();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Return failed', 'error');
+      }
+    } catch (e) {
+      console.error(e);
+      window.showToast?.('Error returning assignment', 'error');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  }
+
+  window.addEventListener('shell-ready', loadData);
+</script>
+<script src="../js/shell.js"></script>
+</body>
+</html>

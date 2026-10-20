@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TagTrace — Asset & Access Control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --moss: #1B3A2E;
+    --moss-light: #2B5240;
+    --copper: #B8763E;
+    --copper-bright: #D89355;
+    --paper: #EDEAE0;
+    --paper-dim: #E2DECF;
+    --ink: #20231F;
+    --ink-soft: #4A4F45;
+    --brick: #A83D2C;
+    --brick-bg: #F3DAD3;
+    --line: #C9C3B0;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono{ font-family: 'JetBrains Mono', monospace; }
+
+  /* ---- Shell ---- */
+  .shell{
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ---- Sidebar ---- */
+  .sidebar{
+    background: var(--moss);
+    color: var(--paper);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand-mark{
+    width: 30px; height: 30px;
+    border: 2px solid var(--copper-bright);
+    border-radius: 4px;
+    position: relative;
+    flex-shrink:0;
+  }
+  .brand-mark::before, .brand-mark::after{
+    content:'';
+    position:absolute;
+    background: var(--copper-bright);
+  }
+  .brand-mark::before{ width:8px; height:2px; top:-2px; left:4px; }
+  .brand-mark::after{ width:2px; height:8px; left:-2px; top:4px; }
+  .brand-name{
+    font-family:'JetBrains Mono', monospace;
+    font-weight:700;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+  }
+  .brand-name span{ color: var(--copper-bright); }
+
+  .nav-group-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(237,234,224,0.45);
+    margin-bottom: 10px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding: 9px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: rgba(237,234,224,0.85);
+    cursor:pointer;
+    margin-bottom: 2px;
+    transition: background 0.15s;
+  }
+  .nav-item:hover{ background: rgba(237,234,224,0.08); }
+  .nav-item.active{
+    background: rgba(237,234,224,0.12);
+    color: var(--paper);
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 var(--copper-bright);
+  }
+  .nav-dot{ width:6px; height:6px; border-radius:50%; background: currentColor; opacity:0.6; }
+
+  .sidebar-foot{
+    margin-top:auto;
+    font-size: 11px;
+    color: rgba(237,234,224,0.4);
+    font-family:'JetBrains Mono', monospace;
+    line-height:1.6;
+  }
+
+  /* ---- Main ---- */
+  .main{ padding: 32px 40px 60px; }
+
+  .topbar{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    margin-bottom: 28px;
+  }
+  .topbar h1{
+    font-size: 22px; font-weight:700; letter-spacing:-0.3px;
+  }
+  .topbar .sub{
+    color: var(--ink-soft); font-size: 13px; margin-top:4px;
+  }
+  .scan-btn{
+    background: var(--ink);
+    color: var(--paper);
+    border:none;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight:600;
+    padding: 11px 18px;
+    border-radius: 6px;
+    cursor:pointer;
+    display:flex; align-items:center; gap:8px;
+  }
+  .scan-btn::before{
+    content:'▣';
+    color: var(--copper-bright);
+  }
+
+  /* ---- Stat cards ---- */
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .stat-card{
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .stat-card .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform:uppercase;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .stat-card .value{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 30px;
+    font-weight:700;
+  }
+  .stat-card .delta{
+    font-size: 12px; margin-top: 6px; color: var(--ink-soft);
+  }
+  .stat-card.alert .value{ color: var(--brick); }
+  .stat-card.alert{ border-color: rgba(168,61,44,0.3); }
+  .stat-card .edge{
+    position:absolute; top:0; left:0; width:4px; height:100%;
+    background: var(--moss);
+  }
+  .stat-card.alert .edge{ background: var(--brick); }
+  .stat-card.copper .edge{ background: var(--copper); }
+
+  /* ---- Grid layout: map + feed ---- */
+  .grid-2{
+    display:grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .panel{
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .panel-head{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom: 16px;
+  }
+  .panel-head h2{
+    font-size: 15px; font-weight:700;
+  }
+  .panel-head .tag-pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--paper-dim);
+    padding: 3px 8px;
+    border-radius: 20px;
+    color: var(--ink-soft);
+  }
+
+  /* ---- Zone map ---- */
+  .zone-map{
+    background: var(--paper-dim);
+    border-radius: 6px;
+    padding: 20px;
+    position: relative;
+    height: 300px;
+    background-image:
+      linear-gradient(rgba(32,35,31,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(32,35,31,0.06) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .zone-label{
+    position:absolute;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    color: var(--ink-soft);
+    border: 1px dashed var(--line);
+    padding: 30px 10px 6px;
+    border-radius: 4px;
+  }
+  .zone-a{ top:16px; left:16px; width:42%; height:110px; }
+  .zone-b{ top:16px; right:16px; width:38%; height:70px; }
+  .zone-c{ bottom:16px; left:16px; width:75%; height:110px; }
+
+  .asset-dot{
+    position:absolute;
+    width:10px; height:10px;
+    border-radius:50%;
+    background: var(--moss);
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--moss);
+    cursor:pointer;
+  }
+  .asset-dot.alert{
+    background: var(--brick);
+    box-shadow: 0 0 0 2px var(--brick);
+    animation: pulse 1.4s infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 2px rgba(168,61,44,0.6); }
+    70%{ box-shadow: 0 0 0 9px rgba(168,61,44,0); }
+    100%{ box-shadow: 0 0 0 2px rgba(168,61,44,0); }
+  }
+
+  /* ---- Activity feed ---- */
+  .feed{ display:flex; flex-direction:column; gap:2px; max-height:300px; overflow-y:auto; }
+  .feed-item{
+    display:flex; gap:12px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--paper-dim);
+    font-size: 13px;
+  }
+  .feed-item:last-child{ border-bottom:none; }
+  .feed-time{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    min-width: 46px;
+    padding-top:1px;
+  }
+  .feed-icon{
+    width:18px; height:18px;
+    border-radius:4px;
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px;
+    margin-top:1px;
+  }
+  .feed-icon.ok{ background: rgba(43,82,64,0.12); color: var(--moss-light); }
+  .feed-icon.warn{ background: var(--brick-bg); color: var(--brick); }
+  .feed-icon.info{ background: rgba(184,118,62,0.15); color: var(--copper); }
+  .feed-text b{ font-weight:600; }
+  .feed-text .tagid{
+    font-family:'JetBrains Mono', monospace;
+    background: var(--paper-dim);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+
+  /* ---- Asset table ---- */
+  .table-panel{ background:white; border:1px solid var(--line); border-radius:8px; padding:20px; }
+  table{ width:100%; border-collapse:collapse; }
+  th{
+    text-align:left;
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color: var(--ink-soft);
+    padding: 0 10px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  td{
+    padding: 12px 10px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--paper-dim);
+  }
+  tr:last-child td{ border-bottom:none; }
+  .asset-label{
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .qr-mini{
+    width:20px; height:20px;
+    background:
+      linear-gradient(90deg, var(--ink) 0 40%, transparent 40%) top left / 60% 60% no-repeat,
+      linear-gradient(90deg, var(--ink) 0 40%, transparent 40%) top right / 60% 60% no-repeat,
+      linear-gradient(90deg, var(--ink) 0 40%, transparent 40%) bottom left / 60% 60% no-repeat,
+      var(--paper-dim);
+    border-radius:3px;
+    flex-shrink:0;
+  }
+  .tag-code{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .status-pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  .status-active{ background: rgba(43,82,64,0.12); color: var(--moss-light); }
+  .status-checkedout{ background: rgba(184,118,62,0.15); color: var(--copper); }
+  .status-alert{ background: var(--brick-bg); color: var(--brick); font-weight:600; }
+
+  ::-webkit-scrollbar{ width:6px; }
+  ::-webkit-scrollbar-thumb{ background: var(--line); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">TAG<span>TRACE</span></div>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Monitor</div>
+      <div class="nav-item active"><span class="nav-dot"></span> Overview</div>
+      <div class="nav-item"><span class="nav-dot"></span> Zone Map</div>
+      <div class="nav-item"><span class="nav-dot"></span> Activity Log</div>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Manage</div>
+      <div class="nav-item"><span class="nav-dot"></span> Assets</div>
+      <div class="nav-item"><span class="nav-dot"></span> Employees</div>
+      <div class="nav-item"><span class="nav-dot"></span> Maintenance</div>
+    </div>
+
+    <div>
+      <div class="nav-group-label">System</div>
+      <div class="nav-item"><span class="nav-dot"></span> Alerts</div>
+      <div class="nav-item"><span class="nav-dot"></span> Reports</div>
+    </div>
+
+    <div class="sidebar-foot">
+      GATE-01 · ONLINE<br>
+      Last sync: 12s ago
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <div class="topbar">
+      <div>
+        <h1>Overview</h1>
+        <div class="sub">Garden Zone A–C · 42 tagged assets · 6 employees</div>
+      </div>
+      <button class="scan-btn">LOG SCAN</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="edge"></div>
+        <div class="label">Assets Tracked</div>
+        <div class="value">42</div>
+        <div class="delta">across 3 zones</div>
+      </div>
+      <div class="stat-card copper">
+        <div class="edge"></div>
+        <div class="label">Checked Out</div>
+        <div class="value">5</div>
+        <div class="delta">2 tools overdue</div>
+      </div>
+      <div class="stat-card">
+        <div class="edge"></div>
+        <div class="label">Maintenance Due</div>
+        <div class="value">7</div>
+        <div class="delta">next 24 hours</div>
+      </div>
+      <div class="stat-card alert">
+        <div class="edge"></div>
+        <div class="label">Active Alerts</div>
+        <div class="value">1</div>
+        <div class="delta">unauthorized movement</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Zone Map — live positions</h2>
+          <div class="tag-pill">GATE-01 · MFRC522</div>
+        </div>
+        <div class="zone-map">
+          <div class="zone-label zone-a">Zone A — Garden Bed</div>
+          <div class="zone-label zone-b">Zone B — Nursery</div>
+          <div class="zone-label zone-c">Zone C — Tool Shed</div>
+
+          <div class="asset-dot" style="top:60px; left:60px;" title="POT-014"></div>
+          <div class="asset-dot" style="top:85px; left:110px;" title="PLANT-021"></div>
+          <div class="asset-dot" style="top:55px; left:160px;" title="PLANT-022"></div>
+          <div class="asset-dot alert" style="top:70px; right:80px;" title="TOOL-007 — unauthorized"></div>
+          <div class="asset-dot" style="bottom:55px; left:70px;" title="TOOL-002"></div>
+          <div class="asset-dot" style="bottom:55px; left:140px;" title="TOOL-003"></div>
+          <div class="asset-dot" style="bottom:80px; left:210px;" title="TOOL-004"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Activity Feed</h2>
+          <div class="tag-pill">live</div>
+        </div>
+        <div class="feed">
+          <div class="feed-item">
+            <div class="feed-time mono">09:41</div>
+            <div class="feed-icon warn">!</div>
+            <div class="feed-text"><b>Unauthorized movement</b> — <span class="tagid">TOOL-007</span> detected at Gate 01, no checkout log</div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-time mono">09:22</div>
+            <div class="feed-icon ok">✓</div>
+            <div class="feed-text"><b>Ravi K.</b> watered <span class="tagid">PLANT-021</span></div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-time mono">08:58</div>
+            <div class="feed-icon info">↔</div>
+            <div class="feed-text"><b>Meera S.</b> checked out <span class="tagid">TOOL-002</span></div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-time mono">08:40</div>
+            <div class="feed-icon ok">✓</div>
+            <div class="feed-text"><b>Ravi K.</b> inspected <span class="tagid">POT-014</span></div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-time mono">08:15</div>
+            <div class="feed-icon info">↔</div>
+            <div class="feed-text"><b>Arjun P.</b> returned <span class="tagid">TOOL-003</span></div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-time mono">07:50</div>
+            <div class="feed-icon ok">✓</div>
+            <div class="feed-text"><b>Meera S.</b> pruned <span class="tagid">PLANT-022</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-panel">
+      <div class="panel-head">
+        <h2>Assets</h2>
+        <div class="tag-pill">42 total</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Asset</th>
+            <th>Tag ID</th>
+            <th>Category</th>
+            <th>Zone</th>
+            <th>Assigned to</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="asset-label"><span class="qr-mini"></span>Tomato Plant #21</span></td>
+            <td class="tag-code">PLANT-021</td>
+            <td>Fixed</td>
+            <td>Zone A</td>
+            <td>Ravi K.</td>
+            <td><span class="status-pill status-active">Active</span></td>
+          </tr>
+          <tr>
+            <td><span class="asset-label"><span class="qr-mini"></span>Terracotta Pot #14</span></td>
+            <td class="tag-code">POT-014</td>
+            <td>Fixed</td>
+            <td>Zone A</td>
+            <td>Ravi K.</td>
+            <td><span class="status-pill status-active">Active</span></td>
+          </tr>
+          <tr>
+            <td><span class="asset-label"><span class="qr-mini"></span>Pruning Shears</span></td>
+            <td class="tag-code">TOOL-007</td>
+            <td>Mobile</td>
+            <td>Zone C</td>
+            <td>Arjun P.</td>
+            <td><span class="status-pill status-alert">Alert</span></td>
+          </tr>
+          <tr>
+            <td><span class="asset-label"><span class="qr-mini"></span>Hand Trowel</span></td>
+            <td class="tag-code">TOOL-002</td>
+            <td>Mobile</td>
+            <td>Zone C</td>
+            <td>Meera S.</td>
+            <td><span class="status-pill status-checkedout">Checked out</span></td>
+          </tr>
+          <tr>
+            <td><span class="asset-label"><span class="qr-mini"></span>Watering Can</span></td>
+            <td class="tag-code">TOOL-003</td>
+            <td>Mobile</td>
+            <td>Zone C</td>
+            <td>Arjun P.</td>
+            <td><span class="status-pill status-active">Active</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

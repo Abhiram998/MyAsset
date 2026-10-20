@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — Manage Assets</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --moss: #16342A;
+    --moss-soft: #2F5A46;
+    --copper: #BE7C3E;
+    --copper-bright: #E2A15C;
+    --paper: #F1EEE3;
+    --paper-warm: #E9E4D3;
+    --ink: #1C1F1B;
+    --ink-soft: #55584F;
+    --line: #D4CDB8;
+    --brick: #A83D2C;
+    --brick-bg: #F3DAD3;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background: var(--paper); color: var(--ink); font-family:'Work Sans', sans-serif; -webkit-font-smoothing:antialiased; }
+  .mono{ font-family:'JetBrains Mono', monospace; }
+
+  .shell{ display:grid; grid-template-columns: 220px 1fr; min-height:100vh; }
+
+  /* Sidebar - matches dashboard brand */
+  .sidebar{ background: var(--moss); color: var(--paper); padding: 28px 20px; display:flex; flex-direction:column; gap:32px; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-mark{ width:26px; height:26px; border:2px solid var(--copper-bright); border-radius:5px; position:relative; }
+  .brand-mark::before{ content:''; position:absolute; inset:5px; border-radius:2px; background: var(--copper-bright); }
+  .brand-name{ font-family:'JetBrains Mono', monospace; font-weight:700; font-size:15px; }
+  .brand-name span{ color: var(--copper-bright); }
+  .nav-group-label{ font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color: rgba(241,238,227,0.45); margin-bottom:10px; }
+  .nav-item{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:6px; font-size:14px; color: rgba(241,238,227,0.85); margin-bottom:2px; }
+  .nav-item.active{ background: rgba(241,238,227,0.12); font-weight:600; color:var(--paper); box-shadow: inset 3px 0 0 var(--copper-bright); }
+  .nav-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; opacity:0.6; }
+  .sidebar-foot{ margin-top:auto; font-size:11px; color: rgba(241,238,227,0.4); font-family:'JetBrains Mono', monospace; line-height:1.6; }
+
+  .main{ padding: 32px 40px 60px; }
+
+  .topbar{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:28px; }
+  .topbar h1{ font-size:22px; font-weight:700; letter-spacing:-0.3px; }
+  .topbar .sub{ color: var(--ink-soft); font-size:13px; margin-top:4px; }
+  .company-chip{
+    display:inline-flex; align-items:center; gap:8px;
+    background:white; border:1px solid var(--line); border-radius:20px;
+    padding:6px 12px; font-size:12px; margin-top:10px;
+  }
+  .company-chip .dot{ width:6px; height:6px; border-radius:50%; background:var(--moss-soft); }
+
+  .btn{
+    background: var(--ink); color: var(--paper); border:none;
+    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:600;
+    padding:11px 18px; border-radius:6px; cursor:pointer;
+    display:flex; align-items:center; gap:8px;
+  }
+  .btn::after{ content:'+'; color: var(--copper-bright); font-size:15px; }
+  .btn-outline{
+    border: 1.5px solid var(--line); background:white; color:var(--ink);
+    font-size:13px; font-weight:600; padding:9px 16px; border-radius:6px; cursor:pointer;
+  }
+
+  .panel{ background:white; border:1px solid var(--line); border-radius:8px; padding:20px; margin-bottom:22px; }
+  .panel-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .panel-head h2{ font-size:15px; font-weight:700; }
+  .tag-pill{ font-family:'JetBrains Mono', monospace; font-size:10px; background:var(--paper-warm); padding:3px 8px; border-radius:20px; color:var(--ink-soft); }
+
+  /* Asset type cards */
+  .type-grid{ display:grid; grid-template-columns: repeat(5, 1fr); gap:14px; }
+  .type-card{
+    border: 1.5px solid var(--line); border-radius:8px; padding:16px;
+    text-align:center;
+  }
+  .type-card .icon{
+    width:36px; height:36px; margin:0 auto 12px;
+    border-radius:8px; background: var(--paper-warm);
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+  }
+  .type-card .name{ font-size:13px; font-weight:600; margin-bottom:4px; }
+  .type-card .count{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--ink-soft); }
+  .type-card.add{
+    border-style:dashed; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    color: var(--ink-soft); cursor:pointer;
+  }
+  .type-card.add .icon{ background:transparent; border:1.5px dashed var(--line); color:var(--copper); font-size:18px; }
+
+  /* Zones */
+  .zone-list{ display:flex; flex-direction:column; gap:0; }
+  .zone-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 13px 6px; border-bottom:1px solid var(--paper-warm);
+    font-size:13.5px;
+  }
+  .zone-row:last-child{ border-bottom:none; }
+  .zone-name{ font-weight:600; display:flex; align-items:center; gap:10px; }
+  .zone-swatch{ width:10px; height:10px; border-radius:3px; }
+  .zone-meta{ display:flex; gap:26px; color:var(--ink-soft); font-family:'JetBrains Mono', monospace; font-size:12px; }
+
+  /* Employees table */
+  table{ width:100%; border-collapse:collapse; }
+  th{ text-align:left; font-family:'JetBrains Mono', monospace; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--ink-soft); padding:0 10px 10px; border-bottom:1px solid var(--line); }
+  td{ padding:12px 10px; font-size:13px; border-bottom:1px solid var(--paper-warm); }
+  tr:last-child td{ border-bottom:none; }
+  .avatar{ width:26px; height:26px; border-radius:50%; background:var(--paper-warm); display:inline-flex; align-items:center; justify-content:center; font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:700; color:var(--moss); margin-right:8px; }
+  .role-pill{ font-family:'JetBrains Mono', monospace; font-size:10px; padding:3px 9px; border-radius:20px; background:var(--paper-warm); color:var(--ink-soft); text-transform:uppercase; }
+
+  /* Register asset form */
+  .reg-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  .field label{ display:block; font-family:'JetBrains Mono', monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:var(--ink-soft); margin-bottom:6px; }
+  .field input, .field select{ width:100%; padding:10px 12px; border:1.5px solid var(--line); border-radius:6px; font-size:13.5px; font-family:'Work Sans',sans-serif; background:white; }
+  .field{ margin-bottom:14px; }
+  .qr-preview{
+    border: 1.5px dashed var(--line); border-radius:8px;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; padding:20px; color:var(--ink-soft); font-size:12px;
+  }
+  .qr-box{
+    width:70px; height:70px;
+    background:
+      linear-gradient(90deg, var(--ink) 0 45%, transparent 45%) top left / 65% 65% no-repeat,
+      linear-gradient(90deg, var(--ink) 0 45%, transparent 45%) top right / 65% 65% no-repeat,
+      linear-gradient(90deg, var(--ink) 0 45%, transparent 45%) bottom left / 65% 65% no-repeat,
+      var(--paper-warm);
+    border-radius:8px;
+  }
+
+  @media (max-width: 900px){
+    .shell{ grid-template-columns:1fr; }
+    .sidebar{ display:none; }
+    .main{ padding:20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">MY<span>ASSET</span></div>
+    </div>
+    <div>
+      <div class="nav-group-label">Monitor</div>
+      <div class="nav-item"><span class="nav-dot"></span> Overview</div>
+      <div class="nav-item"><span class="nav-dot"></span> Activity Log</div>
+    </div>
+    <div>
+      <div class="nav-group-label">Manage</div>
+      <div class="nav-item active"><span class="nav-dot"></span> Assets</div>
+      <div class="nav-item"><span class="nav-dot"></span> Asset Types</div>
+      <div class="nav-item"><span class="nav-dot"></span> Zones</div>
+      <div class="nav-item"><span class="nav-dot"></span> Employees</div>
+    </div>
+    <div>
+      <div class="nav-group-label">System</div>
+      <div class="nav-item"><span class="nav-dot"></span> Settings</div>
+      <div class="nav-item"><span class="nav-dot"></span> Billing</div>
+    </div>
+    <div class="sidebar-foot">
+      GREENFIELD NURSERIES<br>
+      Plan: Growth · 6 seats used
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Manage Assets</h1>
+        <div class="sub">Configure asset types, zones, and employee access for your workspace</div>
+        <div class="company-chip"><span class="dot"></span> Greenfield Nurseries · Agriculture</div>
+      </div>
+      <button class="btn">Register asset</button>
+    </div>
+
+    <!-- Asset Types -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Asset Types</h2>
+        <div class="tag-pill">5 configured</div>
+      </div>
+      <div class="type-grid">
+        <div class="type-card"><div class="icon">🌱</div><div class="name">Plants</div><div class="count">18 assets</div></div>
+        <div class="type-card"><div class="icon">🪴</div><div class="name">Pots</div><div class="count">18 assets</div></div>
+        <div class="type-card"><div class="icon">🛠</div><div class="name">Tools</div><div class="count">9 assets</div></div>
+        <div class="type-card"><div class="icon">💻</div><div class="name">IT Equipment</div><div class="count">4 assets</div></div>
+        <div class="type-card"><div class="icon">🚜</div><div class="name">Machinery</div><div class="count">2 assets</div></div>
+        <div class="type-card add"><div class="icon">+</div><div class="name">Add type</div></div>
+      </div>
+    </div>
+
+    <!-- Zones -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Zones &amp; Locations</h2>
+        <button class="btn-outline">+ Add zone</button>
+      </div>
+      <div class="zone-list">
+        <div class="zone-row">
+          <div class="zone-name"><span class="zone-swatch" style="background:var(--moss)"></span> Zone A — Garden Bed</div>
+          <div class="zone-meta"><span>22 assets</span><span>3 employees</span></div>
+        </div>
+        <div class="zone-row">
+          <div class="zone-name"><span class="zone-swatch" style="background:var(--copper)"></span> Zone B — Nursery</div>
+          <div class="zone-meta"><span>12 assets</span><span>2 employees</span></div>
+        </div>
+        <div class="zone-row">
+          <div class="zone-name"><span class="zone-swatch" style="background:var(--brick)"></span> Zone C — Tool Shed</div>
+          <div class="zone-meta"><span>9 assets</span><span>2 employees</span></div>
+        </div>
+        <div class="zone-row">
+          <div class="zone-name"><span class="zone-swatch" style="background:#7A7460"></span> Zone D — IT Lab</div>
+          <div class="zone-meta"><span>4 assets</span><span>1 employee</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employees -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Employees &amp; Access</h2>
+        <button class="btn-outline">+ Invite employee</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Employee</th><th>Role</th><th>Assigned zone</th><th>Assets</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="avatar">RK</span>Ravi K.</td><td><span class="role-pill">Gardener</span></td><td>Zone A</td><td>22</td><td>Active</td></tr>
+          <tr><td><span class="avatar">MS</span>Meera S.</td><td><span class="role-pill">Nursery Lead</span></td><td>Zone B</td><td>12</td><td>Active</td></tr>
+          <tr><td><span class="avatar">AP</span>Arjun P.</td><td><span class="role-pill">Maintenance</span></td><td>Zone C</td><td>9</td><td>Active</td></tr>
+          <tr><td><span class="avatar">SN</span>Sana N.</td><td><span class="role-pill">IT Admin</span></td><td>Zone D</td><td>4</td><td>Active</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Register new asset -->
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Register a New Asset</h2>
+        <div class="tag-pill">tag auto-generated</div>
+      </div>
+      <div class="reg-grid">
+        <div>
+          <div class="field"><label>Asset name</label><input type="text" placeholder="e.g. Rose Sapling #33"></div>
+          <div class="field"><label>Asset type</label><select><option>Plants</option><option>Pots</option><option>Tools</option><option>IT Equipment</option><option>Machinery</option></select></div>
+          <div class="field"><label>Zone</label><select><option>Zone A — Garden Bed</option><option>Zone B — Nursery</option><option>Zone C — Tool Shed</option><option>Zone D — IT Lab</option></select></div>
+          <div class="field"><label>Assign to employee</label><select><option>Ravi K.</option><option>Meera S.</option><option>Arjun P.</option><option>Sana N.</option></select></div>
+        </div>
+        <div class="qr-preview">
+          <div class="qr-box"></div>
+          <div>TAG-000043 will be generated<br>on save</div>
+        </div>
+      </div>
+      <button class="btn" style="margin-top:6px;">Save &amp; generate tag</button>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

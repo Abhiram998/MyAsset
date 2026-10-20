@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — Field Worker Mobile View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  :root {
+    --mobile-width: 440px;
+  }
+  body {
+    background-color: #17201f;
+    color: var(--text-primary);
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .mobile-frame {
+    width: 100%;
+    max-width: var(--mobile-width);
+    min-height: 100vh;
+    background: var(--bg-canvas);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid rgba(255,255,255,0.05);
+    border-right: 1px solid rgba(255,255,255,0.05);
+  }
+
+  /* Status Bar Simulated */
+  .mobile-status-bar {
+    height: 38px;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    background: var(--bg-canvas);
+  }
+
+  /* Field Header */
+  .field-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-canvas);
+  }
+  .worker-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .worker-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 91, 79, 0.25);
+    border: 2px solid #fff;
+  }
+  .worker-details h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 2px 0;
+  }
+  .worker-details p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .site-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(0, 91, 79, 0.08);
+    color: var(--brand-primary);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* Main Body Scrollable */
+  .field-body {
+    flex: 1;
+    padding: 12px 20px 100px;
+    overflow-y: auto;
+  }
+
+  /* Scan CTA Hero Card */
+  .scan-card {
+    background: linear-gradient(135deg, #FFA033 0%, #F56100 100%);
+    border-radius: 20px;
+    padding: 24px;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(245, 97, 0, 0.28);
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .scan-card:active {
+    transform: scale(0.98);
+  }
+  .scan-card::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    pointer-events: none;
+  }
+  .scan-icon-wrap {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 14px;
+  }
+  .scan-card h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.02em;
+  }
+  .scan-card p {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 16px 0;
+    line-height: 1.4;
+  }
+  .scan-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    color: #F56100;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  /* Section Titles */
+  .section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .section-badge {
+    background: rgba(0, 91, 79, 0.1);
+    color: var(--brand-primary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* 3D Neumorphic Task Card */
+  .field-card {
+    background: var(--panel-bg);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 91, 79, 0.06);
+    position: relative;
+  }
+  .field-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .field-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+  }
+  .field-card-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.35;
+  }
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .status-chip.in-progress {
+    background: rgba(0, 91, 79, 0.1);
+    color: var(--brand-primary);
+  }
+  .status-chip.checked-out {
+    background: rgba(230, 162, 26, 0.12);
+    color: #b37400;
+  }
+  .status-chip.upcoming {
+    background: rgba(104, 115, 111, 0.1);
+    color: var(--text-secondary);
+  }
+
+  .field-card-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0, 91, 79, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .field-card-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .btn-field-action {
+    background: var(--brand-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 91, 79, 0.2);
+    transition: all 0.2s ease;
+  }
+  .btn-field-action:hover {
+    background: var(--brand-secondary);
+  }
+  .btn-field-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid rgba(0, 91, 79, 0.15);
+    border-radius: 18px;
+    padding: 7px 15px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Bottom Nav Bar */
+  .mobile-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: #FFFDF8;
+    border-top: 1px solid rgba(0, 91, 79, 0.08);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -8px 20px rgba(0,0,0,0.04);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .nav-item.active {
+    color: var(--brand-primary);
+    font-weight: 700;
+  }
+  .nav-icon {
+    font-size: 18px;
+  }
+
+  /* Quick Desktop Navigation banner when viewed on desktop */
+  .desktop-bar {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 999;
+  }
+  .desktop-bar a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    color: #17201F;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+</style>
+</head>
+<body>
+
+  <div class="desktop-bar">
+    <a href="overview.html">← Back to Main Web App</a>
+  </div>
+
+  <div class="mobile-frame">
+    <!-- Status bar simulation -->
+    <div class="mobile-status-bar">
+      <span>9:41</span>
+      <span>5G · 98%</span>
+    </div>
+
+    <!-- Header -->
+    <div class="field-header">
+      <div class="worker-info">
+        <div class="worker-avatar">CM</div>
+        <div class="worker-details">
+          <h1>Carlos Mendez</h1>
+          <p>Crew Bravo · <span class="site-pill">Pacific Coast Yard</span></p>
+        </div>
+      </div>
+      <div style="font-size: 20px; cursor: pointer; color: var(--text-secondary);">🔔</div>
+    </div>
+
+    <!-- Body Content -->
+    <div class="field-body">
+      <!-- Quick Scan Card -->
+      <div class="scan-card">
+        <div class="scan-icon-wrap">
+          📱
+        </div>
+        <h2>Scan NFC / QR Tag</h2>
+        <p>Tap your device against any equipment tag or location marker for instant check-in / check-out.</p>
+        <div class="scan-btn">
+          ⚡ Launch Tag Scanner
+        </div>
+      </div>
+
+      <!-- Currently Checked Out Equipment -->
+      <div class="section-title">
+        <span>With You Right Now</span>
+        <span class="section-badge">1 Active</span>
+      </div>
+
+      <div class="field-card">
+        <div class="field-card-header">
+          <div>
+            <h3 class="field-card-title">Kubota Compact Excavator</h3>
+            <p class="field-card-sub">Heavy Machinery · Assigned 7:15 AM</p>
+          </div>
+          <span class="status-chip checked-out">Checked Out</span>
+        </div>
+        <div class="field-card-footer">
+          <span class="field-card-meta">AST-0842 · Zone Sector 4B</span>
+          <button class="btn-field-action">Check In</button>
+        </div>
+      </div>
+
+      <!-- Assigned Tasks -->
+      <div style="margin-top: 24px;" class="section-title">
+        <span>Today's Work Orders</span>
+        <span class="section-badge">2 Tasks</span>
+      </div>
+
+      <div class="field-card">
+        <div class="field-card-header">
+          <div>
+            <h3 class="field-card-title">Trenching &amp; Irrigation — Sector 4B</h3>
+            <p class="field-card-sub">120m run along south wall. Requires Kubota excavator &amp; laser transit.</p>
+          </div>
+          <span class="status-chip in-progress">In Progress</span>
+        </div>
+        <div class="field-card-footer">
+          <span class="field-card-meta">DUE 3:30 PM · HIGH PRIORITY</span>
+          <button class="btn-field-action">Update Status</button>
+        </div>
+      </div>
+
+      <div class="field-card">
+        <div class="field-card-header">
+          <div>
+            <h3 class="field-card-title">Specimen Tree Planting</h3>
+            <p class="field-card-sub">Sector 2A · 4 Olive trees placement with auger attachment.</p>
+          </div>
+          <span class="status-chip upcoming">Upcoming</span>
+        </div>
+        <div class="field-card-footer">
+          <span class="field-card-meta">STARTS 2:00 PM</span>
+          <button class="btn-field-secondary">Start Task</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="mobile-nav">
+      <div class="nav-item active">
+        <span class="nav-icon">📋</span>
+        <span>My Day</span>
+      </div>
+      <div class="nav-item" onclick="location.href='assets.html'">
+        <span class="nav-icon">📦</span>
+        <span>Equipment</span>
+      </div>
+      <div class="nav-item" onclick="location.href='maintenance.html'">
+        <span class="nav-icon">🛠️</span>
+        <span>Service</span>
+      </div>
+      <div class="nav-item" onclick="location.href='activity.html'">
+        <span class="nav-icon">⚡</span>
+        <span>Activity</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

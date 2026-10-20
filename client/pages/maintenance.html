@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — 3D Neumorphic Maintenance Management</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<style>
+
+  /* KPI Cards Grid */
+  .kpi-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  /* Reference Feature Widgets Grid */
+  .feature-widgets-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  /* Priority Badges */
+  .priority-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .priority-low { background: #E0F2FE; color: #0369A1; border: 1px solid rgba(3, 105, 161, 0.2); }
+  .priority-medium { background: #FEF3C7; color: #92400E; border: 1px solid rgba(146, 64, 14, 0.2); }
+  .priority-high { background: #FFEDD5; color: #C2410C; border: 1px solid rgba(194, 65, 12, 0.2); }
+  .priority-critical { background: #FEE2E2; color: #991B1B; border: 1px solid rgba(153, 27, 27, 0.3); }
+
+  /* Toolbar Controls */
+  .toolbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-search {
+    flex: 1;
+    min-width: 240px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #EAE6DC;
+    border-radius: var(--radius-pill);
+    box-shadow: 
+      inset 2px 3px 6px var(--inset-dark),
+      inset -2px -3px 6px var(--inset-light);
+    border: 1px solid rgba(200, 192, 175, 0.3);
+  }
+
+  .toolbar-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--text-primary);
+    width: 100%;
+  }
+
+  .filter-select {
+    padding: 8px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: var(--panel-bg);
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    box-shadow: 2px 3px 8px var(--shadow-dark);
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* Schedule Table */
+  .neu-table-card {
+    background: var(--panel-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 
+      10px 12px 24px var(--shadow-dark),
+      -8px -8px 20px var(--shadow-light);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  table.maint-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  table.maint-table th {
+    text-align: left;
+    font-family: 'Outfit', sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    padding: 14px 16px;
+    background: rgba(234, 230, 220, 0.5);
+    border-bottom: 1px solid rgba(200, 192, 175, 0.4);
+  }
+
+  table.maint-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid rgba(200, 192, 175, 0.3);
+    vertical-align: middle;
+    color: var(--text-primary);
+  }
+
+  table.maint-table tr:hover td {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  /* Calendar Grid */
+  .calendar-container {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .calendar-card-day {
+    background: rgba(255,255,255,0.7);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    min-height: 90px;
+    border: 1px solid rgba(200,192,175,0.3);
+    box-shadow: inset 0 1px 2px #FFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Hardware Toggle Switch */
+  .hardware-toggle-track {
+    width: 44px;
+    height: 24px;
+    background: var(--emerald-accent);
+    border-radius: 100px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .hardware-toggle-knob {
+    width: 18px;
+    height: 18px;
+    background: #FFFFFF;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    left: 23px;
+    transition: left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  .hardware-toggle-track.off {
+    background: rgba(255,255,255,0.3);
+  }
+
+  .hardware-toggle-track.off .hardware-toggle-knob {
+    left: 3px;
+  }
+
+  /* Slide-over Drawer / Modal Overlay */
+  .drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 32, 29, 0.45);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    display: flex;
+    justify-content: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .drawer-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .drawer-content {
+    background: var(--podium-bg);
+    width: 100%;
+    max-width: 520px;
+    height: 100vh;
+    box-shadow: -15px 0 40px rgba(0,0,0,0.25);
+    padding: 32px 28px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .drawer-overlay.open .drawer-content {
+    transform: translateX(0);
+  }
+
+  /* Three-dot Dropdown */
+  .dropdown-wrapper { position: relative; display: inline-block; }
+  .dropdown-menu {
+    position: absolute; right: 0; top: 100%; background: #FFFFFF;
+    border-radius: var(--radius-md); box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border: 1px solid rgba(200,192,175,0.4); width: 160px; padding: 6px 0; z-index: 50; display: none;
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-item { padding: 8px 14px; font-size: 12px; font-weight: 500; cursor: pointer; }
+  .dropdown-item:hover { background: var(--status-neutral-bg); }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="app-sidebar" id="appSidebar" aria-label="Sidebar"></aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button type="button" class="app-icon-btn app-menu-btn" id="appMenuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+      <div class="app-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search maintenance logs..." readonly onclick="openScheduleDrawer()">
+      <span class="pill-badge pill-neutral" style="font-size:10px;">⌘K</span>
+      </div>
+
+      <div class="app-topbar-actions">
+        <a href="alerts.html" class="app-icon-btn" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></a>
+        <div class="app-user" id="appUser" hidden>
+          <span class="app-avatar" aria-hidden="true"></span>
+          <span class="app-user-name"></span>
+        </div>
+      <button class="pill-btn pill-btn-emerald app-cta" onclick="openScheduleDrawer()" aria-label="Schedule Maintenance">
+        <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Schedule Maintenance</span>
+      </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      
+      <!-- PAGE HEADER -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+          <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Maintenance</h1>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Keep your assets healthy, reliable and ready for use.</p>
+        </div>
+
+        <button class="pill-btn pill-btn-emerald" onclick="openScheduleDrawer()">
+          <span>+ Schedule Maintenance</span>
+        </button>
+      </div>
+
+      <!-- COMPACT KPI SUMMARY CARDS -->
+      <section class="kpi-summary-grid">
+        <div class="neu-panel" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Due Today</span>
+            <span>📅</span>
+          </div>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; color: var(--text-primary); margin-top: 4px; line-height: 1;" id="kpiDueToday">0</div>
+          <span class="pill-badge pill-attn" style="margin-top: 6px;">Action Required</span>
+        </div>
+
+        <div class="neu-panel" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Upcoming</span>
+            <span>⏳</span>
+          </div>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; color: var(--text-primary); margin-top: 4px; line-height: 1;" id="kpiUpcoming">0</div>
+          <span class="pill-badge pill-neutral" style="margin-top: 6px;">Next 7 Days</span>
+        </div>
+
+        <div class="neu-panel" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Overdue</span>
+            <span>⚠️</span>
+          </div>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; color: var(--status-alert-text); margin-top: 4px; line-height: 1;" id="kpiOverdue">0</div>
+          <span class="pill-badge pill-alert" style="margin-top: 6px;">Immediate Attn</span>
+        </div>
+
+        <div class="neu-panel" style="padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">In Maintenance</span>
+            <span>🛠️</span>
+          </div>
+          <div style="font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; color: var(--text-primary); margin-top: 4px; line-height: 1;" id="kpiInMaintenance">0</div>
+          <span class="pill-badge pill-ok" style="margin-top: 6px;">Active In Workshop</span>
+        </div>
+      </section>
+
+      <!-- VIBRANT ACCENT CARDS ROW -->
+      <section class="feature-widgets-row">
+        
+        <!-- Vibrant Orange Feature Card -->
+        <div class="vibrant-orange-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="pill-badge" style="background: rgba(255,255,255,0.25); color: #FFF;">Critical Overdue Alert</span>
+              <span>⚠️</span>
+            </div>
+            <h2 style="font-size: 20px; font-family: 'Outfit', sans-serif; margin-top: 14px; color: #FFF;" id="overdueCardTitle">0 Overdue Service Tasks</h2>
+            <p style="font-size: 12.5px; opacity: 0.9; margin-top: 4px; line-height: 1.4;" id="overdueCardDesc">Review overdue maintenance routines and assign service crew.</p>
+          </div>
+          <div style="margin-top: 18px;">
+            <button class="pill-btn pill-btn-light" style="width: 100%; justify-content: center; color: var(--orange-end);" onclick="filterByOverdue()">
+              Resolve Overdue Tasks →
+            </button>
+          </div>
+        </div>
+
+        <!-- Deep Emerald Diagnostic Node -->
+        <div class="vibrant-emerald-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div class="wave-layer"></div>
+          <div style="position: relative; z-index: 2;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="pill-badge" style="background: rgba(0, 230, 118, 0.2); color: #00E676; border: 1px solid rgba(0, 230, 118, 0.4);">LIVE SERVICE ENGINE</span>
+            </div>
+            <h2 style="font-size: 20px; font-family: 'Outfit', sans-serif; margin-top: 14px; color: #FFF;">Preventative Workflows</h2>
+            <p style="font-size: 12.5px; opacity: 0.9; margin-top: 4px; line-height: 1.4; color: #E8F5E9;">Automated scheduling and service status lifecycle.</p>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.12); padding: 8px 12px; border-radius: var(--radius-pill); margin-top: 14px;">
+              <span style="font-size: 12.5px; font-weight: 600;" id="diagLabel">Service Node: ONLINE</span>
+              <div class="hardware-toggle-track" id="diagToggleTrack" onclick="toggleDiagnostics()">
+                <div class="hardware-toggle-knob"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vibrant Amber Card (Reliability Score) -->
+        <div class="neu-panel" style="background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); border: 1px solid rgba(255,255,255,0.9); display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="pill-badge pill-attn">Fleet Health</span>
+              <span class="mono" style="font-size: 14px; font-weight: 700; color: #E65100;" id="fleetHealthScore">100%</span>
+            </div>
+            <h3 style="font-size: 18px; color: #E65100; margin-top: 14px;">Reliability Score</h3>
+            <p style="font-size: 12.5px; color: #795548; margin-top: 4px;" id="fleetHealthSummary">Fleet health is tracked across all operational assets.</p>
+          </div>
+          <div style="background: rgba(255,255,255,0.6); backdrop-filter: blur(6px); padding: 10px 14px; border-radius: 12px; margin-top: 14px;">
+            <div style="font-size: 11px; font-weight: 700; color: #5D4037; text-transform: uppercase;">Preventative Status</div>
+            <div style="font-size: 12.5px; font-weight: 600; color: var(--text-primary); margin-top: 2px;" id="nextServiceHighlight">All routines scheduled</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- TOOLBAR CONTROLS ROW -->
+      <div class="toolbar-row">
+        <!-- Live Search -->
+        <div class="toolbar-search">
+          <span>🔍</span>
+          <input type="text" id="maintSearchInput" placeholder="Search maintenance by asset, technician, type..." onkeyup="filterMaintTable()">
+        </div>
+
+        <!-- Multi-Filter Dropdowns -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <select class="filter-select" id="dateRangeSelect">
+            <option value="all">Date Range: All Time</option>
+            <option value="today">Due Today</option>
+            <option value="week">Next 7 Days</option>
+            <option value="month">This Month</option>
+          </select>
+
+          <select class="filter-select" id="statusFilterSelect" onchange="filterMaintTable()">
+            <option value="all">All Statuses</option>
+            <option value="Scheduled">Scheduled</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Overdue">Overdue</option>
+          </select>
+
+          <select class="filter-select" id="priorityFilterSelect" onchange="filterMaintTable()">
+            <option value="all">All Priorities</option>
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+          </select>
+
+          <select class="filter-select" id="categoryFilterSelect" onchange="filterMaintTable()">
+            <option value="all">All Categories</option>
+            <option value="Machinery">Machinery</option>
+            <option value="Hand Tool">Hand Tool</option>
+            <option value="Vehicle">Vehicle</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 7-COLUMN MAINTENANCE SCHEDULE TABLE -->
+      <div class="neu-table-card">
+        <table class="maint-table" id="maintScheduleTable">
+          <thead>
+            <tr>
+              <th>Asset</th>
+              <th>Maintenance Type</th>
+              <th>Due Date</th>
+              <th>Assigned Technician</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th style="width: 140px; text-align: center;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="maintTableBody">
+            
+          <tbody id="maintTableBody">
+            <tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-secondary);">Loading maintenance data...</td></tr>
+          </tbody>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CALENDAR / SCHEDULE VISUALIZATION -->
+      <div class="neu-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="font-size: 16px;">September 2026 — Interactive Service Calendar</h3>
+          <span class="pill-badge pill-neutral">7-Day View</span>
+        </div>
+        
+        <div class="calendar-container">
+          <div class="calendar-card-day">
+            <strong style="font-size: 13px;">Mon 21</strong>
+            <div class="pill-badge pill-alert" style="font-size: 9.5px; padding: 2px 6px; width: fit-content;">Water Pump Overdue</div>
+          </div>
+
+          <div class="calendar-card-day">
+            <strong style="font-size: 13px;">Tue 22</strong>
+            <div class="pill-badge pill-attn" style="font-size: 9.5px; padding: 2px 6px; width: fit-content;">Sprayer Service</div>
+          </div>
+
+          <div class="calendar-card-day">
+            <strong style="font-size: 13px;">Wed 23</strong>
+            <span style="font-size: 11px; color: var(--text-tertiary);">No services due</span>
+          </div>
+
+          <div class="calendar-card-day">
+            <strong style="font-size: 13px;">Thu 24</strong>
+            <span style="font-size: 11px; color: var(--text-tertiary);">No services due</span>
+          </div>
+
+          <div class="calendar-card-day">
+            <strong style="font-size: 13px;">Fri 25</strong>
+            <div class="pill-badge pill-ok" style="font-size: 9.5px; padding: 2px 6px; width: fit-content;">Chainsaw Check</div>
+          </div>
+
+          <div class="calendar-card-day">
+            <strong style="font-size: 13px;">Sat 26</strong>
+            <span style="font-size: 11px; color: var(--text-tertiary);">Depot Closed</span>
+          </div>
+
+          <div class="calendar-card-day">
+            <strong style="font-size: 13px;">Sun 27</strong>
+            <span style="font-size: 11px; color: var(--text-tertiary);">Depot Closed</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- SLIDE-OVER SCHEDULE MAINTENANCE DRAWER / MODAL -->
+<div class="drawer-overlay" id="scheduleDrawer">
+  <div class="drawer-content">
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--emerald-deep); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 18px;">🛠️</div>
+          <div>
+            <h2 style="font-size: 20px; font-family: 'Outfit', sans-serif;" id="drawerTitle">Schedule Maintenance Task</h2>
+            <p style="font-size: 12px; color: var(--text-secondary);">Assign asset service schedule &amp; technician notes.</p>
+          </div>
+        </div>
+        <button onclick="closeScheduleDrawer()" style="border:none; background:none; font-size:22px; cursor:pointer;">✕</button>
+      </div>
+
+      <form onsubmit="submitMaintSchedule(event)">
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Select Asset Unit *</label>
+            <select class="filter-select" id="maintAsset" style="width: 100%; margin-top: 4px;" required>
+              <option value="AST-0032">Water Pump 5000G (AST-0032)</option>
+              <option value="AST-0089">Heavy Duty Sprayer (AST-0089)</option>
+              <option value="AST-0842">Kubota Compact Excavator (AST-0842)</option>
+              <option value="AST-1102">Stihl MS 261 Chainsaw (AST-1102)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Maintenance Service Type *</label>
+            <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+              <input type="text" id="maintType" required placeholder="e.g. Hydraulic Seal &amp; Engine Calibration" style="border:none; background:transparent; outline:none; width:100%; font-family:'Inter',sans-serif;">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Scheduled Due Date *</label>
+              <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px;">
+                <input type="date" id="maintDate" required style="border:none; background:transparent; outline:none; width:100%; font-family:'Inter',sans-serif;">
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Assign Technician *</label>
+              <select class="filter-select" id="maintTech" style="width: 100%; margin-top: 4px;" required>
+                <option value="Vishnu K.">Vishnu K. (Lead Tech)</option>
+                <option value="Rahul S.">Rahul S.</option>
+                <option value="External Service Co.">External Service Co.</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Priority Level *</label>
+              <select class="filter-select" id="maintPriority" style="width: 100%; margin-top: 4px;" required>
+                <option value="Low">Low Priority</option>
+                <option value="Medium">Medium Priority</option>
+                <option value="High">High Priority</option>
+                <option value="Critical">Critical Priority</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Initial Status</label>
+              <select class="filter-select" id="maintStatus" style="width: 100%; margin-top: 4px;">
+                <option value="Scheduled">Scheduled</option>
+                <option value="In Progress">In Progress</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Technician Instructions / Notes</label>
+            <div class="neu-inset" style="padding: 10px 16px; margin-top: 4px; border-radius: 12px;">
+              <textarea id="maintNotes" rows="3" placeholder="Enter diagnostic notes or specific replacement part details..." style="border:none; background:transparent; outline:none; width:100%; font-family:'Inter',sans-serif; resize:none;"></textarea>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button type="submit" class="pill-btn pill-btn-emerald" style="flex:1; justify-content:center;">
+              Save &amp; Schedule Task
+            </button>
+            <button type="button" class="pill-btn pill-btn-light" onclick="closeScheduleDrawer()">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allSchedules = [];
+
+  // Drawer Handlers
+  function openScheduleDrawer(assetId) {
+    document.getElementById('scheduleDrawer').classList.add('open');
+    if (assetId) {
+      document.getElementById('maintAsset').value = assetId;
+    }
+  }
+
+  function closeScheduleDrawer() {
+    document.getElementById('scheduleDrawer').classList.remove('open');
+  }
+
+  async function submitMaintSchedule(e) {
+    e.preventDefault();
+    const asset_id = document.getElementById('maintAsset').value;
+    const title = document.getElementById('maintType').value.trim();
+    const due_date = document.getElementById('maintDate').value;
+    const priority = document.getElementById('maintPriority').value;
+    const notes = document.getElementById('maintNotes').value.trim();
+
+    if (!asset_id || !title || !due_date) {
+      window.showToast?.('Please fill out all required fields', 'error');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/v1/maintenance/schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ asset_id, title, due_date, priority, notes })
+      });
+
+      if (res.ok) {
+        window.showToast?.(`Maintenance scheduled for asset`, 'success');
+        closeScheduleDrawer();
+        document.getElementById('maintType').value = '';
+        document.getElementById('maintNotes').value = '';
+        await loadMaintenanceData();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to schedule maintenance', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Error scheduling task', 'error');
+    }
+  }
+
+  async function completeScheduleAction(id, title) {
+    const notes = prompt(`Mark "${title}" as completed?\nEnter optional technician notes:`, 'Completed regular service routine');
+    if (notes === null) return;
+
+    try {
+      const res = await fetch(`/api/v1/maintenance/schedules/${id}/complete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes })
+      });
+
+      if (res.ok) {
+        window.showToast?.('Service marked completed and maintenance record logged', 'success');
+        await loadMaintenanceData();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to mark completed', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Error completing maintenance', 'error');
+    }
+  }
+
+  // Toggle Hardware Diagnostic Node (Simulated status mode)
+  let diagActive = true;
+  function toggleDiagnostics() {
+    diagActive = !diagActive;
+    const track = document.getElementById('diagToggleTrack');
+    const label = document.getElementById('diagLabel');
+    if (diagActive) {
+      track.classList.remove('off');
+      label.textContent = 'Service Node: ONLINE';
+    } else {
+      track.classList.add('off');
+      label.textContent = 'Service Node: PAUSED';
+    }
+  }
+
+  async function loadMaintenanceData() {
+    try {
+      const [statsRes, schedRes, assetsRes] = await Promise.all([
+        fetch('/api/v1/maintenance/stats'),
+        fetch('/api/v1/maintenance/schedules'),
+        fetch('/api/v1/assets')
+      ]);
+
+      if (statsRes.ok) {
+        const stats = await statsRes.json();
+        document.getElementById('kpiDueToday').textContent = stats.due_today || 0;
+        document.getElementById('kpiUpcoming').textContent = stats.upcoming || 0;
+        document.getElementById('kpiOverdue').textContent = stats.overdue || 0;
+        document.getElementById('kpiInMaintenance').textContent = stats.in_maintenance || 0;
+        
+        document.getElementById('overdueCardTitle').textContent = `${stats.overdue || 0} Overdue Tasks`;
+        document.getElementById('overdueCardDesc').textContent = stats.overdue > 0 
+          ? 'Requires immediate workshop attention and inspection.' 
+          : 'All scheduled maintenance tasks are currently up to date.';
+
+        document.getElementById('fleetHealthScore').textContent = `${stats.fleet_health || 100}%`;
+        document.getElementById('fleetHealthSummary').textContent = `${stats.completed || 0} tasks completed. ${stats.in_maintenance || 0} assets in workshop.`;
+      }
+
+      if (schedRes.ok) {
+        allSchedules = await schedRes.json();
+        renderSchedulesTable(allSchedules);
+
+        if (allSchedules.length > 0) {
+          const nextSched = allSchedules.find(s => s.status !== 'COMPLETED') || allSchedules[0];
+          document.getElementById('nextServiceHighlight').textContent = `${nextSched.maintenance_type || nextSched.title} (${nextSched.asset_name}) · ${new Date(nextSched.due_date).toLocaleDateString()}`;
+        }
+      }
+
+      if (assetsRes.ok) {
+        const assets = await assetsRes.json();
+        const assetSelect = document.getElementById('maintAsset');
+        assetSelect.innerHTML = assets.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.tag_id)})</option>`).join('');
+      }
+    } catch (e) {
+      console.error(e);
+      document.getElementById('maintTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--rose-crimson);">Error loading maintenance data.</td></tr>';
+    }
+  }
+
+  function renderSchedulesTable(schedules) {
+    const tbody = document.getElementById('maintTableBody');
+    if (!schedules || schedules.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px; color: var(--text-tertiary);">No maintenance schedules found. Click "+ Schedule Maintenance" to create one.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = schedules.map(s => {
+      const priorityClass = s.priority === 'Critical' ? 'priority-critical' : (s.priority === 'High' ? 'priority-high' : 'priority-medium');
+      const isCompleted = s.status === 'COMPLETED';
+      const statusBadge = isCompleted ? 'pill-ok' : (s.status === 'IN_PROGRESS' ? 'pill-neutral' : 'pill-alert');
+
+      return `
+        <tr data-status="${s.status || 'SCHEDULED'}" data-priority="${s.priority || 'Medium'}" data-category="${s.asset_type || 'General'}">
+          <td>
+            <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='asset-details.html?id=${s.asset_id}'">
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.9); border: 1px solid rgba(200,192,175,0.4); display: flex; align-items: center; justify-content: center;">🔧</div>
+              <div>
+                <strong style="font-size: 13.5px;">${escapeHtml(s.asset_name || 'Asset')}</strong>
+                <div class="mono" style="font-size: 11px; color: var(--emerald-deep);">${escapeHtml(s.asset_tag || s.tag_id || '')}</div>
+              </div>
+            </div>
+          </td>
+          <td>${escapeHtml(s.maintenance_type || s.title || 'General Service')}</td>
+          <td><span style="font-weight: 600;">${new Date(s.due_date).toLocaleDateString()}</span></td>
+          <td>${escapeHtml(s.technician_name || 'Maintenance Team')}</td>
+          <td><span class="priority-pill ${priorityClass}">${escapeHtml(s.priority || 'Medium')}</span></td>
+          <td><span class="pill-badge ${statusBadge}">${s.status || 'SCHEDULED'}</span></td>
+          <td style="text-align: center;">
+            <div style="display: flex; gap: 6px; justify-content: center;">
+              ${!isCompleted ? `<button class="pill-btn pill-btn-emerald" style="padding: 4px 10px; font-size: 11.5px;" onclick="completeScheduleAction(${s.id}, '${escapeHtml(s.maintenance_type || s.title)}')">Complete</button>` : `<span style="font-size:11px; color:var(--text-tertiary);">Done</span>`}
+              <div class="dropdown-wrapper">
+                <button class="action-menu-btn" onclick="toggleDropdown(this)">•••</button>
+                <div class="dropdown-menu">
+                  <div class="dropdown-item" onclick="window.location.href='asset-details.html?id=${s.asset_id}'">👁️ View Asset</div>
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function filterMaintTable() {
+    const q = (document.getElementById('maintSearchInput')?.value || '').toLowerCase();
+    const statusVal = document.getElementById('statusFilterSelect')?.value || 'all';
+    const priorityVal = document.getElementById('priorityFilterSelect')?.value || 'all';
+
+    const filtered = allSchedules.filter(s => {
+      const text = `${s.asset_name || ''} ${s.title || s.maintenance_type || ''} ${s.asset_tag || ''}`.toLowerCase();
+      const matchesSearch = !q || text.includes(q);
+      const matchesStatus = (statusVal === 'all' || (s.status || '').toLowerCase() === statusVal.toLowerCase());
+      const matchesPriority = (priorityVal === 'all' || (s.priority || '').toLowerCase() === priorityVal.toLowerCase());
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
+
+    renderSchedulesTable(filtered);
+  }
+
+  function filterByOverdue() {
+    document.getElementById('statusFilterSelect').value = 'Scheduled';
+    filterMaintTable();
+  }
+
+  function toggleDropdown(btn) {
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+      if (m !== btn.nextElementSibling) m.classList.remove('open');
+    });
+    btn.nextElementSibling.classList.toggle('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('action-menu-btn')) {
+      document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  }
+
+  window.addEventListener('shell-ready', loadMaintenanceData);
+</script>
+<script src="../js/shell.js"></script>
+</body>
+</html>

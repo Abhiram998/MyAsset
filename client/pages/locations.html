@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — Job Sites &amp; Location Management</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<style>
+  .location-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px;
+  }
+
+  .stat-badge {
+    padding: 6px 12px; border-radius: var(--radius-md); background: var(--status-neutral-bg); font-size: 12px; font-weight: 600; display: flex; justify-content: space-between;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 24, 20, 0.55);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-card {
+    background: var(--panel-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 10px 16px 36px var(--shadow-dark);
+    width: 100%;
+    max-width: 540px;
+    padding: 24px;
+  }
+  .modal-field {
+    margin-bottom: 12px;
+  }
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="app-sidebar" id="appSidebar" aria-label="Sidebar"></aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button type="button" class="app-icon-btn app-menu-btn" id="appMenuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+      <div class="app-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="siteSearchInput" placeholder="Search job sites &amp; zones..." onkeyup="filterZones()">
+      </div>
+
+      <div class="app-topbar-actions">
+        <a href="alerts.html" class="app-icon-btn" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></a>
+        <div class="app-user" id="appUser" hidden>
+          <span class="app-avatar" aria-hidden="true"></span>
+          <span class="app-user-name"></span>
+        </div>
+        <button class="pill-btn pill-btn-emerald app-cta" onclick="openAddSiteModal()" aria-label="Add Job Site">
+          <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Add Job Site</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+          <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Job Sites &amp; Locations</h1>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Monitor active site zones, equipment distribution, and local gate alerts.</p>
+        </div>
+        <button class="pill-btn pill-btn-emerald" onclick="openAddSiteModal()">+ Add Site / Zone</button>
+      </div>
+
+      <!-- LOCATION CARDS GRID -->
+      <div class="location-grid" id="zonesContainer">
+        <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">Loading job sites...</div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ADD SITE MODAL -->
+<div class="modal-overlay" id="addSiteModal">
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800;">Register New Site / Zone</h3>
+      <button onclick="closeAddSiteModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+    <form onsubmit="handleAddSiteSubmit(event)">
+      <div class="modal-field">
+        <label>Zone / Site Name *</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="text" id="newZoneName" required placeholder="e.g. Zone B - North Yard" style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Facility / Location</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="text" id="newLocationName" placeholder="e.g. Seattle Central Depot" style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Address / Geo Coordinates</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="text" id="newAddress" placeholder="e.g. 1042 Industrial Parkway" style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="pill-btn pill-btn-emerald" style="flex: 1; justify-content: center;">Save Site</button>
+        <button type="button" class="pill-btn pill-btn-light" onclick="closeAddSiteModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- SITE DETAILS MODAL -->
+<div class="modal-overlay" id="siteDetailsModal">
+  <div class="modal-card" style="max-width: 640px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800;" id="modalSiteTitle">Site Details</h3>
+      <button onclick="closeSiteDetailsModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+    
+    <div id="modalSiteContent">
+      <div style="text-align: center; padding: 20px;">Loading details...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allZones = [];
+
+  async function loadZones() {
+    try {
+      const res = await fetch('/api/v1/zones');
+      if (!res.ok) throw new Error("Failed to load");
+      allZones = await res.json();
+      renderZones(allZones);
+    } catch(e) {
+      console.error(e);
+      document.getElementById('zonesContainer').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--rose-crimson);">Error loading job sites</div>';
+    }
+  }
+
+  function renderZones(zones) {
+    const container = document.getElementById('zonesContainer');
+    if (!zones || zones.length === 0) {
+      container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-tertiary); padding: 30px;">No job sites registered yet. Click "+ Add Site" to create one.</div>';
+      return;
+    }
+
+    container.innerHTML = zones.map(zone => {
+      return `
+        <div class="neu-panel site-card" data-name="${escapeHtml(zone.name.toLowerCase())}" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div>
+                <h3 style="font-size: 18px; font-family: 'Outfit', sans-serif;">${escapeHtml(zone.name)}</h3>
+                <div style="font-size: 11.5px; color: var(--text-tertiary);">${escapeHtml(zone.location_name || 'Primary Facility')}</div>
+              </div>
+              <span class="pill-badge pill-ok">Active</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+              <div class="stat-badge"><span>📦 Asset Units</span><span><strong>${zone.asset_count || 0} Assets</strong></span></div>
+              <div class="stat-badge"><span>👥 Assigned Crew</span><span><strong>${zone.employee_count || 0} Members</strong></span></div>
+              <div class="stat-badge"><span>📍 Coordinates</span><span style="font-size:11px; color:var(--text-secondary);">${zone.coordinates ? escapeHtml(zone.coordinates) : 'Configured'}</span></div>
+            </div>
+          </div>
+          <button class="pill-btn pill-btn-light" style="width: 100%; justify-content: center;" onclick="viewZoneDetails(${zone.id}, '${escapeHtml(zone.name)}')">View Site Inventory →</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function filterZones() {
+    const q = (document.getElementById('siteSearchInput')?.value || '').toLowerCase();
+    const filtered = allZones.filter(z => z.name.toLowerCase().includes(q) || (z.location_name || '').toLowerCase().includes(q));
+    renderZones(filtered);
+  }
+
+  function openAddSiteModal() {
+    document.getElementById('addSiteModal').classList.add('open');
+  }
+
+  function closeAddSiteModal() {
+    document.getElementById('addSiteModal').classList.remove('open');
+  }
+
+  async function handleAddSiteSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById('newZoneName').value.trim();
+    const locationName = document.getElementById('newLocationName').value.trim() || name;
+    const address = document.getElementById('newAddress').value.trim();
+
+    try {
+      // First create location
+      const locRes = await fetch('/api/v1/locations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: locationName, address })
+      });
+
+      let location_id = null;
+      if (locRes.ok) {
+        const locData = await locRes.json();
+        location_id = locData.id;
+      }
+
+      // Then create zone
+      const zoneRes = await fetch('/api/v1/zones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, location_id })
+      });
+
+      if (zoneRes.ok) {
+        window.showToast?.('Site & Zone created successfully', 'success');
+        closeAddSiteModal();
+        await loadZones();
+      } else {
+        const err = await zoneRes.json();
+        window.showToast?.(err.error || 'Failed to create site', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Network error registering site', 'error');
+    }
+  }
+
+  async function viewZoneDetails(zoneId, zoneName) {
+    document.getElementById('modalSiteTitle').textContent = `Site Inventory: ${zoneName}`;
+    const modalContent = document.getElementById('modalSiteContent');
+    modalContent.innerHTML = '<div style="text-align: center; padding: 20px;">Loading site details...</div>';
+    document.getElementById('siteDetailsModal').classList.add('open');
+
+    try {
+      const res = await fetch(`/api/v1/zones/${zoneId}`);
+      if (res.ok) {
+        const data = await res.json();
+        const assets = data.assets || [];
+        const crew = data.crew || [];
+
+        modalContent.innerHTML = `
+          <div style="margin-bottom: 16px;">
+            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Stationed Assets (${assets.length})</h4>
+            <div style="max-height: 180px; overflow-y: auto; background: rgba(234,230,220,0.3); border-radius: 8px; padding: 8px;">
+              ${assets.length === 0 ? '<div style="color:var(--text-tertiary); font-size:12.5px;">No assets stationed here.</div>' : 
+                assets.map(a => `
+                  <div style="display:flex; justify-content:space-between; padding: 6px 8px; border-bottom: 1px solid var(--status-neutral-bg); font-size:12.5px;">
+                    <span><strong>${escapeHtml(a.name)}</strong> (${escapeHtml(a.tag_id)})</span>
+                    <span class="pill-badge ${a.status === 'AVAILABLE' ? 'pill-ok' : 'pill-neutral'}">${a.status}</span>
+                  </div>
+                `).join('')
+              }
+            </div>
+          </div>
+
+          <div>
+            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Assigned Personnel (${crew.length})</h4>
+            <div style="max-height: 140px; overflow-y: auto; background: rgba(234,230,220,0.3); border-radius: 8px; padding: 8px;">
+              ${crew.length === 0 ? '<div style="color:var(--text-tertiary); font-size:12.5px;">No crew assigned to this site.</div>' : 
+                crew.map(c => `
+                  <div style="display:flex; justify-content:space-between; padding: 6px 8px; border-bottom: 1px solid var(--status-neutral-bg); font-size:12.5px;">
+                    <span><strong>${escapeHtml(c.first_name)} ${escapeHtml(c.last_name)}</strong></span>
+                    <span style="color:var(--text-secondary);">${escapeHtml(c.role_name || c.job_title || 'Staff')}</span>
+                  </div>
+                `).join('')
+              }
+            </div>
+          </div>
+        `;
+      } else {
+        modalContent.innerHTML = '<div style="color:var(--rose-crimson); padding: 20px;">Failed to load site details.</div>';
+      }
+    } catch (e) {
+      console.error(e);
+      modalContent.innerHTML = '<div style="color:var(--rose-crimson); padding: 20px;">Network error loading site details.</div>';
+    }
+  }
+
+  function closeSiteDetailsModal() {
+    document.getElementById('siteDetailsModal').classList.remove('open');
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  }
+
+  window.addEventListener('shell-ready', loadZones);
+</script>
+<script src="../js/shell.js"></script>
+</body>
+</html>

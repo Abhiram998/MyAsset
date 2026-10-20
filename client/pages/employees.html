@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyAsset — Personnel &amp; Employees Directory</title>
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/app-shell.css">
+<style>
+  .employee-cards-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px;
+  }
+
+  .employee-avatar-box {
+    width: 48px; height: 48px; border-radius: 50%; background: #E0E7FF; color: #3730A3; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; border: 2px solid #FFF; box-shadow: 2px 4px 10px rgba(0,0,0,0.1);
+  }
+
+  .filter-select { padding: 8px 14px; border-radius: var(--radius-pill); border: 1px solid rgba(255,255,255,0.9); background: var(--panel-bg); font-family: 'Inter', sans-serif; font-size: 12.5px; font-weight: 500; color: var(--text-primary); box-shadow: 2px 3px 8px var(--shadow-dark); outline: none; cursor: pointer; }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 24, 20, 0.55);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-card {
+    background: var(--panel-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 10px 16px 36px var(--shadow-dark);
+    width: 100%;
+    max-width: 520px;
+    padding: 24px;
+  }
+  .modal-field {
+    margin-bottom: 12px;
+  }
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="app-sidebar" id="appSidebar" aria-label="Sidebar"></aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button type="button" class="app-icon-btn app-menu-btn" id="appMenuBtn" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+
+      <div class="app-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="employeeSearchInput" placeholder="Search employees by name, role, site..." onkeyup="filterEmployees()">
+      </div>
+
+      <div class="app-topbar-actions">
+        <a href="alerts.html" class="app-icon-btn" aria-label="Alerts" title="Alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></a>
+        <div class="app-user" id="appUser" hidden>
+          <span class="app-avatar" aria-hidden="true"></span>
+          <span class="app-user-name"></span>
+        </div>
+        <button class="pill-btn pill-btn-emerald app-cta" onclick="openAddEmployeeModal()" aria-label="Add Employee">
+          <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Add Employee</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="page-content">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+        <div>
+          <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Employees &amp; Crew</h1>
+          <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Manage personnel assignments and access authorization.</p>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <select class="filter-select" id="roleFilterSelect" onchange="filterEmployees()">
+            <option value="all">All Roles</option>
+          </select>
+
+          <button class="pill-btn pill-btn-light" id="viewToggleBtn" onclick="toggleViewMode()">Switch to Table View</button>
+          <button class="pill-btn pill-btn-emerald" onclick="openAddEmployeeModal()">+ Add Employee</button>
+        </div>
+      </div>
+
+      <!-- CARD VIEW CONTAINER -->
+      <div class="employee-cards-grid" id="cardViewContainer">
+        <div class="empty-state" style="grid-column: 1 / -1;">Loading employees...</div>
+      </div>
+
+      <!-- TABLE VIEW CONTAINER (HIDDEN BY DEFAULT) -->
+      <div class="neu-panel" id="tableViewContainer" style="padding: 0; overflow: hidden; display: none;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <thead>
+            <tr style="background: rgba(234, 230, 220, 0.4); text-align: left; font-size: 11.5px; color: var(--text-secondary); text-transform: uppercase;">
+              <th style="padding: 14px 18px;">Personnel</th>
+              <th style="padding: 14px 18px;">Role</th>
+              <th style="padding: 14px 18px;">Assigned Sites / Zones</th>
+              <th style="padding: 14px 18px;">Status</th>
+              <th style="padding: 14px 18px;">Active Tasks</th>
+              <th style="padding: 14px 18px;">Joined</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="6" class="empty-state">Loading employees...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ADD EMPLOYEE MODAL -->
+<div class="modal-overlay" id="addEmployeeModal">
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800;">Register Personnel &amp; Crew</h3>
+      <button onclick="closeAddEmployeeModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+    </div>
+    <form onsubmit="handleAddEmployeeSubmit(event)">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="modal-field">
+          <label>First Name *</label>
+          <div class="neu-inset" style="padding: 8px 14px;">
+            <input type="text" id="newFirstName" required placeholder="Jane" style="border:none; background:transparent; width:100%; outline:none;">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label>Last Name *</label>
+          <div class="neu-inset" style="padding: 8px 14px;">
+            <input type="text" id="newLastName" required placeholder="Doe" style="border:none; background:transparent; width:100%; outline:none;">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="modal-field">
+          <label>Job Title</label>
+          <div class="neu-inset" style="padding: 8px 14px;">
+            <input type="text" id="newJobTitle" placeholder="e.g. Field Technician" style="border:none; background:transparent; width:100%; outline:none;">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label>Operational Role *</label>
+          <select class="filter-select" id="newRoleName" style="width: 100%;" required>
+            <option value="FIELD WORKER">FIELD WORKER</option>
+            <option value="SITE / CREW SUPERVISOR">SITE / CREW SUPERVISOR</option>
+            <option value="MAINTENANCE STAFF">MAINTENANCE STAFF</option>
+            <option value="OPERATIONS MANAGER">OPERATIONS MANAGER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label>Assigned Zone / Site</label>
+        <select class="filter-select" id="newZoneId" style="width: 100%;">
+          <option value="">— Unassigned —</option>
+        </select>
+      </div>
+
+      <div style="border-top: 1px solid var(--status-neutral-bg); padding-top: 12px; margin-top: 12px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 8px;">Login Account Credentials (Optional)</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="modal-field">
+            <label>Login Email</label>
+            <div class="neu-inset" style="padding: 8px 14px;">
+              <input type="email" id="newEmail" placeholder="jane@company.com" style="border:none; background:transparent; width:100%; outline:none;">
+            </div>
+          </div>
+          <div class="modal-field">
+            <label>Password</label>
+            <div class="neu-inset" style="padding: 8px 14px;">
+              <input type="password" id="newPassword" placeholder="Minimum 6 chars" style="border:none; background:transparent; width:100%; outline:none;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="pill-btn pill-btn-emerald" style="flex: 1; justify-content: center;">Save Employee</button>
+        <button type="button" class="pill-btn pill-btn-light" onclick="closeAddEmployeeModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let isTableView = false;
+  let allEmployees = [];
+
+  function toggleViewMode() {
+    isTableView = !isTableView;
+    document.getElementById('cardViewContainer').style.display = isTableView ? 'none' : 'grid';
+    document.getElementById('tableViewContainer').style.display = isTableView ? 'block' : 'none';
+    document.getElementById('viewToggleBtn').textContent = isTableView ? 'Switch to Card View' : 'Switch to Table View';
+  }
+
+  function getInitials(firstName, lastName) {
+    const f = firstName ? firstName[0] : '';
+    const l = lastName ? lastName[0] : '';
+    return (f + l).toUpperCase() || 'EM';
+  }
+
+  function renderEmployees() {
+    const cardContainer = document.getElementById('cardViewContainer');
+    const tableBody = document.getElementById('tableBody');
+    
+    if (allEmployees.length === 0) {
+      cardContainer.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">No employees registered yet.</div>';
+      tableBody.innerHTML = '<tr><td colspan="6" class="empty-state" style="text-align: center; padding: 20px;">No employees found.</td></tr>';
+      return;
+    }
+
+    cardContainer.innerHTML = '';
+    tableBody.innerHTML = '';
+
+    allEmployees.forEach(emp => {
+      const initials = getInitials(emp.first_name, emp.last_name);
+      const fullName = `${emp.first_name} ${emp.last_name}`;
+      const role = emp.role_name || emp.job_title || 'Staff';
+      const badgeClass = role === 'ADMIN' ? 'pill-alert' : 
+        (role === 'SITE / CREW SUPERVISOR' ? 'pill-ok' : 
+        (role === 'MAINTENANCE STAFF' ? 'pill-attn' : 'pill-neutral'));
+      const zones = emp.assigned_zones && emp.assigned_zones.length > 0 ? emp.assigned_zones.join(', ') : 'Unassigned';
+
+      // Render Card
+      const card = document.createElement('div');
+      card.className = 'neu-panel employee-card';
+      card.dataset.role = role;
+      card.dataset.name = fullName.toLowerCase();
+      
+      card.innerHTML = `
+        <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 14px;">
+          <div class="employee-avatar-box">${initials}</div>
+          <div>
+            <h3 style="font-size: 16px;">${escapeHtml(fullName)}</h3>
+            <span class="pill-badge ${badgeClass}" style="font-size: 10px;">${escapeHtml(role)}</span>
+          </div>
+        </div>
+        <div style="font-size: 12.5px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 6px;">
+          <div>📍 <strong>Sites:</strong> ${escapeHtml(zones)}</div>
+          <div>🟢 <strong>Status:</strong> ${escapeHtml(emp.status || 'ACTIVE')}</div>
+          <div>📋 <strong>Tasks:</strong> ${emp.task_count || 0} Assigned</div>
+          <div>⏱️ <strong>Joined:</strong> ${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : '—'}</div>
+        </div>
+      `;
+      cardContainer.appendChild(card);
+
+      // Render Table Row
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--status-neutral-bg)';
+      tr.className = 'employee-table-row';
+      tr.dataset.role = role;
+      tr.dataset.name = fullName.toLowerCase();
+
+      tr.innerHTML = `
+        <td style="padding: 14px 18px;"><strong>${escapeHtml(fullName)}</strong></td>
+        <td style="padding: 14px 18px;"><span class="pill-badge ${badgeClass}">${escapeHtml(role)}</span></td>
+        <td style="padding: 14px 18px;">${escapeHtml(zones)}</td>
+        <td style="padding: 14px 18px;">${escapeHtml(emp.status || 'ACTIVE')}</td>
+        <td style="padding: 14px 18px;">${emp.task_count || 0}</td>
+        <td style="padding: 14px 18px;">${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : '—'}</td>
+      `;
+      tableBody.appendChild(tr);
+    });
+  }
+
+  async function loadEmployees() {
+    try {
+      const res = await fetch('/api/v1/employees');
+      if (res.ok) {
+        allEmployees = await res.json();
+        
+        // Populate Role Filter dropdown based on actual data
+        const roles = [...new Set(allEmployees.map(e => e.role_name || e.job_title))].filter(Boolean);
+        const roleSelect = document.getElementById('roleFilterSelect');
+        roleSelect.innerHTML = '<option value="all">All Roles</option>';
+        roles.forEach(role => {
+          roleSelect.innerHTML += `<option value="${role}">${role}</option>`;
+        });
+
+        renderEmployees();
+      }
+    } catch(e) {
+      console.error(e);
+      document.getElementById('cardViewContainer').innerHTML = '<div class="empty-state" style="grid-column: 1 / -1; color: var(--rose-crimson);">Failed to load employees</div>';
+    }
+  }
+
+  async function openAddEmployeeModal() {
+    document.getElementById('addEmployeeModal').classList.add('open');
+    const zoneSelect = document.getElementById('newZoneId');
+    try {
+      const res = await fetch('/api/v1/zones');
+      if (res.ok) {
+        const zones = await res.json();
+        zoneSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
+          zones.map(z => `<option value="${z.id}">${z.name}</option>`).join('');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function closeAddEmployeeModal() {
+    document.getElementById('addEmployeeModal').classList.remove('open');
+  }
+
+  async function handleAddEmployeeSubmit(e) {
+    e.preventDefault();
+    const first_name = document.getElementById('newFirstName').value.trim();
+    const last_name = document.getElementById('newLastName').value.trim();
+    const job_title = document.getElementById('newJobTitle').value.trim();
+    const role_name = document.getElementById('newRoleName').value;
+    const zone_id = document.getElementById('newZoneId').value ? Number(document.getElementById('newZoneId').value) : null;
+    const email = document.getElementById('newEmail').value.trim() || undefined;
+    const password = document.getElementById('newPassword').value || undefined;
+
+    const payload = {
+      first_name,
+      last_name,
+      job_title: job_title || role_name,
+      role_name,
+      zone_ids: zone_id ? [zone_id] : [],
+      email,
+      password
+    };
+
+    try {
+      const res = await fetch('/api/v1/employees', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        window.showToast?.('Employee successfully registered', 'success');
+        closeAddEmployeeModal();
+        await loadEmployees();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to add employee', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Network error adding employee', 'error');
+    }
+  }
+
+  function filterEmployees() {
+    const q = (document.getElementById('employeeSearchInput')?.value || '').toLowerCase();
+    const roleVal = document.getElementById('roleFilterSelect')?.value || 'all';
+    
+    // Filter Cards
+    document.querySelectorAll('.employee-card').forEach(card => {
+      const text = card.textContent.toLowerCase();
+      const role = card.getAttribute('data-role');
+      const matchesSearch = !q || text.includes(q);
+      const matchesRole = (roleVal === 'all' || role === roleVal);
+      card.style.display = (matchesSearch && matchesRole) ? '' : 'none';
+    });
+
+    // Filter Table Rows
+    document.querySelectorAll('.employee-table-row').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const role = row.getAttribute('data-role');
+      const matchesSearch = !q || text.includes(q);
+      const matchesRole = (roleVal === 'all' || role === roleVal);
+      row.style.display = (matchesSearch && matchesRole) ? '' : 'none';
+    });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>'"]/g, 
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+  }
+
+  window.addEventListener('shell-ready', loadEmployees);
+</script>
+<script src="../js/shell.js"></script>
+</body>
+</html>
