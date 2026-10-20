@@ -15,9 +15,33 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cookieParser());
 
-// Security middleware
+// HTTPS enforcement for production environments
+if (process.env.NODE_ENV === 'production') {
+    app.enable('trust proxy');
+    app.use((req, res, next) => {
+        if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+            return next();
+        }
+        res.redirect(301, `https://${req.headers.host}${req.url}`);
+    });
+}
+
+// Security middleware: Enhanced Helmet configuration with Content Security Policy
 app.use(helmet({
-    contentSecurityPolicy: false // Disable CSP for MVP since we use inline scripts
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "blob:"],
+            connectSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            frameAncestors: ["'self'"]
+        }
+    },
+    crossOriginEmbedderPolicy: false
 }));
 app.use(cors({
     origin: process.env.NODE_ENV === 'production' ? 'https://myasset.com' : 'http://localhost:3000',
@@ -36,6 +60,11 @@ app.use(express.static(path.join(__dirname, '../client')));
 // Basic route to verify server is running
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// OpenAPI 3.0 specification contract
+app.get('/api/docs', (req, res) => {
+    res.sendFile(path.join(__dirname, '../docs/openapi.json'));
 });
 
 // Setup specific routes
@@ -84,7 +113,11 @@ app.use((req, res) => {
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error('GLOBAL ERROR:', err);
-    res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    const isDev = process.env.NODE_ENV !== 'production';
+    res.status(err.status || 500).json({
+        error: 'Internal Server Error',
+        ...(isDev ? { details: err.message } : {})
+    });
 });
 
 app.listen(PORT, () => {

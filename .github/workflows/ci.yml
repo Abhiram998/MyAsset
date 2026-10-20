@@ -1,0 +1,50 @@
+name: MyAsset CI / Security & Integration Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  audit-and-test:
+    name: Security Scan, Syntax & Integration Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 18.x, 20.x ]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Syntax and Architecture Validation
+        run: |
+          node -c server/server.js
+          node -c server/db/database.js
+          node -c tests/api.test.js
+
+      - name: Production Dependency Security Audit
+        run: npm audit --omit=dev
+
+      - name: Prepare Test Environment
+        run: |
+          cp .env.example .env
+
+      - name: Start Application Server
+        run: |
+          npm start &
+          npx wait-on http://localhost:3000/api/health --timeout 15000
+
+      - name: Execute End-to-End Test Suite
+        run: npm test

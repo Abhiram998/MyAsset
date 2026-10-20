@@ -55,18 +55,12 @@ class AlertController {
     resolveAlert(req, res) {
         try {
             const { id } = req.params;
-            const db = connect();
             
             // Scope check: Field workers can't resolve alerts
             if (req.user.role_name === 'FIELD WORKER') return res.status(403).json({ error: 'Unauthorized to resolve alerts' });
 
-            const result = db.prepare(`
-                UPDATE alerts 
-                SET is_resolved = 1, resolved_at = CURRENT_TIMESTAMP, resolved_by_id = ?
-                WHERE id = ? AND organization_id = ?
-            `).run(req.user.id, id, req.user.organization_id);
-
-            if (result.changes === 0) return res.status(404).json({ error: 'Alert not found or already resolved' });
+            const success = alertRepository.resolveAlert(id, req.user.id, req.user.organization_id);
+            if (!success) return res.status(404).json({ error: 'Alert not found or already resolved' });
 
             const activityService = require('../services/activity.service');
             activityService.logActivity(req.user, 'RESOLVED_ALERT', null, null, null, `Resolved alert ID ${id}`);

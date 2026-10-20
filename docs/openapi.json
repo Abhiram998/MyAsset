@@ -1,0 +1,252 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "MyAsset Enterprise API",
+    "version": "1.0.0",
+    "description": "Production REST API contract for the MyAsset intelligent equipment and field dispatch management platform."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Primary API v1 Base Path"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "token",
+        "description": "JWT authentication token passed via HttpOnly cookie."
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "details": { "type": "string" }
+        },
+        "required": ["error"]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["ADMIN", "OPERATIONS MANAGER", "SITE / CREW SUPERVISOR", "MAINTENANCE STAFF", "FIELD WORKER"] },
+          "organization_id": { "type": "integer" },
+          "employee_id": { "type": "integer", "nullable": true },
+          "first_name": { "type": "string" },
+          "last_name": { "type": "string" }
+        }
+      },
+      "Asset": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "tag_id": { "type": "string" },
+          "asset_type_id": { "type": "integer" },
+          "type_name": { "type": "string" },
+          "status": { "type": "string", "enum": ["AVAILABLE", "ASSIGNED", "IN_MAINTENANCE", "ARCHIVED", "MISSING"] },
+          "condition": { "type": "string", "enum": ["GOOD", "FAIR", "POOR", "CRITICAL"] },
+          "zone_id": { "type": "integer", "nullable": true },
+          "zone_name": { "type": "string", "nullable": true },
+          "location_name": { "type": "string", "nullable": true },
+          "assigned_to_name": { "type": "string", "nullable": true }
+        }
+      },
+      "Assignment": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "asset_id": { "type": "integer" },
+          "asset_name": { "type": "string" },
+          "employee_id": { "type": "integer" },
+          "employee_name": { "type": "string" },
+          "assigned_at": { "type": "string", "format": "date-time" },
+          "expected_return": { "type": "string", "format": "date-time", "nullable": true },
+          "returned_at": { "type": "string", "format": "date-time", "nullable": true },
+          "calculated_status": { "type": "string", "enum": ["ACTIVE", "RETURNED", "OVERDUE"] }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "status": { "type": "string", "enum": ["ASSIGNED", "IN PROGRESS", "VERIFICATION", "COMPLETED"] },
+          "asset_id": { "type": "integer", "nullable": true },
+          "assignee_id": { "type": "integer", "nullable": true },
+          "zone_id": { "type": "integer", "nullable": true },
+          "due_date": { "type": "string", "nullable": true }
+        }
+      }
+    }
+  },
+  "security": [
+    { "cookieAuth": [] }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate user session",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Authenticated successfully, cookie set" },
+          "401": { "description": "Invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "429": { "description": "Too many requests" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Invalidate user session",
+        "responses": {
+          "200": { "description": "Session invalidated successfully" }
+        }
+      }
+    },
+    "/auth/session": {
+      "get": {
+        "summary": "Retrieve currently authenticated user identity and context",
+        "responses": {
+          "200": { "description": "User profile", "content": { "application/json": { "schema": { "type": "object", "properties": { "user": { "$ref": "#/components/schemas/User" } } } } } },
+          "401": { "description": "Not authenticated" }
+        }
+      }
+    },
+    "/assets": {
+      "get": {
+        "summary": "List assets scoped by caller authorization and optional filters",
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "type_id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "zone_id", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Array of assets", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Asset" } } } } }
+        }
+      },
+      "post": {
+        "summary": "Register a new asset",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "asset_type_id": { "type": "integer" },
+                  "tag_id": { "type": "string" },
+                  "zone_id": { "type": "integer" },
+                  "condition": { "type": "string" }
+                },
+                "required": ["name", "asset_type_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Asset created" },
+          "403": { "description": "Forbidden for role" }
+        }
+      }
+    },
+    "/assignments/checkout": {
+      "post": {
+        "summary": "Perform atomic asset checkout with duplicate conflict detection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "asset_id": { "type": "integer" },
+                  "employee_id": { "type": "integer" },
+                  "expected_return": { "type": "string", "format": "date-time" }
+                },
+                "required": ["asset_id", "employee_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Asset checked out successfully" },
+          "409": { "description": "Asset already assigned or unavailable" }
+        }
+      }
+    },
+    "/assignments/{id}/return": {
+      "post": {
+        "summary": "Return checked out equipment back to available inventory",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Asset returned and status updated" }
+        }
+      }
+    },
+    "/tasks/{id}/status": {
+      "patch": {
+        "summary": "Advance 4-stage task lifecycle (ASSIGNED -> IN PROGRESS -> VERIFICATION -> COMPLETED)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "status": { "type": "string" } },
+                "required": ["status"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status updated" },
+          "409": { "description": "Illegal lifecycle transition" }
+        }
+      }
+    },
+    "/alerts/{id}/resolve": {
+      "patch": {
+        "summary": "Resolve an active security/operational alert",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Alert resolved" },
+          "403": { "description": "Forbidden for role" }
+        }
+      }
+    },
+    "/reports/asset-register": {
+      "get": {
+        "summary": "Generate asset register report or dynamic CSV export",
+        "parameters": [{ "name": "format", "in": "query", "schema": { "type": "string", "enum": ["json", "csv"] } }],
+        "responses": {
+          "200": { "description": "JSON report or CSV file stream" },
+          "403": { "description": "Forbidden for Field Worker" }
+        }
+      }
+    }
+  }
+}

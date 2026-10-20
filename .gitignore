@@ -30,6 +30,8 @@ server/db/*.sqlite-shm
 *.bak
 *.dump
 *.sql.bak
+server/db/backups/
+backups/
 
 # Logs
 logs/

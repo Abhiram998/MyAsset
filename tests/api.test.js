@@ -345,6 +345,43 @@ async function runTests() {
     assert.strictEqual(opsUserRes.status, 403, "Ops Manager cannot modify user roles (Admin only)");
     console.log("✅ Privilege escalation prevention and RBAC boundaries verified");
 
+    console.log("\n--- 17. Input Validation & Error Handling ---");
+    // Missing required fields on asset creation must return 400
+    let invalidAssetRes = await fetch(`${API_URL}/assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ asset_type_id: typeEq.id }) // missing name
+    });
+    assert.strictEqual(invalidAssetRes.status, 400, "Should reject asset without name");
+
+    // Missing title on task creation must return 400
+    let invalidTaskRes = await fetch(`${API_URL}/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ asset_id: createdAssetId }) // missing title
+    });
+    assert.strictEqual(invalidTaskRes.status, 400, "Should reject task without title");
+
+    // Invalid session token cookie must be rejected with 401
+    let fakeCookieRes = await fetch(`${API_URL}/assets`, {
+        headers: { 'Cookie': 'token=invalid.tampered.token' }
+    });
+    assert.strictEqual(fakeCookieRes.status, 401, "Should reject invalid/tampered token");
+    console.log("✅ Input validation and invalid token rejection verified");
+
+    console.log("\n--- 18. OpenAPI Contract & Online Backup Integrity ---");
+    let docsRes = await fetch('http://localhost:3000/api/docs');
+    assert.strictEqual(docsRes.status, 200, "Should serve OpenAPI documentation");
+    let openapiData = await docsRes.json();
+    assert.strictEqual(openapiData.openapi, "3.0.3", "Contract must be OpenAPI 3.0.3");
+
+    // Test database online backup utility
+    const { createBackup, verifyBackup } = require('../server/db/backup');
+    const backupFile = await createBackup();
+    const isIntegrityOk = verifyBackup(backupFile);
+    assert.strictEqual(isIntegrityOk, true, "Backup file integrity check must pass");
+    console.log("✅ OpenAPI contract and database online backup integrity verified");
+
     console.log("\nALL TESTS PASSED SUCCESSFULLY! 🚀");
 }
 

@@ -68,6 +68,16 @@ class AlertRepository {
             highSeverity
         };
     }
+
+    resolveAlert(id, userId, orgId) {
+        const db = connect();
+        const result = db.prepare(`
+            UPDATE alerts 
+            SET is_resolved = 1, resolved_at = CURRENT_TIMESTAMP, resolved_by_id = ?
+            WHERE id = ? AND organization_id = ?
+        `).run(userId, id, orgId);
+        return result.changes > 0;
+    }
 }
 
 module.exports = new AlertRepository();
