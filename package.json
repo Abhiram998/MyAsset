@@ -9,7 +9,10 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
-    "test": "node tests/api.test.js"
+    "test": "node tests/api.test.js",
+    "db:backup": "node server/db/backup.js",
+    "db:export:pg": "node server/db/export_sqlite_to_pg.js",
+    "db:migrate:pg": "node -e \"require('./server/db/postgres').runPgMigrations()\""
   },
   "keywords": [],
   "author": "",
@@ -26,6 +29,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1"
   }
 }

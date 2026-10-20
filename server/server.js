@@ -43,8 +43,9 @@ app.use(helmet({
     },
     crossOriginEmbedderPolicy: false
 }));
+const allowedOrigin = process.env.ALLOWED_ORIGIN || (process.env.NODE_ENV === 'production' ? true : 'http://localhost:3000');
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? 'https://myasset.com' : 'http://localhost:3000',
+    origin: allowedOrigin,
     credentials: true
 }));
 
@@ -120,6 +121,10 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;

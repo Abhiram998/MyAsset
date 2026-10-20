@@ -110,7 +110,22 @@ npm test
 
 ---
 
+## ☁️ Vercel Cloud Deployment
+
+MyAsset is configured for zero-configuration Git deployment on Vercel:
+- **Serverless Entrypoint:** `api/index.js` wraps the Express backend.
+- **Static Edge Delivery:** `vercel.json` configures edge caching for `/pages/*`, `/css/*`, and `/js/*`.
+- **Database Persistence:** Managed PostgreSQL (Neon / Vercel Postgres / Supabase) via `POSTGRES_URL`.
+- **Migration & Export Tools:**
+  - `npm run db:export:pg`: Safely extracts SQLite records into a PostgreSQL SQL import script.
+  - `npm run db:migrate:pg`: Applies `001_postgres_schema.sql` to your remote PostgreSQL instance.
+
+For the step-by-step setup guide and environment variable reference, see [docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md).
+
+---
+
 ## 📜 Documentation Reference
+- `docs/VERCEL_DEPLOYMENT.md` — Complete Vercel deployment, PostgreSQL configuration, and security guide.
 - `docs/MyAsset_UIUX_Architecture_Spec.md` — Complete UI/UX specification, role definitions, and sitemap.
 - `chat_transcript.md` — Historical project record and engineering milestones.
 - `uploads/` — Design blueprints and reference documentation.

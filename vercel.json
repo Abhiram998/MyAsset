@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/",
+      "destination": "/client/pages/overview.html"
+    },
+    {
+      "source": "/pages/(.*)",
+      "destination": "/client/pages/$1"
+    },
+    {
+      "source": "/css/(.*)",
+      "destination": "/client/css/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/client/js/$1"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/client/assets/$1"
+    }
+  ]
+}

@@ -30,6 +30,7 @@ server/db/*.sqlite-shm
 *.bak
 *.dump
 *.sql.bak
+server/db/export_to_postgres.sql
 server/db/backups/
 backups/
 
@@ -53,3 +54,6 @@ desktop.ini
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Vercel deployment artifacts
+.vercel/
