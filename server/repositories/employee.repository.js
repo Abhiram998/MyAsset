@@ -116,8 +116,9 @@ class EmployeeRepository {
 
             if (zone_ids && Array.isArray(zone_ids)) {
                 const insertZone = db.prepare(`
-                    INSERT OR IGNORE INTO employee_zones (employee_id, zone_id)
+                    INSERT INTO employee_zones (employee_id, zone_id)
                     VALUES (?, ?)
+                    ON CONFLICT DO NOTHING
                 `);
                 for (const zid of zone_ids) {
                     insertZone.run(employeeId, Number(zid));

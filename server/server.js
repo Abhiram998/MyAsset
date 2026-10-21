@@ -8,6 +8,18 @@ const rateLimit = require('express-rate-limit');
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
+const { getDatabaseMode } = require('./db/database');
+// Enforce fail-fast check: fail clearly at startup in production if PostgreSQL config is missing
+try {
+    const activeDbMode = getDatabaseMode();
+    console.log(`[MyAsset] Database mode initialized: ${activeDbMode.toUpperCase()}`);
+} catch (dbErr) {
+    console.error(`[MyAsset] FATAL STARTUP CONFIGURATION ERROR: ${dbErr.message}`);
+    if (process.env.NODE_ENV === 'production') {
+        throw dbErr;
+    }
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 

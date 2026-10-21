@@ -42,8 +42,13 @@ const TABLES_IN_ORDER = [
     'settings'
 ];
 
-function sanitizeValue(val) {
+const BOOLEAN_COLUMNS = new Set(['is_required', 'is_completed', 'is_resolved']);
+
+function sanitizeValue(val, colName) {
     if (val === null || val === undefined) return 'NULL';
+    if (colName && BOOLEAN_COLUMNS.has(colName)) {
+        return (val === 1 || val === true || val === '1') ? 'TRUE' : 'FALSE';
+    }
     if (typeof val === 'number') return val.toString();
     if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
     // String escaping for Postgres SQL literals
@@ -84,7 +89,7 @@ function exportData(sqlitePath = DEFAULT_SQLITE_PATH, outputPath = DEFAULT_OUTPU
         const colList = columns.map(c => `"${c}"`).join(', ');
 
         for (const row of rows) {
-            const values = columns.map(col => sanitizeValue(row[col])).join(', ');
+            const values = columns.map(col => sanitizeValue(row[col], col)).join(', ');
             sqlDump += `INSERT INTO ${table} (${colList}) VALUES (${values}) ON CONFLICT DO NOTHING;\n`;
         }
 

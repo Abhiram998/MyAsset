@@ -47,7 +47,7 @@ class AlertRepository {
 
         const result = db.prepare(`
             INSERT INTO alerts (organization_id, type, severity, message, related_entity_id, is_resolved)
-            VALUES (?, ?, ?, ?, ?, 0)
+            VALUES (?, ?, ?, ?, ?, FALSE)
         `).run(organization_id, type, severity || 'MEDIUM', message, related_entity_id || null);
         return { id: result.lastInsertRowid, isDuplicate: false };
     }
@@ -57,9 +57,9 @@ class AlertRepository {
         const orgId = user.organization_id;
 
         const total = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ?`).get(orgId).count;
-        const unresolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = 0`).get(orgId).count;
-        const resolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = 1`).get(orgId).count;
-        const highSeverity = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = 0 AND severity = 'HIGH'`).get(orgId).count;
+        const unresolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = FALSE`).get(orgId).count;
+        const resolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = TRUE`).get(orgId).count;
+        const highSeverity = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = FALSE AND severity = 'HIGH'`).get(orgId).count;
 
         return {
             total,
@@ -73,7 +73,7 @@ class AlertRepository {
         const db = connect();
         const result = db.prepare(`
             UPDATE alerts 
-            SET is_resolved = 1, resolved_at = CURRENT_TIMESTAMP, resolved_by_id = ?
+            SET is_resolved = TRUE, resolved_at = CURRENT_TIMESTAMP, resolved_by_id = ?
             WHERE id = ? AND organization_id = ?
         `).run(userId, id, orgId);
         return result.changes > 0;

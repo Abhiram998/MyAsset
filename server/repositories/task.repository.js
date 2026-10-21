@@ -9,7 +9,7 @@ class TaskRepository {
                    e.first_name || ' ' || e.last_name as assigned_name,
                    z.name as zone_name,
                    (SELECT COUNT(*) FROM task_checklists WHERE task_id = t.id) as checklist_total,
-                   (SELECT COUNT(*) FROM task_checklists WHERE task_id = t.id AND is_completed = 1) as checklist_completed
+                   (SELECT COUNT(*) FROM task_checklists WHERE task_id = t.id AND is_completed = TRUE) as checklist_completed
             FROM tasks t
             LEFT JOIN assets a ON t.asset_id = a.id
             LEFT JOIN employees e ON t.assignee_id = e.id
@@ -75,7 +75,7 @@ class TaskRepository {
             if (checklists && Array.isArray(checklists)) {
                 const insertItem = db.prepare(`
                     INSERT INTO task_checklists (task_id, item_text, is_completed)
-                    VALUES (?, ?, 0)
+                    VALUES (?, ?, FALSE)
                 `);
                 for (const item of checklists) {
                     if (item && typeof item === 'string' && item.trim()) {
@@ -142,7 +142,7 @@ class TaskRepository {
         const db = connect();
         const result = db.prepare(`
             INSERT INTO task_checklists (task_id, item_text, is_completed)
-            VALUES (?, ?, 0)
+            VALUES (?, ?, FALSE)
         `).run(taskId, itemText);
         return result.lastInsertRowid;
     }
@@ -150,8 +150,8 @@ class TaskRepository {
     toggleChecklist(checklistId, isCompleted) {
         const db = connect();
         const query = isCompleted
-            ? `UPDATE task_checklists SET is_completed = 1, completed_at = CURRENT_TIMESTAMP WHERE id = ?`
-            : `UPDATE task_checklists SET is_completed = 0, completed_at = NULL WHERE id = ?`;
+            ? `UPDATE task_checklists SET is_completed = TRUE, completed_at = CURRENT_TIMESTAMP WHERE id = ?`
+            : `UPDATE task_checklists SET is_completed = FALSE, completed_at = NULL WHERE id = ?`;
         db.prepare(query).run(checklistId);
     }
 

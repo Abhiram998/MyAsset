@@ -10,6 +10,7 @@
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
     "test": "node tests/api.test.js",
+    "test:pg": "node tests/postgres.test.js",
     "db:backup": "node server/db/backup.js",
     "db:export:pg": "node server/db/export_sqlite_to_pg.js",
     "db:migrate:pg": "node -e \"require('./server/db/postgres').runPgMigrations()\""

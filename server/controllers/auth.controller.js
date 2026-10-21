@@ -35,11 +35,11 @@ class AuthController {
         res.json({ message: 'Logged out successfully' });
     }
 
-    getSession(req, res) {
+    async getSession(req, res) {
         if (!req.user) {
             return res.status(401).json({ error: 'Not authenticated' });
         }
-        const freshUser = userRepository.findById(req.user.id);
+        const freshUser = await userRepository.findById(req.user.id);
         if (!freshUser) {
             return res.status(401).json({ error: 'User no longer exists' });
         }

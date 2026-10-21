@@ -102,7 +102,7 @@ class ReportRepository {
         `).get(orgId).count;
         const inMaintenance = db.prepare(`SELECT COUNT(*) as count FROM assets WHERE organization_id = ? AND status = 'IN_MAINTENANCE'`).get(orgId).count;
         const activeTasks = db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status != 'COMPLETED' AND organization_id = ?").get(orgId).count;
-        const alerts = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE is_resolved = 0 AND organization_id = ?').get(orgId).count;
+        const alerts = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE is_resolved = FALSE AND organization_id = ?').get(orgId).count;
 
         const utilizationRate = totalAssets > 0 ? ((activeAssignments / totalAssets) * 100).toFixed(1) : '0.0';
 

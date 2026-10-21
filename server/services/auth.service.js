@@ -7,7 +7,7 @@ const EXPIRES_IN = '8h';
 
 class AuthService {
     async login(email, password) {
-        const user = userRepository.findByEmail(email);
+        const user = await userRepository.findByEmail(email);
         
         if (!user) {
             throw new Error('Invalid email or password');
