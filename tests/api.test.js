@@ -95,6 +95,64 @@ async function runTests() {
     const field2Cookie = await login('field2@test.com');
     console.log("✅ All 5 roles authenticated");
 
+    console.log("\\n--- 1.1 Company Registration & Workspace Provisioning ---");
+    // Missing fields
+    let badReg = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName: '', email: 'test@example.com', password: 'password123', firstName: 'A', lastName: 'B' })
+    });
+    assert.strictEqual(badReg.status, 400, "Should reject registration without company name");
+
+    // Short password
+    badReg = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName: 'New Corp', email: 'test@example.com', password: '123', firstName: 'A', lastName: 'B' })
+    });
+    assert.strictEqual(badReg.status, 400, "Should reject password shorter than 6 chars");
+
+    // Existing email conflict
+    badReg = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName: 'New Corp', email: 'admin@test.com', password: 'password123', firstName: 'A', lastName: 'B' })
+    });
+    assert.strictEqual(badReg.status, 409, "Should reject duplicate email registration");
+
+    // Successful company registration
+    const uniqueEmail = `admin_reg_${Date.now()}@newcorp.io`;
+    const regRes = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            companyName: 'Timberland Landscaping Pro',
+            firstName: 'Sarah',
+            lastName: 'Connor',
+            email: uniqueEmail,
+            password: 'SecurePassword!123'
+        })
+    });
+    assert.strictEqual(regRes.status, 201, "Should successfully register new company");
+    const regData = await regRes.json();
+    assert.strictEqual(regData.user.role, 'ADMIN', "Registrant should have ADMIN role");
+    assert.strictEqual(regData.user.company_name, 'Timberland Landscaping Pro', "Company name should match");
+    const newOrgCookie = regRes.headers.get('set-cookie').split(';')[0];
+    assert.ok(newOrgCookie.includes('token='), "Session token cookie should be set");
+
+    // Verify session
+    const sessRes = await fetch(`${API_URL}/auth/session`, { headers: { 'Cookie': newOrgCookie } });
+    assert.strictEqual(sessRes.status, 200, "Session should authenticate with registration cookie");
+    const sessData = await sessRes.json();
+    assert.strictEqual(sessData.user.email, uniqueEmail, "Session user should match registered admin");
+    assert.strictEqual(sessData.user.organization_id, regData.user.organization_id, "Session organization should match");
+
+    // Verify tenant isolation (new company has 0 assets initially)
+    const newOrgAssetsRes = await fetch(`${API_URL}/assets`, { headers: { 'Cookie': newOrgCookie } });
+    const newOrgAssets = await newOrgAssetsRes.json();
+    assert.strictEqual(newOrgAssets.length, 0, "New organization should have zero assets initially (tenant isolation)");
+    console.log("✅ Company registration & workspace provisioning verified");
+
     console.log("\\n--- 2. Field Worker Scope (Positive & Negative) ---");
     let res = await fetch(`${API_URL}/assets`, { headers: { 'Cookie': fieldCookie } });
     let data = await res.json();

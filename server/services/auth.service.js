@@ -44,6 +44,48 @@ class AuthService {
             }
         };
     }
+
+    async register({ companyName, firstName, lastName, email, password }) {
+        const existing = await userRepository.findByEmail(email);
+        if (existing) {
+            throw new Error('An account with this email already exists');
+        }
+
+        const password_hash = await bcrypt.hash(password, 10);
+        const { organizationId, userId, employeeId } = await userRepository.createOrganizationWithAdmin({
+            companyName,
+            firstName,
+            lastName,
+            email,
+            password_hash
+        });
+
+        const tokenPayload = {
+            id: userId,
+            organization_id: organizationId,
+            role_name: 'ADMIN',
+            employee_id: employeeId,
+            first_name: firstName,
+            last_name: lastName
+        };
+
+        const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: EXPIRES_IN });
+
+        return {
+            token,
+            user: {
+                id: userId,
+                email,
+                role: 'ADMIN',
+                role_name: 'ADMIN',
+                organization_id: organizationId,
+                employee_id: employeeId,
+                first_name: firstName,
+                last_name: lastName,
+                company_name: companyName
+            }
+        };
+    }
 }
 
 module.exports = new AuthService();

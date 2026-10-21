@@ -63,6 +63,54 @@ class UserRepository {
         const db = connect();
         return db.prepare('SELECT id, name, description FROM roles ORDER BY id ASC').all();
     }
+
+    async createOrganizationWithAdmin({ companyName, firstName, lastName, email, password_hash }) {
+        const db = connect();
+        const execute = async () => {
+            // 1. Insert organization
+            const orgResult = await db.prepare('INSERT INTO organizations (name) VALUES (?)').run(companyName);
+            const organizationId = orgResult.lastInsertRowid;
+
+            // 2. Insert company settings
+            await db.prepare(`
+                INSERT INTO settings (organization_id, company_name)
+                VALUES (?, ?)
+            `).run(organizationId, companyName);
+
+            // 3. Find ADMIN role
+            const adminRole = await db.prepare("SELECT id FROM roles WHERE name = 'ADMIN'").get();
+            const roleId = adminRole ? adminRole.id : 1;
+
+            // 4. Insert user
+            const userResult = await db.prepare(`
+                INSERT INTO users (organization_id, email, password_hash, role_id)
+                VALUES (?, ?, ?, ?)
+            `).run(organizationId, email, password_hash, roleId);
+            const userId = userResult.lastInsertRowid;
+
+            // 5. Insert employee profile for primary administrator
+            const empResult = await db.prepare(`
+                INSERT INTO employees (user_id, organization_id, first_name, last_name, status)
+                VALUES (?, ?, ?, ?, 'ACTIVE')
+            `).run(userId, organizationId, firstName, lastName);
+            const employeeId = empResult.lastInsertRowid;
+
+            // 6. Log system activity
+            await db.prepare(`
+                INSERT INTO activity (organization_id, employee_id, action, details)
+                VALUES (?, ?, 'REGISTERED_ORGANIZATION', ?)
+            `).run(organizationId, employeeId, `Registered company "${companyName}" with primary admin ${email}`);
+
+            return {
+                organizationId,
+                userId,
+                employeeId
+            };
+        };
+
+        const tx = db.transaction(execute);
+        return await tx();
+    }
 }
 
 module.exports = new UserRepository();

@@ -26,6 +26,52 @@ class AuthController {
         }
     }
 
+    async register(req, res) {
+        try {
+            const { companyName, firstName, lastName, email, password } = req.body;
+
+            if (!companyName || !companyName.trim()) {
+                return res.status(400).json({ error: 'Company name is required' });
+            }
+            if (!firstName || !firstName.trim() || !lastName || !lastName.trim()) {
+                return res.status(400).json({ error: 'First name and last name are required' });
+            }
+            if (!email || !email.trim()) {
+                return res.status(400).json({ error: 'Work email is required' });
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email.trim())) {
+                return res.status(400).json({ error: 'Please provide a valid work email address' });
+            }
+            if (!password || password.length < 6) {
+                return res.status(400).json({ error: 'Password must be at least 6 characters' });
+            }
+
+            const { token, user } = await authService.register({
+                companyName: companyName.trim(),
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
+                email: email.trim().toLowerCase(),
+                password
+            });
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 8 * 60 * 60 * 1000 // 8 hours
+            });
+
+            res.status(201).json({ message: 'Company registered successfully', user });
+        } catch (error) {
+            console.error('Registration error:', error);
+            if (error.message.includes('already exists') || error.code === '23505' || error.message.includes('UNIQUE constraint failed')) {
+                return res.status(409).json({ error: 'An account with this email already exists' });
+            }
+            res.status(400).json({ error: error.message || 'Registration failed' });
+        }
+    }
+
     logout(req, res) {
         res.clearCookie('token', {
             httpOnly: true,

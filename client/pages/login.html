@@ -378,47 +378,152 @@
     <div class="form-panel">
       <div class="form-card">
 
-        <div class="tabs">
-          <div class="tab">Register company</div>
-          <div class="tab active">Sign in</div>
+        <div class="tabs" role="tablist">
+          <div class="tab" id="tabRegister" role="tab" aria-selected="false">Register company</div>
+          <div class="tab active" id="tabLogin" role="tab" aria-selected="true">Sign in</div>
         </div>
 
-        <h2>Sign in to your workspace</h2>
-        <div class="sub">Enter your credentials to access MyAsset.</div>
+        <h2 id="formTitle">Sign in to your workspace</h2>
+        <div class="sub" id="formSub">Enter your credentials to access MyAsset.</div>
 
         <form id="loginForm">
           <div class="field">
-            <label>Email</label>
-            <input type="email" id="email" placeholder="you@company.com" required>
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@company.com" autocomplete="email" required>
           </div>
 
           <div class="field">
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Enter your password" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required>
           </div>
 
-          <div id="errorMsg" style="color: var(--danger, #A83D2C); font-size: 13.5px; margin-bottom: 15px; display: none;"></div>
+          <div id="errorMsg" style="color: var(--danger, #A83D2C); font-size: 13.5px; margin-bottom: 15px; display: none;" role="alert"></div>
 
           <button type="submit" class="submit-btn" id="loginBtn">Sign in</button>
         </form>
 
+        <form id="registerForm" style="display: none;">
+          <div class="field">
+            <label for="regCompanyName">Company / Organization Name</label>
+            <input type="text" id="regCompanyName" placeholder="e.g. Greenfield Landscaping" autocomplete="organization" required>
+          </div>
+
+          <div class="two-col">
+            <div class="field">
+              <label for="regFirstName">First Name</label>
+              <input type="text" id="regFirstName" placeholder="Alex" autocomplete="given-name" required>
+            </div>
+            <div class="field">
+              <label for="regLastName">Last Name</label>
+              <input type="text" id="regLastName" placeholder="Rivera" autocomplete="family-name" required>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="regEmail">Work Email</label>
+            <input type="email" id="regEmail" placeholder="admin@company.com" autocomplete="email" required>
+          </div>
+
+          <div class="field">
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" placeholder="Minimum 6 characters" minlength="6" autocomplete="new-password" required>
+          </div>
+
+          <div id="regErrorMsg" style="color: var(--danger, #A83D2C); font-size: 13.5px; margin-bottom: 15px; display: none;" role="alert"></div>
+
+          <button type="submit" class="submit-btn" id="registerBtn">Create workspace</button>
+        </form>
+
         <div class="divider">or</div>
 
-        <div class="foot-note">Don't have a workspace? <a href="#">Register your company</a>.</div>
+        <div class="foot-note" id="footNote">
+          <span id="footNotePrompt">Don't have a workspace?</span>
+          <a href="#register" id="footNoteLink">Register your company</a>.
+        </div>
       </div>
     </div>
 
   </div>
 
   <script>
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    const tabRegister = document.getElementById('tabRegister');
+    const tabLogin = document.getElementById('tabLogin');
+    const formTitle = document.getElementById('formTitle');
+    const formSub = document.getElementById('formSub');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const footNotePrompt = document.getElementById('footNotePrompt');
+    const footNoteLink = document.getElementById('footNoteLink');
+    const errorMsg = document.getElementById('errorMsg');
+    const regErrorMsg = document.getElementById('regErrorMsg');
+
+    function setMode(mode) {
+      if (mode === 'register') {
+        tabRegister.classList.add('active');
+        tabRegister.setAttribute('aria-selected', 'true');
+        tabLogin.classList.remove('active');
+        tabLogin.setAttribute('aria-selected', 'false');
+
+        formTitle.textContent = 'Create your workspace';
+        formSub.textContent = 'Register your organization to start tracking assets.';
+
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+
+        footNotePrompt.textContent = 'Already have a workspace?';
+        footNoteLink.textContent = 'Sign in';
+        footNoteLink.setAttribute('href', '#signin');
+
+        errorMsg.style.display = 'none';
+        errorMsg.innerText = '';
+        regErrorMsg.style.display = 'none';
+        regErrorMsg.innerText = '';
+      } else {
+        tabLogin.classList.add('active');
+        tabLogin.setAttribute('aria-selected', 'true');
+        tabRegister.classList.remove('active');
+        tabRegister.setAttribute('aria-selected', 'false');
+
+        formTitle.textContent = 'Sign in to your workspace';
+        formSub.textContent = 'Enter your credentials to access MyAsset.';
+
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+
+        footNotePrompt.textContent = "Don't have a workspace?";
+        footNoteLink.textContent = 'Register your company';
+        footNoteLink.setAttribute('href', '#register');
+
+        errorMsg.style.display = 'none';
+        errorMsg.innerText = '';
+        regErrorMsg.style.display = 'none';
+        regErrorMsg.innerText = '';
+      }
+    }
+
+    tabRegister.addEventListener('click', () => setMode('register'));
+    tabLogin.addEventListener('click', () => setMode('login'));
+    footNoteLink.addEventListener('click', (e) => {
       e.preventDefault();
-      const email = document.getElementById('email').value;
+      const isRegister = tabRegister.classList.contains('active');
+      setMode(isRegister ? 'login' : 'register');
+    });
+
+    // Check query params or hash for initial tab state
+    const urlParams = new URLSearchParams(window.location.search);
+    if (window.location.hash === '#register' || urlParams.get('tab') === 'register') {
+      setMode('register');
+    }
+
+    // Login Form Handler
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const errorMsg = document.getElementById('errorMsg');
       const loginBtn = document.getElementById('loginBtn');
 
       errorMsg.style.display = 'none';
+      errorMsg.innerText = '';
       loginBtn.disabled = true;
       loginBtn.innerText = 'Signing in...';
 
@@ -445,6 +550,54 @@
       } finally {
         loginBtn.disabled = false;
         loginBtn.innerHTML = 'Sign in';
+      }
+    });
+
+    // Register Form Handler
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const companyName = document.getElementById('regCompanyName').value.trim();
+      const firstName = document.getElementById('regFirstName').value.trim();
+      const lastName = document.getElementById('regLastName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const registerBtn = document.getElementById('registerBtn');
+
+      regErrorMsg.style.display = 'none';
+      regErrorMsg.innerText = '';
+
+      if (password.length < 6) {
+        regErrorMsg.innerText = 'Password must be at least 6 characters.';
+        regErrorMsg.style.display = 'block';
+        return;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.innerText = 'Creating workspace...';
+
+      try {
+        const response = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ companyName, firstName, lastName, email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Registration failed');
+        }
+
+        // Registration successful and session cookie set -> redirect to overview
+        window.location.href = '/pages/overview.html';
+      } catch (err) {
+        regErrorMsg.innerText = err.message;
+        regErrorMsg.style.display = 'block';
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.innerHTML = 'Create workspace';
       }
     });
   </script>

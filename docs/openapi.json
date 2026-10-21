@@ -116,6 +116,36 @@
         }
       }
     },
+    "/auth/register": {
+      "post": {
+        "summary": "Register a new organization workspace and primary administrator user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "companyName": { "type": "string" },
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 }
+                },
+                "required": ["companyName", "firstName", "lastName", "email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Workspace registered successfully, session cookie set" },
+          "400": { "description": "Invalid input or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "409": { "description": "Email already registered", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "429": { "description": "Too many registration attempts" }
+        }
+      }
+    },
     "/auth/logout": {
       "post": {
         "summary": "Invalidate user session",

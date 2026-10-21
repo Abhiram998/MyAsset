@@ -15,6 +15,7 @@ const loginLimiter = rateLimit({
 });
 
 router.post('/login', loginLimiter, authController.login);
+router.post('/register', loginLimiter, authController.register);
 router.post('/logout', authController.logout);
 router.get('/session', authenticate, authController.getSession);
 
