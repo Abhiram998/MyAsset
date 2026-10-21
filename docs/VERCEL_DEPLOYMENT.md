@@ -49,6 +49,13 @@ Vercel Functions execute inside serverless sandbox environments (AWS Lambda cont
 **The Solution:**
 Production persistence uses a serverless-compatible managed PostgreSQL database (e.g., Vercel Postgres / Neon / Supabase). The repository includes complete PostgreSQL DDL migrations and data extraction scripts.
 
+### 2.1 Node.js Engine Pinning (`20.x`) & Build Compatibility
+When deploying to Vercel without a specified engine, Vercel defaults to Node.js `24.x`. In Node 24, V8 C++ API changes deprecate and remove legacy type conversion methods, causing older native modules (`better-sqlite3@9.6.0`) to fail compilation during `npm install`.
+
+To guarantee build and runtime compatibility:
+1. `package.json` specifies `"engines": { "node": "20.x" }` to pin Vercel builds and Serverless Functions to the stable Node.js 20 LTS runtime.
+2. `better-sqlite3` is upgraded to `^11.8.1`, which contains prebuilt Linux x64 binaries and updated V8 bindings, preventing any native compilation errors.
+
 ---
 
 ## 3. Required Environment Variables
