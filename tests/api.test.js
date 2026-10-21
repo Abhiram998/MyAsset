@@ -64,6 +64,16 @@ async function runTests() {
     } catch(e) { taskResult = { lastInsertRowid: 1 }; }
     const taskId = taskResult.lastInsertRowid;
 
+    let testServer = null;
+    try {
+        await fetch('http://localhost:3000/api/health', { signal: AbortSignal.timeout(500) });
+    } catch (_) {
+        const app = require('../server/server');
+        testServer = await new Promise((resolve) => {
+            const s = app.listen(3000, () => resolve(s));
+        });
+    }
+
     const API_URL = 'http://localhost:3000/api/v1';
 
     async function login(email) {
@@ -381,6 +391,9 @@ async function runTests() {
     const isIntegrityOk = verifyBackup(backupFile);
     assert.strictEqual(isIntegrityOk, true, "Backup file integrity check must pass");
     console.log("✅ OpenAPI contract and database online backup integrity verified");
+    if (testServer) {
+        testServer.close();
+    }
 
     console.log("\nALL TESTS PASSED SUCCESSFULLY! 🚀");
 }
