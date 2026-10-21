@@ -89,13 +89,29 @@ async function runPgMigrations() {
     const client = await clientPool.connect();
     try {
         await client.query('BEGIN');
-        await client.query(sql);
         await client.query(`
-            INSERT INTO migrations (name) VALUES ('001_postgres_schema.sql')
-            ON CONFLICT (name) DO NOTHING;
+            CREATE TABLE IF NOT EXISTS migrations (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                applied_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
         `);
+        const migrationCheck = await client.query('SELECT name FROM migrations WHERE name = $1', ['001_postgres_schema.sql']);
+        const userTableCheck = await client.query("SELECT to_regclass('public.users') AS tbl");
+        const usersExist = userTableCheck.rows[0] && userTableCheck.rows[0].tbl !== null;
+
+        if (migrationCheck.rows.length === 0 || !usersExist) {
+            console.log('Applying PostgreSQL migrations from:', schemaPath);
+            await client.query(sql);
+            await client.query(`
+                INSERT INTO migrations (name) VALUES ('001_postgres_schema.sql')
+                ON CONFLICT (name) DO NOTHING;
+            `);
+            console.log('✅ PostgreSQL migrations applied successfully');
+        } else {
+            console.log('✅ PostgreSQL migrations already applied and verified');
+        }
         await client.query('COMMIT');
-        console.log('✅ PostgreSQL migrations applied successfully');
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('❌ PostgreSQL migration failed:', err);

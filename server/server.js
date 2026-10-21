@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
-const { getDatabaseMode } = require('./db/database');
+const { getDatabaseMode, runMigrations } = require('./db/database');
 // Enforce fail-fast check: fail clearly at startup in production if PostgreSQL config is missing
 try {
     const activeDbMode = getDatabaseMode();
@@ -18,6 +18,24 @@ try {
     if (process.env.NODE_ENV === 'production') {
         throw dbErr;
     }
+}
+
+// Global database migration readiness tracker (safe for serverless cold-starts & dev)
+let migrationInitPromise = null;
+function ensureDatabaseReady() {
+    if (!migrationInitPromise) {
+        migrationInitPromise = (async () => {
+            const mode = getDatabaseMode();
+            console.log(`[MyAsset] Ensuring database schema migrations are applied for mode: ${mode.toUpperCase()}...`);
+            await runMigrations();
+            console.log(`[MyAsset] Database schema is ready and verified for mode: ${mode.toUpperCase()}`);
+        })().catch(err => {
+            console.error(`[MyAsset] Error initializing database schema: ${err.message}`);
+            migrationInitPromise = null; // allow retry on next request
+            throw err;
+        });
+    }
+    return migrationInitPromise;
 }
 
 const app = express();
@@ -97,6 +115,20 @@ const gpsRoutes = require('./routes/gps.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const rfidRoutes = require('./routes/rfid.routes');
 
+// Ensure database migrations are run before handling API requests
+app.use('/api/v1', async (req, res, next) => {
+    try {
+        await ensureDatabaseReady();
+        next();
+    } catch (err) {
+        console.error('[MyAsset] Database initialization error on request:', err.message);
+        return res.status(500).json({
+            error: 'Database initialization failed. Please verify PostgreSQL configuration.',
+            details: process.env.NODE_ENV === 'production' ? err.message : err.stack
+        });
+    }
+});
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/assets', assetRoutes);
@@ -134,8 +166,13 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
+    ensureDatabaseReady().then(() => {
+        app.listen(PORT, () => {
+            console.log(`Server running on http://localhost:${PORT}`);
+        });
+    }).catch(err => {
+        console.error('Failed to initialize database on server startup:', err);
+        process.exit(1);
     });
 }
 

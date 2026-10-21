@@ -13,7 +13,7 @@
     "test:pg": "node tests/postgres.test.js",
     "db:backup": "node server/db/backup.js",
     "db:export:pg": "node server/db/export_sqlite_to_pg.js",
-    "db:migrate:pg": "node -e \"require('./server/db/postgres').runPgMigrations()\""
+    "db:migrate:pg": "node server/db/migrate_pg.js"
   },
   "keywords": [],
   "author": "",
