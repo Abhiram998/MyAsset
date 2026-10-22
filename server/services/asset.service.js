@@ -1,40 +1,55 @@
 const assetRepository = require('../repositories/asset.repository');
 
 class AssetService {
-    getTypes(orgId) {
-        return assetRepository.getTypes(orgId);
+    async getTypes(orgId) {
+        let types = await assetRepository.getTypes(orgId);
+        if (!types || types.length === 0) {
+            const defaultAssetTypes = [
+                'Heavy Equipment',
+                'Vehicles & Transport',
+                'Power Tools & Machinery',
+                'Hand Tools & Hardware',
+                'Safety & Protective Gear',
+                'Electronics & Diagnostics'
+            ];
+            for (const name of defaultAssetTypes) {
+                await assetRepository.createType(orgId, name);
+            }
+            types = await assetRepository.getTypes(orgId);
+        }
+        return types;
     }
 
-    getCustomFields(typeId) {
-        return assetRepository.getCustomFields(typeId);
+    async getCustomFields(typeId) {
+        return await assetRepository.getCustomFields(typeId);
     }
 
-    getAllAssets(user, filters) {
-        return assetRepository.findAll(user, filters);
+    async getAllAssets(user, filters) {
+        return await assetRepository.findAll(user, filters);
     }
 
-    getAssetById(id, user) {
-        return assetRepository.findById(id, user);
+    async getAssetById(id, user) {
+        return await assetRepository.findById(id, user);
     }
 
-    createAsset(assetData) {
-        return assetRepository.create(assetData);
+    async createAsset(assetData) {
+        return await assetRepository.create(assetData);
     }
 
-    updateAsset(id, assetData, user) {
-        return assetRepository.update(id, assetData, user);
+    async updateAsset(id, assetData, user) {
+        return await assetRepository.update(id, assetData, user);
     }
 
-    archiveAsset(id, user) {
-        return assetRepository.archive(id, user);
+    async archiveAsset(id, user) {
+        return await assetRepository.archive(id, user);
     }
 
-    restoreAsset(id, user) {
-        return assetRepository.restore(id, user);
+    async restoreAsset(id, user) {
+        return await assetRepository.restore(id, user);
     }
 
-    getAssetHistory(id, user) {
-        return assetRepository.getAssetHistory(id, user);
+    async getAssetHistory(id, user) {
+        return await assetRepository.getAssetHistory(id, user);
     }
 }
 

@@ -1,7 +1,7 @@
 const { connect } = require('../db/database');
 
 class ActivityRepository {
-    getActivities(user, filters = {}) {
+    async getActivities(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT ac.*, 
@@ -54,13 +54,13 @@ class ActivityRepository {
         }
 
         query += ` ORDER BY ac.created_at DESC LIMIT 100`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    logActivity(activityData) {
+    async logActivity(activityData) {
         const db = connect();
         const { organization_id, employee_id, action, asset_id, task_id, zone_id, details } = activityData;
-        const result = db.prepare(`
+        const result = await db.prepare(`
             INSERT INTO activity (organization_id, employee_id, action, asset_id, task_id, zone_id, details)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(organization_id, employee_id || null, action, asset_id || null, task_id || null, zone_id || null, details || null);

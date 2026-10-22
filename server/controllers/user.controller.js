@@ -3,9 +3,9 @@ const userRepository = require('../repositories/user.repository');
 const { connect } = require('../db/database');
 
 class UserController {
-    getAllUsers(req, res) {
+    async getAllUsers(req, res) {
         try {
-            const users = userRepository.findAll(req.user.organization_id);
+            const users = await userRepository.findAll(req.user.organization_id);
             res.json(users);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -19,7 +19,7 @@ class UserController {
                 return res.status(400).json({ error: 'Email, password, and role are required' });
             }
 
-            const existing = userRepository.findByEmail(email);
+            const existing = await userRepository.findByEmail(email);
             if (existing) {
                 return res.status(409).json({ error: 'A user with this email already exists' });
             }
@@ -28,8 +28,8 @@ class UserController {
             const password_hash = await bcrypt.hash(password, 10);
             
             let userId;
-            const tx = db.transaction(() => {
-                userId = userRepository.create({
+            const tx = db.transaction(async () => {
+                userId = await userRepository.create({
                     organization_id: req.user.organization_id,
                     email,
                     password_hash,
@@ -37,16 +37,16 @@ class UserController {
                 });
 
                 if (first_name || last_name) {
-                    db.prepare(`
+                    await db.prepare(`
                         INSERT INTO employees (user_id, organization_id, first_name, last_name, status)
                         VALUES (?, ?, ?, ?, 'ACTIVE')
                     `).run(userId, req.user.organization_id, first_name || 'User', last_name || '');
                 }
             });
-            tx();
+            await tx();
 
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'CREATED_USER', null, null, null, `Created user ${email}`);
+            await activityService.logActivity(req.user, 'CREATED_USER', null, null, null, `Created user ${email}`);
 
             res.status(201).json({ id: userId, message: 'User created successfully' });
         } catch (error) {
@@ -54,7 +54,7 @@ class UserController {
         }
     }
 
-    updateUserRole(req, res) {
+    async updateUserRole(req, res) {
         try {
             const userId = req.params.id;
             const { role_id } = req.body;
@@ -62,13 +62,13 @@ class UserController {
                 return res.status(400).json({ error: 'role_id is required' });
             }
 
-            const success = userRepository.updateRole(userId, req.user.organization_id, Number(role_id));
+            const success = await userRepository.updateRole(userId, req.user.organization_id, Number(role_id));
             if (!success) {
                 return res.status(404).json({ error: 'User not found' });
             }
 
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'UPDATED_USER_ROLE', null, null, null, `User ID ${userId} role changed to ${role_id}`);
+            await activityService.logActivity(req.user, 'UPDATED_USER_ROLE', null, null, null, `User ID ${userId} role changed to ${role_id}`);
 
             res.json({ message: 'User role updated successfully' });
         } catch (error) {
@@ -76,9 +76,9 @@ class UserController {
         }
     }
 
-    getAllRoles(req, res) {
+    async getAllRoles(req, res) {
         try {
-            const roles = userRepository.findAllRoles();
+            const roles = await userRepository.findAllRoles();
             res.json(roles);
         } catch (error) {
             res.status(500).json({ error: error.message });

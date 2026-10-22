@@ -1,26 +1,26 @@
 const assetService = require('../services/asset.service');
 
 class AssetController {
-    getTypes(req, res) {
+    async getTypes(req, res) {
         try {
-            const types = assetService.getTypes(req.user.organization_id);
+            const types = await assetService.getTypes(req.user.organization_id);
             res.json(types);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getCustomFields(req, res) {
+    async getCustomFields(req, res) {
         try {
             const typeId = req.params.typeId;
-            const fields = assetService.getCustomFields(typeId);
+            const fields = await assetService.getCustomFields(typeId);
             res.json(fields);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getAllAssets(req, res) {
+    async getAllAssets(req, res) {
         try {
             const filters = {
                 status: req.query.status,
@@ -29,16 +29,16 @@ class AssetController {
                 search: req.query.search,
                 includeArchived: req.query.includeArchived === 'true'
             };
-            const assets = assetService.getAllAssets(req.user, filters);
+            const assets = await assetService.getAllAssets(req.user, filters);
             res.json(assets);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getAssetById(req, res) {
+    async getAssetById(req, res) {
         try {
-            const asset = assetService.getAssetById(req.params.id, req.user);
+            const asset = await assetService.getAssetById(req.params.id, req.user);
             if (!asset) {
                 return res.status(404).json({ error: 'Asset not found or access denied' });
             }
@@ -48,9 +48,9 @@ class AssetController {
         }
     }
 
-    getAssetHistory(req, res) {
+    async getAssetHistory(req, res) {
         try {
-            const history = assetService.getAssetHistory(req.params.id, req.user);
+            const history = await assetService.getAssetHistory(req.params.id, req.user);
             if (!history) {
                 return res.status(404).json({ error: 'Asset not found or access denied' });
             }
@@ -60,9 +60,9 @@ class AssetController {
         }
     }
 
-    createAsset(req, res) {
+    async createAsset(req, res) {
         try {
-            const { name, asset_type_id, tag_id } = req.body;
+            const { name, asset_type_id } = req.body;
             if (!name || !asset_type_id) {
                 return res.status(400).json({ error: 'Name and asset type are required' });
             }
@@ -76,54 +76,54 @@ class AssetController {
                 assetData.tag_id = 'AST-' + Math.floor(1000 + Math.random() * 9000);
             }
 
-            const id = assetService.createAsset(assetData);
+            const id = await assetService.createAsset(assetData);
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'CREATED_ASSET', id, null, assetData.zone_id, `Registered asset ${name}`);
+            await activityService.logActivity(req.user, 'CREATED_ASSET', id, null, assetData.zone_id, `Registered asset ${name}`);
             res.status(201).json({ id, tag_id: assetData.tag_id, message: 'Asset created successfully' });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    updateAsset(req, res) {
+    async updateAsset(req, res) {
         try {
             const id = req.params.id;
-            const updated = assetService.updateAsset(id, req.body, req.user);
+            const updated = await assetService.updateAsset(id, req.body, req.user);
             if (!updated) {
                 return res.status(404).json({ error: 'Asset not found or update denied' });
             }
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'UPDATED_ASSET', id, null, req.body.zone_id, `Updated asset ID ${id}`);
+            await activityService.logActivity(req.user, 'UPDATED_ASSET', id, null, req.body.zone_id, `Updated asset ID ${id}`);
             res.json({ message: 'Asset updated successfully' });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    archiveAsset(req, res) {
+    async archiveAsset(req, res) {
         try {
             const id = req.params.id;
-            const archived = assetService.archiveAsset(id, req.user);
+            const archived = await assetService.archiveAsset(id, req.user);
             if (!archived) {
                 return res.status(404).json({ error: 'Asset not found' });
             }
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'ARCHIVED_ASSET', id, null, null, `Archived asset ID ${id}`);
+            await activityService.logActivity(req.user, 'ARCHIVED_ASSET', id, null, null, `Archived asset ID ${id}`);
             res.json({ message: 'Asset archived successfully' });
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    restoreAsset(req, res) {
+    async restoreAsset(req, res) {
         try {
             const id = req.params.id;
-            const restored = assetService.restoreAsset(id, req.user);
+            const restored = await assetService.restoreAsset(id, req.user);
             if (!restored) {
                 return res.status(404).json({ error: 'Asset not found' });
             }
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'RESTORED_ASSET', id, null, null, `Restored asset ID ${id}`);
+            await activityService.logActivity(req.user, 'RESTORED_ASSET', id, null, null, `Restored asset ID ${id}`);
             res.json({ message: 'Asset restored successfully' });
         } catch (error) {
             res.status(500).json({ error: error.message });

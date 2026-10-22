@@ -1,7 +1,7 @@
 const { connect } = require('../db/database');
 
 class UserRepository {
-    findByEmail(email) {
+    async findByEmail(email) {
         const db = connect();
         const stmt = db.prepare(`
             SELECT u.id, u.organization_id, u.email, u.password_hash, u.role_id, r.name as role_name,
@@ -11,10 +11,10 @@ class UserRepository {
             LEFT JOIN employees e ON u.id = e.user_id
             WHERE u.email = ?
         `);
-        return stmt.get(email);
+        return await stmt.get(email);
     }
 
-    findById(id) {
+    async findById(id) {
         const db = connect();
         const stmt = db.prepare(`
             SELECT u.id, u.organization_id, u.email, u.role_id, r.name as role_name,
@@ -24,12 +24,12 @@ class UserRepository {
             LEFT JOIN employees e ON u.id = e.user_id
             WHERE u.id = ?
         `);
-        return stmt.get(id);
+        return await stmt.get(id);
     }
 
-    findAll(orgId) {
+    async findAll(orgId) {
         const db = connect();
-        return db.prepare(`
+        return await db.prepare(`
             SELECT u.id, u.organization_id, u.email, u.role_id, r.name as role_name,
                    e.id as employee_id, e.first_name, e.last_name, e.status as employee_status,
                    u.created_at
@@ -41,27 +41,27 @@ class UserRepository {
         `).all(orgId);
     }
 
-    create(userData) {
+    async create(userData) {
         const db = connect();
         const { organization_id, email, password_hash, role_id } = userData;
-        const result = db.prepare(`
+        const result = await db.prepare(`
             INSERT INTO users (organization_id, email, password_hash, role_id)
             VALUES (?, ?, ?, ?)
         `).run(organization_id, email, password_hash, role_id);
         return result.lastInsertRowid;
     }
 
-    updateRole(userId, orgId, roleId) {
+    async updateRole(userId, orgId, roleId) {
         const db = connect();
-        const result = db.prepare(`
+        const result = await db.prepare(`
             UPDATE users SET role_id = ? WHERE id = ? AND organization_id = ?
         `).run(roleId, userId, orgId);
         return result.changes > 0;
     }
 
-    findAllRoles() {
+    async findAllRoles() {
         const db = connect();
-        return db.prepare('SELECT id, name, description FROM roles ORDER BY id ASC').all();
+        return await db.prepare('SELECT id, name, description FROM roles ORDER BY id ASC').all();
     }
 
     async createOrganizationWithAdmin({ companyName, firstName, lastName, email, password_hash }) {
@@ -95,7 +95,32 @@ class UserRepository {
             `).run(userId, organizationId, firstName, lastName);
             const employeeId = empResult.lastInsertRowid;
 
-            // 6. Log system activity
+            // 6. Seed standard asset types / categories for the organization
+            const defaultAssetTypes = [
+                'Heavy Equipment',
+                'Vehicles & Transport',
+                'Power Tools & Machinery',
+                'Hand Tools & Hardware',
+                'Safety & Protective Gear',
+                'Electronics & Diagnostics'
+            ];
+            for (const typeName of defaultAssetTypes) {
+                await db.prepare('INSERT INTO asset_types (organization_id, name) VALUES (?, ?)').run(organizationId, typeName);
+            }
+
+            // 7. Seed initial primary operational site and zone
+            const locResult = await db.prepare(`
+                INSERT INTO locations (organization_id, name, address)
+                VALUES (?, 'Primary Operating Depot', 'Headquarters / Main Yard')
+            `).run(organizationId);
+            const locationId = locResult.lastInsertRowid;
+
+            await db.prepare(`
+                INSERT INTO zones (location_id, name, description)
+                VALUES (?, 'Main Equipment Yard', 'Primary staging area for all fleet units')
+            `).run(locationId);
+
+            // 8. Log system activity
             await db.prepare(`
                 INSERT INTO activity (organization_id, employee_id, action, details)
                 VALUES (?, ?, 'REGISTERED_ORGANIZATION', ?)

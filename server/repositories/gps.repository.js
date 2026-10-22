@@ -1,7 +1,7 @@
 const { connect } = require('../db/database');
 
 class GpsRepository {
-    getPositions(user) {
+    async getPositions(user) {
         const db = connect();
         let query = `
             SELECT g.*, e.first_name, e.last_name 
@@ -23,12 +23,12 @@ class GpsRepository {
         }
 
         query += ` ORDER BY g.recorded_at DESC LIMIT 100`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    insertPosition(employeeId, latitude, longitude, accuracy, status = 'LIVE') {
+    async insertPosition(employeeId, latitude, longitude, accuracy, status = 'LIVE') {
         const db = connect();
-        const result = db.prepare(`
+        const result = await db.prepare(`
             INSERT INTO gps_positions (employee_id, latitude, longitude, accuracy, status)
             VALUES (?, ?, ?, ?, ?)
         `).run(employeeId, latitude, longitude, accuracy || null, status);

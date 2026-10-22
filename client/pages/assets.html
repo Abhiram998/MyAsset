@@ -523,35 +523,47 @@
   });
 
   async function loadAssetTypes() {
+    const catSelect = document.getElementById('inputCategory');
     try {
       const res = await fetch('/api/v1/assets/types');
       if (res.ok) {
-        assetTypes = await res.json();
-        const catSelect = document.getElementById('inputCategory');
-        catSelect.innerHTML = assetTypes.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        const data = await res.json();
+        assetTypes = Array.isArray(data) ? data : [];
+        if (assetTypes.length === 0) {
+          catSelect.innerHTML = '<option value="">No categories configured</option>';
+        } else {
+          catSelect.innerHTML = assetTypes.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+        }
+      } else {
+        catSelect.innerHTML = '<option value="">Failed to load categories</option>';
       }
     } catch (err) {
       console.error('Failed to load asset types:', err);
+      catSelect.innerHTML = '<option value="">Error connecting to server</option>';
     }
   }
 
   async function loadZones() {
+    const locSelect = document.getElementById('inputLocation');
+    const locFilter = document.getElementById('locationFilter');
     try {
       const res = await fetch('/api/v1/zones');
       if (res.ok) {
-        allZones = await res.json();
-        const locSelect = document.getElementById('inputLocation');
+        const data = await res.json();
+        allZones = Array.isArray(data) ? data : [];
         locSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
-          allZones.map(z => `<option value="${z.id}">${z.name}</option>`).join('');
+          allZones.map(z => `<option value="${z.id}">${escapeHtml(z.name)}${z.location_name ? ` (${escapeHtml(z.location_name)})` : ''}</option>`).join('');
 
-        const locFilter = document.getElementById('locationFilter');
         if (locFilter) {
           locFilter.innerHTML = '<option value="all">All Locations</option>' + 
-            allZones.map(z => `<option value="${z.name}">${z.name}</option>`).join('');
+            allZones.map(z => `<option value="${escapeHtml(z.name)}">${escapeHtml(z.name)}</option>`).join('');
         }
+      } else {
+        locSelect.innerHTML = '<option value="">— Unassigned —</option>';
       }
     } catch (err) {
       console.error('Failed to load zones:', err);
+      locSelect.innerHTML = '<option value="">— Unassigned —</option>';
     }
   }
 
@@ -559,7 +571,8 @@
     try {
       const response = await fetch('/api/v1/assets');
       if (response.ok) {
-        allAssets = await response.json();
+        const data = await response.json();
+        allAssets = Array.isArray(data) ? data : [];
         renderAssetsTable(allAssets);
         updateStatusFilterCounts();
       } else {
@@ -686,9 +699,10 @@
   async function handleFormSubmit(e) {
     e.preventDefault();
     const editingId = document.getElementById('editingAssetId').value;
+    const catVal = document.getElementById('inputCategory').value;
     const payload = {
       name: document.getElementById('inputName').value.trim(),
-      asset_type_id: Number(document.getElementById('inputCategory').value),
+      asset_type_id: catVal ? Number(catVal) : null,
       tag_id: document.getElementById('inputTag').value.trim(),
       serial_number: document.getElementById('inputSerial').value.trim(),
       zone_id: document.getElementById('inputLocation').value ? Number(document.getElementById('inputLocation').value) : null,
@@ -696,6 +710,15 @@
       condition: document.getElementById('inputCondition').value,
       notes: document.getElementById('inputNotes').value.trim()
     };
+
+    if (!payload.name) {
+      window.showToast?.('Please enter an equipment name', 'error');
+      return;
+    }
+    if (!payload.asset_type_id || isNaN(payload.asset_type_id)) {
+      window.showToast?.('Please select an asset Category / Type', 'error');
+      return;
+    }
 
     try {
       const url = editingId ? `/api/v1/assets/${editingId}` : '/api/v1/assets';

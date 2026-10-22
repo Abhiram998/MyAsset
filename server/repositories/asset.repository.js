@@ -1,17 +1,22 @@
 const { connect } = require('../db/database');
 
 class AssetRepository {
-    getTypes(orgId) {
+    async getTypes(orgId) {
         const db = connect();
-        return db.prepare('SELECT * FROM asset_types WHERE organization_id = ? ORDER BY name ASC').all(orgId);
+        return await db.prepare('SELECT * FROM asset_types WHERE organization_id = ? ORDER BY name ASC').all(orgId);
     }
 
-    getCustomFields(typeId) {
+    async createType(orgId, name) {
         const db = connect();
-        return db.prepare('SELECT * FROM asset_custom_fields WHERE asset_type_id = ? ORDER BY id ASC').all(typeId);
+        return await db.prepare('INSERT INTO asset_types (organization_id, name) VALUES (?, ?)').run(orgId, name);
     }
 
-    findAll(user, filters = {}) {
+    async getCustomFields(typeId) {
+        const db = connect();
+        return await db.prepare('SELECT * FROM asset_custom_fields WHERE asset_type_id = ? ORDER BY id ASC').all(typeId);
+    }
+
+    async findAll(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT a.*, at.name as type_name, z.name as zone_name, l.name as location_name,
@@ -71,7 +76,7 @@ class AssetRepository {
                 OR a.status = 'IN_MAINTENANCE'
             )`;
         } else if (user.role_name === 'FIELD WORKER') {
-            // Explicit rule: Field Worker does not automatically see all assets in zone. Only explicitly assigned assets or assigned tasks.
+            // Field Worker sees only explicitly assigned assets or assigned tasks
             query += ` AND (
                 a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ? AND returned_at IS NULL)
                 OR a.id IN (SELECT asset_id FROM tasks WHERE assignee_id = ? AND status != 'COMPLETED')
@@ -99,10 +104,10 @@ class AssetRepository {
         }
 
         query += ` ORDER BY a.created_at DESC`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    findById(id, user) {
+    async findById(id, user) {
         const db = connect();
         let query = `
             SELECT a.*, at.name as type_name, z.name as zone_name, l.name as location_name,
@@ -147,10 +152,10 @@ class AssetRepository {
             params.push(user.employee_id, user.employee_id);
         }
 
-        const asset = db.prepare(query).get(...params);
+        const asset = await db.prepare(query).get(...params);
 
         if (asset) {
-            asset.customValues = db.prepare(`
+            asset.customValues = await db.prepare(`
                 SELECT acf.id as field_id, acf.name, acf.field_type, acv.value 
                 FROM asset_custom_values acv
                 JOIN asset_custom_fields acf ON acv.field_id = acf.id
@@ -161,13 +166,13 @@ class AssetRepository {
         return asset;
     }
 
-    create(assetData) {
+    async create(assetData) {
         const db = connect();
         const { organization_id, asset_type_id, name, tag_id, zone_id, condition, serial_number, notes, custom_values } = assetData;
         
         let assetId;
-        const createTx = db.transaction(() => {
-            const result = db.prepare(`
+        const createTx = db.transaction(async () => {
+            const result = await db.prepare(`
                 INSERT INTO assets (organization_id, asset_type_id, name, tag_id, status, zone_id, condition, serial_number, notes)
                 VALUES (?, ?, ?, ?, 'AVAILABLE', ?, ?, ?, ?)
             `).run(organization_id, asset_type_id, name, tag_id, zone_id || null, condition || 'GOOD', serial_number || null, notes || null);
@@ -175,31 +180,30 @@ class AssetRepository {
             assetId = result.lastInsertRowid;
 
             if (custom_values && Array.isArray(custom_values)) {
-                const insertValue = db.prepare(`
-                    INSERT INTO asset_custom_values (asset_id, field_id, value)
-                    VALUES (?, ?, ?)
-                `);
                 for (const cv of custom_values) {
                     if (cv.field_id && cv.value !== undefined) {
-                        insertValue.run(assetId, cv.field_id, String(cv.value));
+                        await db.prepare(`
+                            INSERT INTO asset_custom_values (asset_id, field_id, value)
+                            VALUES (?, ?, ?)
+                        `).run(assetId, cv.field_id, String(cv.value));
                     }
                 }
             }
         });
         
-        createTx();
+        await createTx();
         return assetId;
     }
 
-    update(id, assetData, user) {
+    async update(id, assetData, user) {
         const db = connect();
         const { name, asset_type_id, tag_id, status, zone_id, condition, serial_number, notes, custom_values } = assetData;
         
-        const existing = this.findById(id, user);
+        const existing = await this.findById(id, user);
         if (!existing) return false;
 
-        const updateTx = db.transaction(() => {
-            db.prepare(`
+        const updateTx = db.transaction(async () => {
+            await db.prepare(`
                 UPDATE assets
                 SET name = COALESCE(?, name),
                     asset_type_id = COALESCE(?, asset_type_id),
@@ -224,26 +228,25 @@ class AssetRepository {
             );
 
             if (custom_values && Array.isArray(custom_values)) {
-                const upsertVal = db.prepare(`
-                    INSERT INTO asset_custom_values (asset_id, field_id, value)
-                    VALUES (?, ?, ?)
-                    ON CONFLICT(asset_id, field_id) DO UPDATE SET value = excluded.value
-                `);
                 for (const cv of custom_values) {
                     if (cv.field_id && cv.value !== undefined) {
-                        upsertVal.run(id, cv.field_id, String(cv.value));
+                        await db.prepare(`
+                            INSERT INTO asset_custom_values (asset_id, field_id, value)
+                            VALUES (?, ?, ?)
+                            ON CONFLICT(asset_id, field_id) DO UPDATE SET value = excluded.value
+                        `).run(id, cv.field_id, String(cv.value));
                     }
                 }
             }
         });
 
-        updateTx();
+        await updateTx();
         return true;
     }
 
-    archive(id, user) {
+    async archive(id, user) {
         const db = connect();
-        const result = db.prepare(`
+        const result = await db.prepare(`
             UPDATE assets 
             SET status = 'ARCHIVED', archived_at = CURRENT_TIMESTAMP
             WHERE id = ? AND organization_id = ?
@@ -251,9 +254,9 @@ class AssetRepository {
         return result.changes > 0;
     }
 
-    restore(id, user) {
+    async restore(id, user) {
         const db = connect();
-        const result = db.prepare(`
+        const result = await db.prepare(`
             UPDATE assets 
             SET status = 'AVAILABLE', archived_at = NULL
             WHERE id = ? AND organization_id = ?
@@ -261,12 +264,12 @@ class AssetRepository {
         return result.changes > 0;
     }
 
-    getAssetHistory(id, user) {
+    async getAssetHistory(id, user) {
         const db = connect();
-        const asset = this.findById(id, user);
+        const asset = await this.findById(id, user);
         if (!asset) return null;
 
-        const assignments = db.prepare(`
+        const assignments = await db.prepare(`
             SELECT asn.*, e.first_name || ' ' || e.last_name as employee_name,
                    u.email as assigned_by_email,
                    z.name as zone_name
@@ -279,7 +282,7 @@ class AssetRepository {
             ORDER BY asn.assigned_at DESC
         `).all(id);
 
-        const maintenance = db.prepare(`
+        const maintenance = await db.prepare(`
             SELECT mr.*, e.first_name || ' ' || e.last_name as technician_name
             FROM maintenance_records mr
             JOIN employees e ON mr.staff_id = e.id
@@ -287,14 +290,14 @@ class AssetRepository {
             ORDER BY mr.completed_at DESC
         `).all(id);
 
-        const schedules = db.prepare(`
+        const schedules = await db.prepare(`
             SELECT ms.*
             FROM maintenance_schedules ms
             WHERE ms.asset_id = ?
             ORDER BY ms.due_date ASC
         `).all(id);
 
-        const activity = db.prepare(`
+        const activity = await db.prepare(`
             SELECT act.*, e.first_name || ' ' || e.last_name as employee_name, z.name as zone_name
             FROM activity act
             LEFT JOIN employees e ON act.employee_id = e.id
@@ -303,7 +306,7 @@ class AssetRepository {
             ORDER BY act.created_at DESC
         `).all(id);
 
-        const alerts = db.prepare(`
+        const alerts = await db.prepare(`
             SELECT * FROM alerts
             WHERE related_entity_id = ? AND organization_id = ?
             ORDER BY created_at DESC

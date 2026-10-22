@@ -1,7 +1,7 @@
 const { connect } = require('../db/database');
 
 class ReportRepository {
-    getAssetRegister(user, filters = {}) {
+    async getAssetRegister(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT a.tag_id, a.name, at.name as type, z.name as zone, l.name as location, a.status, a.condition, a.created_at
@@ -21,10 +21,10 @@ class ReportRepository {
         }
 
         query += ` ORDER BY a.created_at DESC LIMIT 500`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    getMaintenanceHistory(user, filters = {}) {
+    async getMaintenanceHistory(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT mr.id, a.name as asset, a.tag_id as asset_tag,
@@ -43,10 +43,10 @@ class ReportRepository {
         }
 
         query += ` ORDER BY mr.completed_at DESC LIMIT 500`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    getEmployeeActivity(user, filters = {}) {
+    async getEmployeeActivity(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT e.first_name || ' ' || e.last_name as employee, ac.action, ac.details, ac.created_at, z.name as location
@@ -63,10 +63,10 @@ class ReportRepository {
         }
 
         query += ` ORDER BY ac.created_at DESC LIMIT 500`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    getZoneUtilization(user, filters = {}) {
+    async getZoneUtilization(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT z.name as zone, l.name as location,
@@ -76,7 +76,7 @@ class ReportRepository {
             LEFT JOIN assets a ON z.id = a.zone_id AND (a.status != 'ARCHIVED' OR a.status IS NULL)
             JOIN locations l ON z.location_id = l.id
             WHERE l.organization_id = ?
-            GROUP BY z.id
+            GROUP BY z.id, z.name, l.name
         `;
         const params = [user.organization_id];
 
@@ -86,41 +86,57 @@ class ReportRepository {
         }
 
         query += ` ORDER BY total_assets DESC LIMIT 200`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    getDashboardStats(user) {
+    async getDashboardStats(user) {
         const db = connect();
         const orgId = user.organization_id;
 
-        const totalAssets = db.prepare(`SELECT COUNT(*) as count FROM assets WHERE organization_id = ? AND (status != 'ARCHIVED' OR status IS NULL)`).get(orgId).count;
-        const activeAssignments = db.prepare(`
+        const totalAssetsRow = await db.prepare(`SELECT COUNT(*) as count FROM assets WHERE organization_id = ? AND (status != 'ARCHIVED' OR status IS NULL)`).get(orgId);
+        const totalAssets = totalAssetsRow?.count || 0;
+
+        const activeAssignmentsRow = await db.prepare(`
             SELECT COUNT(*) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
             WHERE a.organization_id = ? AND asn.returned_at IS NULL
-        `).get(orgId).count;
-        const inMaintenance = db.prepare(`SELECT COUNT(*) as count FROM assets WHERE organization_id = ? AND status = 'IN_MAINTENANCE'`).get(orgId).count;
-        const activeTasks = db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status != 'COMPLETED' AND organization_id = ?").get(orgId).count;
-        const alerts = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE is_resolved = FALSE AND organization_id = ?').get(orgId).count;
+        `).get(orgId);
+        const activeAssignments = activeAssignmentsRow?.count || 0;
+
+        const inMaintenanceRow = await db.prepare(`SELECT COUNT(*) as count FROM assets WHERE organization_id = ? AND status = 'IN_MAINTENANCE'`).get(orgId);
+        const inMaintenance = inMaintenanceRow?.count || 0;
+
+        const activeTasksRow = await db.prepare("SELECT COUNT(*) as count FROM tasks WHERE status != 'COMPLETED' AND organization_id = ?").get(orgId);
+        const activeTasks = activeTasksRow?.count || 0;
+
+        const alertsRow = await db.prepare('SELECT COUNT(*) as count FROM alerts WHERE is_resolved = FALSE AND organization_id = ?').get(orgId);
+        const alerts = alertsRow?.count || 0;
 
         const utilizationRate = totalAssets > 0 ? ((activeAssignments / totalAssets) * 100).toFixed(1) : '0.0';
 
         return {
             totalAssets,
+            total_assets: totalAssets,
             activeAssignments,
+            active_assignments: activeAssignments,
             utilizationRate: utilizationRate + '%',
+            fleet_utilization: utilizationRate,
             inMaintenance,
+            in_maintenance: inMaintenance,
             activeTasks,
-            alerts
+            active_tasks: activeTasks,
+            alerts,
+            security_alerts: alerts,
+            maintenance_cost: 0
         };
     }
 
-    getAnalyticsData(user) {
+    async getAnalyticsData(user) {
         const db = connect();
         const orgId = user.organization_id;
 
-        const statusRows = db.prepare(`
+        const statusRows = await db.prepare(`
             SELECT COALESCE(status, 'AVAILABLE') as status, COUNT(*) as count
             FROM assets
             WHERE organization_id = ? AND (status != 'ARCHIVED' OR status IS NULL)
@@ -130,7 +146,7 @@ class ReportRepository {
         const statusMap = { AVAILABLE: 0, ASSIGNED: 0, IN_MAINTENANCE: 0, MISSING: 0 };
         statusRows.forEach(r => { statusMap[r.status] = r.count; });
 
-        const locationRows = db.prepare(`
+        const locationRows = await db.prepare(`
             SELECT COALESCE(l.name, 'Unassigned') as location_name, COUNT(a.id) as count
             FROM assets a
             LEFT JOIN zones z ON a.zone_id = z.id
@@ -141,7 +157,7 @@ class ReportRepository {
             LIMIT 50
         `).all(orgId);
 
-        const maintenanceTrends = db.prepare(`
+        const maintenanceTrends = await db.prepare(`
             SELECT strftime('%Y-%m', completed_at) as month, COUNT(*) as count
             FROM maintenance_records mr
             JOIN assets a ON mr.asset_id = a.id
@@ -151,7 +167,7 @@ class ReportRepository {
             LIMIT 6
         `).all(orgId);
 
-        const recentAssignments = db.prepare(`
+        const recentAssignments = await db.prepare(`
             SELECT date(assigned_at) as day, COUNT(*) as checkouts
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
@@ -160,7 +176,7 @@ class ReportRepository {
             ORDER BY day ASC
         `).all(orgId);
 
-        const recentReturns = db.prepare(`
+        const recentReturns = await db.prepare(`
             SELECT date(returned_at) as day, COUNT(*) as returns
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
@@ -169,16 +185,21 @@ class ReportRepository {
             ORDER BY day ASC
         `).all(orgId);
 
-        const alertBreakdown = db.prepare(`
+        const alertBreakdown = await db.prepare(`
             SELECT severity, COUNT(*) as count
             FROM alerts
             WHERE organization_id = ?
             GROUP BY severity
         `).all(orgId);
 
+        const status_breakdown = statusRows.map(r => ({ status: r.status, count: r.count }));
+        const zone_distribution = locationRows.map(r => ({ zone_name: r.location_name, count: r.count }));
+
         return {
             statusMap,
+            status_breakdown,
             locationRows,
+            zone_distribution,
             maintenanceTrends,
             recentAssignments,
             recentReturns,

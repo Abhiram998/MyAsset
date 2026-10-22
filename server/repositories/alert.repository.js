@@ -1,7 +1,7 @@
 const { connect } = require('../db/database');
 
 class AlertRepository {
-    getAlerts(user, filters = {}) {
+    async getAlerts(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT al.*, u.email as resolved_by_email,
@@ -27,16 +27,16 @@ class AlertRepository {
         }
 
         query += ` ORDER BY al.created_at DESC LIMIT 100`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    createAlert(alertData) {
+    async createAlert(alertData) {
         const db = connect();
         const { organization_id, type, severity, message, related_entity_id } = alertData;
 
         // Deduplication: prevent duplicate unresolved alerts for the same entity and type
         if (related_entity_id) {
-            const existing = db.prepare(`
+            const existing = await db.prepare(`
                 SELECT id FROM alerts 
                 WHERE organization_id = ? AND type = ? AND related_entity_id = ? AND is_resolved = 0
             `).get(organization_id, type, related_entity_id);
@@ -45,21 +45,28 @@ class AlertRepository {
             }
         }
 
-        const result = db.prepare(`
+        const result = await db.prepare(`
             INSERT INTO alerts (organization_id, type, severity, message, related_entity_id, is_resolved)
             VALUES (?, ?, ?, ?, ?, FALSE)
         `).run(organization_id, type, severity || 'MEDIUM', message, related_entity_id || null);
         return { id: result.lastInsertRowid, isDuplicate: false };
     }
 
-    getStats(user) {
+    async getStats(user) {
         const db = connect();
         const orgId = user.organization_id;
 
-        const total = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ?`).get(orgId).count;
-        const unresolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = FALSE`).get(orgId).count;
-        const resolved = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = TRUE`).get(orgId).count;
-        const highSeverity = db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = FALSE AND severity = 'HIGH'`).get(orgId).count;
+        const totalRow = await db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ?`).get(orgId);
+        const total = totalRow?.count || 0;
+
+        const unresolvedRow = await db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = FALSE`).get(orgId);
+        const unresolved = unresolvedRow?.count || 0;
+
+        const resolvedRow = await db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = TRUE`).get(orgId);
+        const resolved = resolvedRow?.count || 0;
+
+        const highSeverityRow = await db.prepare(`SELECT COUNT(*) as count FROM alerts WHERE organization_id = ? AND is_resolved = FALSE AND severity = 'HIGH'`).get(orgId);
+        const highSeverity = highSeverityRow?.count || 0;
 
         return {
             total,
@@ -69,9 +76,9 @@ class AlertRepository {
         };
     }
 
-    resolveAlert(id, userId, orgId) {
+    async resolveAlert(id, userId, orgId) {
         const db = connect();
-        const result = db.prepare(`
+        const result = await db.prepare(`
             UPDATE alerts 
             SET is_resolved = TRUE, resolved_at = CURRENT_TIMESTAMP, resolved_by_id = ?
             WHERE id = ? AND organization_id = ?

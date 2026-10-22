@@ -1,70 +1,70 @@
 const reportRepository = require('../repositories/report.repository');
 
 class ReportController {
-    getAssetRegister(req, res) {
+    async getAssetRegister(req, res) {
         try {
             const user = req.user;
             if (user.role_name === 'FIELD WORKER') return res.status(403).json({ error: 'Field Worker cannot access reports' });
             
-            const data = reportRepository.getAssetRegister(user, req.query);
+            const data = await reportRepository.getAssetRegister(user, req.query);
             this.handleExport(req, res, data, 'asset_register');
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getMaintenanceHistory(req, res) {
+    async getMaintenanceHistory(req, res) {
         try {
             const user = req.user;
             if (user.role_name === 'FIELD WORKER') return res.status(403).json({ error: 'Field Worker cannot access reports' });
 
-            const data = reportRepository.getMaintenanceHistory(user, req.query);
+            const data = await reportRepository.getMaintenanceHistory(user, req.query);
             this.handleExport(req, res, data, 'maintenance_history');
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getEmployeeActivity(req, res) {
+    async getEmployeeActivity(req, res) {
         try {
             const user = req.user;
             if (user.role_name === 'FIELD WORKER' || user.role_name === 'MAINTENANCE STAFF') {
                 return res.status(403).json({ error: 'Unauthorized report access' });
             }
 
-            const data = reportRepository.getEmployeeActivity(user, req.query);
+            const data = await reportRepository.getEmployeeActivity(user, req.query);
             this.handleExport(req, res, data, 'employee_activity');
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getZoneUtilization(req, res) {
+    async getZoneUtilization(req, res) {
         try {
             const user = req.user;
             if (user.role_name === 'FIELD WORKER' || user.role_name === 'MAINTENANCE STAFF') {
                 return res.status(403).json({ error: 'Unauthorized report access' });
             }
 
-            const data = reportRepository.getZoneUtilization(user, req.query);
+            const data = await reportRepository.getZoneUtilization(user, req.query);
             this.handleExport(req, res, data, 'zone_utilization');
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getDashboardStats(req, res) {
+    async getDashboardStats(req, res) {
         try {
-            const stats = reportRepository.getDashboardStats(req.user);
+            const stats = await reportRepository.getDashboardStats(req.user);
             res.json(stats);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getAnalyticsData(req, res) {
+    async getAnalyticsData(req, res) {
         try {
-            const analytics = reportRepository.getAnalyticsData(req.user);
+            const analytics = await reportRepository.getAnalyticsData(req.user);
             res.json(analytics);
         } catch (error) {
             res.status(500).json({ error: error.message });
@@ -73,7 +73,7 @@ class ReportController {
 
     handleExport(req, res, data, filename) {
         if (req.query.format === 'csv') {
-            if (!data.length) {
+            if (!data || !data.length) {
                 res.header('Content-Type', 'text/csv');
                 res.attachment(`${filename}.csv`);
                 return res.send('');

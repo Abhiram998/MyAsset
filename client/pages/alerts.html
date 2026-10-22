@@ -87,7 +87,8 @@
       }
 
       if (alertsRes.ok) {
-        allAlerts = await alertsRes.json();
+        const raw = await alertsRes.json();
+        allAlerts = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         renderAlerts();
       } else {
         document.getElementById('alertsContainer').innerHTML = '<div style="text-align: center; color: var(--rose-crimson); padding: 20px;">Failed to load alerts</div>';

@@ -277,7 +277,8 @@
     try {
       const res = await fetch('/api/v1/users');
       if (res.ok) {
-        allUsers = await res.json();
+        const raw = await res.json();
+        allUsers = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         const tbody = document.getElementById('settingsUsersBody');
         if (allUsers.length === 0) {
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px;">No users found.</td></tr>';
@@ -339,7 +340,8 @@
     try {
       const res = await fetch('/api/v1/rfid');
       if (res.ok) {
-        const rfidList = await res.json();
+        const raw = await res.json();
+        const rfidList = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         const container = document.getElementById('plannedRfidList');
         if (rfidList.length === 0) {
           container.innerHTML = '<div style="color:var(--text-tertiary); font-size:13px;">No planned devices configured. (Planned for future phase)</div>';

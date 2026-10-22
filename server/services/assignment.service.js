@@ -1,20 +1,20 @@
 const assignmentRepository = require('../repositories/assignment.repository');
 
 class AssignmentService {
-    getAllAssignments(user, filters) {
-        return assignmentRepository.findAll(user, filters);
+    async getAllAssignments(user, filters) {
+        return await assignmentRepository.findAll(user, filters);
     }
 
-    checkout(data, user) {
-        return assignmentRepository.checkout(data, user);
+    async checkout(data, user) {
+        return await assignmentRepository.checkout(data, user);
     }
 
-    returnAsset(id, user) {
-        return assignmentRepository.returnAsset(id, user);
+    async returnAsset(id, user) {
+        return await assignmentRepository.returnAsset(id, user);
     }
 
-    getStats(user) {
-        return assignmentRepository.getStats(user);
+    async getStats(user) {
+        return await assignmentRepository.getStats(user);
     }
 }
 

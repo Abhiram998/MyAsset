@@ -135,7 +135,8 @@
     try {
       const res = await fetch('/api/v1/maintenance/requests');
       if (res.ok) {
-        allRequests = await res.json();
+        const data = await res.json();
+        allRequests = Array.isArray(data) ? data : [];
         renderRequests(allRequests);
       } else {
         document.getElementById('requestsTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--rose-crimson);">Failed to load requests</td></tr>';
@@ -202,9 +203,14 @@
     try {
       const res = await fetch('/api/v1/assets');
       if (res.ok) {
-        const assets = await res.json();
-        select.innerHTML = '<option value="">Select Asset...</option>' + 
-          assets.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.tag_id)})</option>`).join('');
+        const data = await res.json();
+        const assets = Array.isArray(data) ? data : [];
+        if (assets.length === 0) {
+          select.innerHTML = '<option value="">No assets registered</option>';
+        } else {
+          select.innerHTML = '<option value="">Select Asset...</option>' + 
+            assets.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.tag_id)})</option>`).join('');
+        }
       }
     } catch (e) {
       console.error(e);

@@ -2,36 +2,36 @@ const alertRepository = require('../repositories/alert.repository');
 const { connect } = require('../db/database');
 
 class AlertController {
-    getAlerts(req, res) {
+    async getAlerts(req, res) {
         try {
             const filters = {
                 status: req.query.status,
                 severity: req.query.severity
             };
-            const alerts = alertRepository.getAlerts(req.user, filters);
+            const alerts = await alertRepository.getAlerts(req.user, filters);
             res.json(alerts);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    getStats(req, res) {
+    async getStats(req, res) {
         try {
-            const stats = alertRepository.getStats(req.user);
+            const stats = await alertRepository.getStats(req.user);
             res.json(stats);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    createAlert(req, res) {
+    async createAlert(req, res) {
         try {
             const { type, severity, message, related_entity_id } = req.body;
             if (!type || !message) {
                 return res.status(400).json({ error: 'Type and message are required' });
             }
 
-            const alertResult = alertRepository.createAlert({
+            const alertResult = await alertRepository.createAlert({
                 organization_id: req.user.organization_id,
                 type,
                 severity,
@@ -44,7 +44,7 @@ class AlertController {
             }
 
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'TRIGGERED_ALERT', related_entity_id || null, null, null, `Alert: ${message}`);
+            await activityService.logActivity(req.user, 'TRIGGERED_ALERT', related_entity_id || null, null, null, `Alert: ${message}`);
 
             res.status(201).json({ id: alertResult.id, message: 'Alert created successfully' });
         } catch (error) {
@@ -52,18 +52,18 @@ class AlertController {
         }
     }
 
-    resolveAlert(req, res) {
+    async resolveAlert(req, res) {
         try {
             const { id } = req.params;
             
             // Scope check: Field workers can't resolve alerts
             if (req.user.role_name === 'FIELD WORKER') return res.status(403).json({ error: 'Unauthorized to resolve alerts' });
 
-            const success = alertRepository.resolveAlert(id, req.user.id, req.user.organization_id);
+            const success = await alertRepository.resolveAlert(id, req.user.id, req.user.organization_id);
             if (!success) return res.status(404).json({ error: 'Alert not found or already resolved' });
 
             const activityService = require('../services/activity.service');
-            activityService.logActivity(req.user, 'RESOLVED_ALERT', null, null, null, `Resolved alert ID ${id}`);
+            await activityService.logActivity(req.user, 'RESOLVED_ALERT', null, null, null, `Resolved alert ID ${id}`);
 
             res.json({ message: 'Alert resolved successfully' });
         } catch (error) {

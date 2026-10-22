@@ -1,7 +1,7 @@
 const gpsRepository = require('../repositories/gps.repository');
 
 class GpsController {
-    getPositions(req, res) {
+    async getPositions(req, res) {
         try {
             const user = req.user;
 
@@ -9,14 +9,14 @@ class GpsController {
                 return res.status(403).json({ error: 'Maintenance Staff cannot access GPS data' });
             }
 
-            const positions = gpsRepository.getPositions(user);
+            const positions = await gpsRepository.getPositions(user);
             res.json(positions);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    updatePosition(req, res) {
+    async updatePosition(req, res) {
         try {
             const user = req.user;
             const { latitude, longitude, accuracy, status } = req.body;
@@ -28,7 +28,7 @@ class GpsController {
                 return res.status(400).json({ error: 'Latitude and longitude are required' });
             }
 
-            gpsRepository.insertPosition(user.employee_id, latitude, longitude, accuracy, status);
+            await gpsRepository.insertPosition(user.employee_id, latitude, longitude, accuracy, status);
             res.status(201).json({ message: 'GPS position updated' });
         } catch (error) {
             res.status(500).json({ error: error.message });

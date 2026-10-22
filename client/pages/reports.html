@@ -171,7 +171,7 @@
 
   function renderBreakdown(statuses) {
     const container = document.getElementById('statusBreakdownContainer');
-    if (!statuses || statuses.length === 0) {
+    if (!Array.isArray(statuses) || statuses.length === 0) {
       container.innerHTML = '<div style="color:var(--text-tertiary);">No assets registered.</div>';
       return;
     }
@@ -195,7 +195,7 @@
 
   function renderZones(zones) {
     const container = document.getElementById('zoneDistributionContainer');
-    if (!zones || zones.length === 0) {
+    if (!Array.isArray(zones) || zones.length === 0) {
       container.innerHTML = '<div style="color:var(--text-tertiary);">No zones configured.</div>';
       return;
     }

@@ -674,9 +674,10 @@
     try {
       const res = await fetch('/api/v1/employees');
       if (res.ok) {
-        const emps = await res.json();
+        const raw = await res.json();
+        const emps = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         select.innerHTML = '<option value="">Select Employee...</option>' + 
-          emps.map(e => `<option value="${e.id}">${e.first_name} ${e.last_name} (${e.job_title || 'Staff'})</option>`).join('');
+          emps.map(e => `<option value="${e.id}">${escapeHtml(e.first_name)} ${escapeHtml(e.last_name)} (${escapeHtml(e.job_title || 'Staff')})</option>`).join('');
       }
     } catch (e) {
       console.error(e);
@@ -760,9 +761,10 @@
     try {
       const res = await fetch('/api/v1/zones');
       if (res.ok) {
-        const zones = await res.json();
+        const raw = await res.json();
+        const zones = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         zoneSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
-          zones.map(z => `<option value="${z.id}" ${z.id === asset.zone_id ? 'selected' : ''}>${z.name}</option>`).join('');
+          zones.map(z => `<option value="${z.id}" ${z.id === asset.zone_id ? 'selected' : ''}>${escapeHtml(z.name)}</option>`).join('');
       }
     } catch (e) {
       console.error(e);

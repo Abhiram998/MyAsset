@@ -505,10 +505,7 @@
           <div>
             <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Select Asset Unit *</label>
             <select class="filter-select" id="maintAsset" style="width: 100%; margin-top: 4px;" required>
-              <option value="AST-0032">Water Pump 5000G (AST-0032)</option>
-              <option value="AST-0089">Heavy Duty Sprayer (AST-0089)</option>
-              <option value="AST-0842">Kubota Compact Excavator (AST-0842)</option>
-              <option value="AST-1102">Stihl MS 261 Chainsaw (AST-1102)</option>
+              <option value="">Loading registered assets...</option>
             </select>
           </div>
 
@@ -530,9 +527,7 @@
             <div>
               <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Assign Technician *</label>
               <select class="filter-select" id="maintTech" style="width: 100%; margin-top: 4px;" required>
-                <option value="Vishnu K.">Vishnu K. (Lead Tech)</option>
-                <option value="Rahul S.">Rahul S.</option>
-                <option value="External Service Co.">External Service Co.</option>
+                <option value="">Loading technicians...</option>
               </select>
             </div>
           </div>
@@ -595,13 +590,20 @@
 
   async function submitMaintSchedule(e) {
     e.preventDefault();
-    const asset_id = document.getElementById('maintAsset').value;
+    const assetSelectVal = document.getElementById('maintAsset').value;
+    const asset_id = Number(assetSelectVal);
     const title = document.getElementById('maintType').value.trim();
     const due_date = document.getElementById('maintDate').value;
     const priority = document.getElementById('maintPriority').value;
-    const notes = document.getElementById('maintNotes').value.trim();
+    const techName = document.getElementById('maintTech').value;
+    const notesInput = document.getElementById('maintNotes').value.trim();
+    const notes = techName ? `${notesInput ? notesInput + ' ' : ''}[Tech: ${techName}]` : notesInput;
 
-    if (!asset_id || !title || !due_date) {
+    if (!asset_id || isNaN(asset_id)) {
+      window.showToast?.('Please select a valid registered asset unit', 'error');
+      return;
+    }
+    if (!title || !due_date) {
       window.showToast?.('Please fill out all required fields', 'error');
       return;
     }
@@ -670,30 +672,32 @@
 
   async function loadMaintenanceData() {
     try {
-      const [statsRes, schedRes, assetsRes] = await Promise.all([
+      const [statsRes, schedRes, assetsRes, empsRes] = await Promise.all([
         fetch('/api/v1/maintenance/stats'),
         fetch('/api/v1/maintenance/schedules'),
-        fetch('/api/v1/assets')
+        fetch('/api/v1/assets'),
+        fetch('/api/v1/employees')
       ]);
 
       if (statsRes.ok) {
         const stats = await statsRes.json();
-        document.getElementById('kpiDueToday').textContent = stats.due_today || 0;
+        document.getElementById('kpiDueToday').textContent = stats.due_today || stats.dueToday || 0;
         document.getElementById('kpiUpcoming').textContent = stats.upcoming || 0;
         document.getElementById('kpiOverdue').textContent = stats.overdue || 0;
-        document.getElementById('kpiInMaintenance').textContent = stats.in_maintenance || 0;
+        document.getElementById('kpiInMaintenance').textContent = stats.in_maintenance || stats.inMaintenance || 0;
         
         document.getElementById('overdueCardTitle').textContent = `${stats.overdue || 0} Overdue Tasks`;
-        document.getElementById('overdueCardDesc').textContent = stats.overdue > 0 
+        document.getElementById('overdueCardDesc').textContent = (stats.overdue || 0) > 0 
           ? 'Requires immediate workshop attention and inspection.' 
           : 'All scheduled maintenance tasks are currently up to date.';
 
-        document.getElementById('fleetHealthScore').textContent = `${stats.fleet_health || 100}%`;
-        document.getElementById('fleetHealthSummary').textContent = `${stats.completed || 0} tasks completed. ${stats.in_maintenance || 0} assets in workshop.`;
+        document.getElementById('fleetHealthScore').textContent = `${stats.fleet_health || stats.fleetHealth || '100%'}`;
+        document.getElementById('fleetHealthSummary').textContent = `${stats.completed || 0} tasks completed. ${stats.in_maintenance || stats.inMaintenance || 0} assets in workshop.`;
       }
 
       if (schedRes.ok) {
-        allSchedules = await schedRes.json();
+        const data = await schedRes.json();
+        allSchedules = Array.isArray(data) ? data : [];
         renderSchedulesTable(allSchedules);
 
         if (allSchedules.length > 0) {
@@ -703,9 +707,25 @@
       }
 
       if (assetsRes.ok) {
-        const assets = await assetsRes.json();
+        const data = await assetsRes.json();
+        const assets = Array.isArray(data) ? data : [];
         const assetSelect = document.getElementById('maintAsset');
-        assetSelect.innerHTML = assets.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.tag_id)})</option>`).join('');
+        if (assets.length === 0) {
+          assetSelect.innerHTML = '<option value="">No assets registered</option>';
+        } else {
+          assetSelect.innerHTML = assets.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.tag_id)})</option>`).join('');
+        }
+      }
+
+      if (empsRes && empsRes.ok) {
+        const data = await empsRes.json();
+        const emps = Array.isArray(data) ? data : [];
+        const techSelect = document.getElementById('maintTech');
+        if (emps.length > 0) {
+          techSelect.innerHTML = emps.map(e => `<option value="${escapeHtml(e.first_name)} ${escapeHtml(e.last_name)}">${escapeHtml(e.first_name)} ${escapeHtml(e.last_name)} (${escapeHtml(e.role_name || 'Staff')})</option>`).join('');
+        } else {
+          techSelect.innerHTML = '<option value="Internal Service Team">Internal Service Team</option>';
+        }
       }
     } catch (e) {
       console.error(e);

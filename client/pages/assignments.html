@@ -233,7 +233,8 @@
     try {
       const res = await fetch('/api/v1/assignments');
       if (!res.ok) throw new Error("Failed to load");
-      allAssignments = await res.json();
+      const data = await res.json();
+      allAssignments = Array.isArray(data) ? data : [];
       
       const activeCount = allAssignments.filter(a => !a.returned_at).length;
       const returnedCount = allAssignments.filter(a => a.returned_at).length;
@@ -324,18 +325,24 @@
       ]);
 
       if (assetsRes.ok && empsRes.ok) {
-        const assets = await assetsRes.json();
-        const emps = await empsRes.json();
+        const rawAssets = await assetsRes.json();
+        const rawEmps = await empsRes.json();
+        const assets = Array.isArray(rawAssets) ? rawAssets : [];
+        const emps = Array.isArray(rawEmps) ? rawEmps : [];
 
         if (assets.length === 0) {
           assetSelect.innerHTML = '<option value="">No assets currently available for checkout</option>';
         } else {
           assetSelect.innerHTML = '<option value="">Select Asset...</option>' + 
-            assets.map(a => `<option value="${a.id}">${a.name} (${a.tag_id})</option>`).join('');
+            assets.map(a => `<option value="${a.id}">${escapeHtml(a.name)} (${escapeHtml(a.tag_id)})</option>`).join('');
         }
 
-        employeeSelect.innerHTML = '<option value="">Select Personnel...</option>' + 
-          emps.map(e => `<option value="${e.id}">${e.first_name} ${e.last_name} (${e.job_title || 'Staff'})</option>`).join('');
+        if (emps.length === 0) {
+          employeeSelect.innerHTML = '<option value="">No personnel registered</option>';
+        } else {
+          employeeSelect.innerHTML = '<option value="">Select Personnel...</option>' + 
+            emps.map(e => `<option value="${e.id}">${escapeHtml(e.first_name)} ${escapeHtml(e.last_name)} (${escapeHtml(e.role_name || e.job_title || 'Staff')})</option>`).join('');
+        }
       }
     } catch (e) {
       console.error(e);

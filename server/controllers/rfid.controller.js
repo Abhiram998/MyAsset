@@ -2,25 +2,25 @@ const rfidRepository = require('../repositories/rfid.repository');
 const activityService = require('../services/activity.service');
 
 class RfidController {
-    getDevices(req, res) {
+    async getDevices(req, res) {
         try {
-            const devices = rfidRepository.findAll(req.user.organization_id);
+            const devices = await rfidRepository.findAll(req.user.organization_id);
             res.json(devices);
         } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }
 
-    createDevice(req, res) {
+    async createDevice(req, res) {
         try {
             const { name, location_id } = req.body;
             if (!name) {
                 return res.status(400).json({ error: 'Device name is required' });
             }
 
-            const id = rfidRepository.create(req.user.organization_id, name, location_id);
+            const id = await rfidRepository.create(req.user.organization_id, name, location_id);
 
-            activityService.logActivity(req.user, 'REGISTERED_RFID_GATEWAY', null, null, null, `Configured planned RFID device: ${name}`);
+            await activityService.logActivity(req.user, 'REGISTERED_RFID_GATEWAY', null, null, null, `Configured planned RFID device: ${name}`);
 
             res.status(201).json({ id, message: 'RFID device configured (Planned state)' });
         } catch (error) {

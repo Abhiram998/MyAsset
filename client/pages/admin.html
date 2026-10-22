@@ -280,13 +280,14 @@
     try {
       const res = await fetch('/api/v1/users/roles');
       if (res.ok) {
-        cachedRoles = await res.json();
+        const raw = await res.json();
+        cachedRoles = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         const container = document.getElementById('rolesListContainer');
         container.innerHTML = cachedRoles.map(r => `
           <div style="background: var(--status-neutral-bg); padding: 14px 18px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <strong style="font-size: 14px; font-family: 'Outfit', sans-serif;">${r.name}</strong>
-              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${r.description || 'System access role'}</div>
+              <strong style="font-size: 14px; font-family: 'Outfit', sans-serif;">${escapeHtml(r.name)}</strong>
+              <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(r.description || 'System access role')}</div>
             </div>
             <span class="pill-badge pill-ok">Active</span>
           </div>
@@ -301,7 +302,8 @@
     try {
       const res = await fetch('/api/v1/users');
       if (!res.ok) throw new Error('Failed to load users');
-      cachedUsers = await res.json();
+      const raw = await res.json();
+      cachedUsers = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
       renderUsers(cachedUsers);
     } catch(err) {
       document.getElementById('usersTableBody').innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--status-alert-text);">${err.message}</td></tr>`;
@@ -310,7 +312,7 @@
 
   function renderUsers(users) {
     const tbody = document.getElementById('usersTableBody');
-    if (!users.length) {
+    if (!Array.isArray(users) || !users.length) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 24px; color: var(--text-secondary);">No system users found.</td></tr>';
       return;
     }
@@ -407,7 +409,8 @@
     try {
       const res = await fetch('/api/v1/rfid');
       if (!res.ok) throw new Error('Failed to load RFID devices');
-      const devices = await res.json();
+      const raw = await res.json();
+      const devices = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
       const container = document.getElementById('rfidListContainer');
       if (!devices.length) {
         container.innerHTML = '<div style="color: var(--text-secondary); padding: 14px;">No RFID devices configured yet. Hardware integration is planned for a future phase.</div>';
@@ -416,8 +419,8 @@
       container.innerHTML = devices.map(d => `
         <div style="background: var(--status-neutral-bg); padding: 14px 18px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
           <div>
-            <strong style="font-size: 14px;">${d.name}</strong>
-            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${d.location_name || 'General Site Checkpoint'}</div>
+            <strong style="font-size: 14px;">${escapeHtml(d.name)}</strong>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(d.location_name || 'General Site Checkpoint')}</div>
           </div>
           <span class="pill-badge pill-neutral">PLANNED HARDWARE</span>
         </div>
@@ -452,7 +455,8 @@
     try {
       const res = await fetch('/api/v1/activity');
       if (!res.ok) return;
-      const acts = await res.json();
+      const raw = await res.json();
+      const acts = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
       const tbody = document.getElementById('adminAuditBody');
       if (!acts.length) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 24px; color: var(--text-secondary);">No audit logs yet.</td></tr>';
@@ -460,9 +464,9 @@
       }
       tbody.innerHTML = acts.map(a => `
         <tr style="border-bottom: 1px solid var(--status-neutral-bg);">
-          <td style="padding: 12px 18px;"><strong>${a.employee_name || 'System'}</strong></td>
-          <td style="padding: 12px 18px;"><span class="pill-badge pill-neutral">${a.action}</span></td>
-          <td style="padding: 12px 18px; color: var(--text-secondary);">${a.details || a.asset_name || '—'}</td>
+          <td style="padding: 12px 18px;"><strong>${escapeHtml(a.employee_name || 'System')}</strong></td>
+          <td style="padding: 12px 18px;"><span class="pill-badge pill-neutral">${escapeHtml(a.action)}</span></td>
+          <td style="padding: 12px 18px; color: var(--text-secondary);">${escapeHtml(a.details || a.asset_name || '—')}</td>
           <td style="padding: 12px 18px;" class="mono">${new Date(a.created_at).toLocaleString()}</td>
         </tr>
       `).join('');

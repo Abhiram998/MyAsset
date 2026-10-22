@@ -1,7 +1,7 @@
 const { connect } = require('../db/database');
 
 class AssignmentRepository {
-    findAll(user, filters = {}) {
+    async findAll(user, filters = {}) {
         const db = connect();
         let query = `
             SELECT asn.*, 
@@ -55,10 +55,10 @@ class AssignmentRepository {
         }
 
         query += ` ORDER BY asn.assigned_at DESC`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    findById(id, user) {
+    async findById(id, user) {
         const db = connect();
         const query = `
             SELECT asn.*, a.organization_id, a.name as asset_name, a.tag_id as asset_tag
@@ -66,15 +66,15 @@ class AssignmentRepository {
             JOIN assets a ON asn.asset_id = a.id
             WHERE asn.id = ? AND a.organization_id = ?
         `;
-        return db.prepare(query).get(id, user.organization_id);
+        return await db.prepare(query).get(id, user.organization_id);
     }
 
-    checkout(data, user) {
+    async checkout(data, user) {
         const db = connect();
         const { asset_id, employee_id, expected_return, notes } = data;
 
         // Verify asset availability
-        const asset = db.prepare(`SELECT * FROM assets WHERE id = ? AND organization_id = ?`).get(asset_id, user.organization_id);
+        const asset = await db.prepare(`SELECT * FROM assets WHERE id = ? AND organization_id = ?`).get(asset_id, user.organization_id);
         if (!asset) {
             throw new Error('Asset not found');
         }
@@ -83,14 +83,14 @@ class AssignmentRepository {
         }
 
         // Verify employee
-        const employee = db.prepare(`SELECT * FROM employees WHERE id = ? AND organization_id = ?`).get(employee_id, user.organization_id);
+        const employee = await db.prepare(`SELECT * FROM employees WHERE id = ? AND organization_id = ?`).get(employee_id, user.organization_id);
         if (!employee) {
             throw new Error('Employee not found');
         }
 
         // Authorization check for supervisor
         if (user.role_name === 'SITE / CREW SUPERVISOR') {
-            const isAuthorized = db.prepare(`
+            const isAuthorized = await db.prepare(`
                 SELECT 1 FROM employee_zones 
                 WHERE employee_id = ? 
                 AND zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
@@ -101,17 +101,17 @@ class AssignmentRepository {
         }
 
         let assignmentId;
-        const tx = db.transaction(() => {
-            const result = db.prepare(`
+        const tx = db.transaction(async () => {
+            const result = await db.prepare(`
                 INSERT INTO assignments (asset_id, employee_id, assigned_by_id, expected_return, notes)
                 VALUES (?, ?, ?, ?, ?)
             `).run(asset_id, employee_id, user.id, expected_return || null, notes || null);
             
             assignmentId = result.lastInsertRowid;
 
-            db.prepare(`UPDATE assets SET status = 'ASSIGNED' WHERE id = ?`).run(asset_id);
+            await db.prepare(`UPDATE assets SET status = 'ASSIGNED' WHERE id = ?`).run(asset_id);
 
-            db.prepare(`
+            await db.prepare(`
                 INSERT INTO activity (organization_id, employee_id, action, asset_id, zone_id, details)
                 VALUES (?, ?, 'CHECKED_OUT_ASSET', ?, ?, ?)
             `).run(
@@ -123,13 +123,13 @@ class AssignmentRepository {
             );
         });
 
-        tx();
+        await tx();
         return assignmentId;
     }
 
-    returnAsset(assignmentId, user) {
+    async returnAsset(assignmentId, user) {
         const db = connect();
-        const assignment = this.findById(assignmentId, user);
+        const assignment = await this.findById(assignmentId, user);
         if (!assignment) {
             throw new Error('Assignment record not found');
         }
@@ -142,23 +142,23 @@ class AssignmentRepository {
             throw new Error('You can only return assets checked out to yourself');
         }
 
-        const employee = db.prepare(`SELECT * FROM employees WHERE id = ?`).get(assignment.employee_id);
-        const asset = db.prepare(`SELECT * FROM assets WHERE id = ?`).get(assignment.asset_id);
+        const employee = await db.prepare(`SELECT * FROM employees WHERE id = ?`).get(assignment.employee_id);
+        const asset = await db.prepare(`SELECT * FROM assets WHERE id = ?`).get(assignment.asset_id);
 
-        const tx = db.transaction(() => {
-            db.prepare(`
+        const tx = db.transaction(async () => {
+            await db.prepare(`
                 UPDATE assignments 
                 SET returned_at = CURRENT_TIMESTAMP 
                 WHERE id = ?
             `).run(assignmentId);
 
-            db.prepare(`
+            await db.prepare(`
                 UPDATE assets 
                 SET status = 'AVAILABLE' 
                 WHERE id = ?
             `).run(assignment.asset_id);
 
-            db.prepare(`
+            await db.prepare(`
                 INSERT INTO activity (organization_id, employee_id, action, asset_id, zone_id, details)
                 VALUES (?, ?, 'RETURNED_ASSET', ?, ?, ?)
             `).run(
@@ -170,22 +170,23 @@ class AssignmentRepository {
             );
         });
 
-        tx();
+        await tx();
         return true;
     }
 
-    getStats(user) {
+    async getStats(user) {
         const db = connect();
         const orgId = user.organization_id;
 
-        const totalCheckedOut = db.prepare(`
+        const totalCheckedOutRow = await db.prepare(`
             SELECT COUNT(*) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
             WHERE a.organization_id = ? AND asn.returned_at IS NULL
-        `).get(orgId).count;
+        `).get(orgId);
+        const totalCheckedOut = totalCheckedOutRow?.count || 0;
 
-        const overdue = db.prepare(`
+        const overdueRow = await db.prepare(`
             SELECT COUNT(*) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
@@ -193,9 +194,10 @@ class AssignmentRepository {
               AND asn.returned_at IS NULL 
               AND asn.expected_return IS NOT NULL 
               AND asn.expected_return < CURRENT_TIMESTAMP
-        `).get(orgId).count;
+        `).get(orgId);
+        const overdue = overdueRow?.count || 0;
 
-        const dueToday = db.prepare(`
+        const dueTodayRow = await db.prepare(`
             SELECT COUNT(*) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
@@ -203,30 +205,37 @@ class AssignmentRepository {
               AND asn.returned_at IS NULL 
               AND asn.expected_return IS NOT NULL 
               AND date(asn.expected_return) = date('now')
-        `).get(orgId).count;
+        `).get(orgId);
+        const dueToday = dueTodayRow?.count || 0;
 
-        const returnedToday = db.prepare(`
+        const returnedTodayRow = await db.prepare(`
             SELECT COUNT(*) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
             WHERE a.organization_id = ? 
               AND asn.returned_at IS NOT NULL 
               AND date(asn.returned_at) = date('now')
-        `).get(orgId).count;
+        `).get(orgId);
+        const returnedToday = returnedTodayRow?.count || 0;
 
-        const siteCount = db.prepare(`
+        const siteCountRow = await db.prepare(`
             SELECT COUNT(DISTINCT a.zone_id) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
             WHERE a.organization_id = ? AND asn.returned_at IS NULL AND a.zone_id IS NOT NULL
-        `).get(orgId).count;
+        `).get(orgId);
+        const siteCount = siteCountRow?.count || 0;
 
         return {
             checkedOut: totalCheckedOut,
+            checked_out: totalCheckedOut,
             overdue,
             dueToday,
+            due_today: dueToday,
             returnedToday,
-            siteCount
+            returned_today: returnedToday,
+            siteCount,
+            site_count: siteCount
         };
     }
 }

@@ -2,7 +2,7 @@ const { connect } = require('../db/database');
 const bcrypt = require('bcrypt');
 
 class EmployeeRepository {
-    findAll(user, filters = {}) {
+    async findAll(user, filters = {}) {
         const db = connect();
         
         // Maintenance staff have no access to the employee directory
@@ -55,10 +55,10 @@ class EmployeeRepository {
         }
 
         query += ` ORDER BY e.created_at DESC`;
-        return db.prepare(query).all(...params);
+        return await db.prepare(query).all(...params);
     }
 
-    findById(id, user) {
+    async findById(id, user) {
         const db = connect();
         let query = `
             SELECT e.*, u.email, r.name as role_name, r.id as role_id
@@ -73,10 +73,10 @@ class EmployeeRepository {
             return null;
         }
 
-        const employee = db.prepare(query).get(...params);
+        const employee = await db.prepare(query).get(...params);
         if (!employee) return null;
 
-        employee.zones = db.prepare(`
+        employee.zones = await db.prepare(`
             SELECT z.id, z.name, l.name as location_name
             FROM employee_zones ez
             JOIN zones z ON ez.zone_id = z.id
@@ -87,27 +87,27 @@ class EmployeeRepository {
         return employee;
     }
 
-    create(employeeData, user) {
+    async create(employeeData, user) {
         const db = connect();
         const { first_name, last_name, status, email, password, role_id, zone_ids } = employeeData;
 
         let employeeId;
-        const tx = db.transaction(() => {
+        const tx = db.transaction(async () => {
             let userId = null;
             if (email && password && role_id) {
-                const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+                const existing = await db.prepare('SELECT id FROM users WHERE email = ?').get(email);
                 if (existing) {
                     throw new Error('A user account with this email already exists');
                 }
                 const password_hash = bcrypt.hashSync(password, 10);
-                const userRes = db.prepare(`
+                const userRes = await db.prepare(`
                     INSERT INTO users (organization_id, email, password_hash, role_id)
                     VALUES (?, ?, ?, ?)
                 `).run(user.organization_id, email, password_hash, Number(role_id));
                 userId = userRes.lastInsertRowid;
             }
 
-            const empRes = db.prepare(`
+            const empRes = await db.prepare(`
                 INSERT INTO employees (user_id, organization_id, first_name, last_name, status)
                 VALUES (?, ?, ?, ?, ?)
             `).run(userId, user.organization_id, first_name, last_name, status || 'ACTIVE');
@@ -115,30 +115,29 @@ class EmployeeRepository {
             employeeId = empRes.lastInsertRowid;
 
             if (zone_ids && Array.isArray(zone_ids)) {
-                const insertZone = db.prepare(`
-                    INSERT INTO employee_zones (employee_id, zone_id)
-                    VALUES (?, ?)
-                    ON CONFLICT DO NOTHING
-                `);
                 for (const zid of zone_ids) {
-                    insertZone.run(employeeId, Number(zid));
+                    await db.prepare(`
+                        INSERT INTO employee_zones (employee_id, zone_id)
+                        VALUES (?, ?)
+                        ON CONFLICT DO NOTHING
+                    `).run(employeeId, Number(zid));
                 }
             }
         });
 
-        tx();
+        await tx();
         return employeeId;
     }
 
-    update(id, employeeData, user) {
+    async update(id, employeeData, user) {
         const db = connect();
         const { first_name, last_name, status, zone_ids } = employeeData;
 
-        const employee = this.findById(id, user);
+        const employee = await this.findById(id, user);
         if (!employee) return false;
 
-        const tx = db.transaction(() => {
-            db.prepare(`
+        const tx = db.transaction(async () => {
+            await db.prepare(`
                 UPDATE employees
                 SET first_name = COALESCE(?, first_name),
                     last_name = COALESCE(?, last_name),
@@ -147,18 +146,17 @@ class EmployeeRepository {
             `).run(first_name || null, last_name || null, status || null, id, user.organization_id);
 
             if (zone_ids && Array.isArray(zone_ids)) {
-                db.prepare('DELETE FROM employee_zones WHERE employee_id = ?').run(id);
-                const insertZone = db.prepare(`
-                    INSERT INTO employee_zones (employee_id, zone_id)
-                    VALUES (?, ?)
-                `);
+                await db.prepare('DELETE FROM employee_zones WHERE employee_id = ?').run(id);
                 for (const zid of zone_ids) {
-                    insertZone.run(id, Number(zid));
+                    await db.prepare(`
+                        INSERT INTO employee_zones (employee_id, zone_id)
+                        VALUES (?, ?)
+                    `).run(id, Number(zid));
                 }
             }
         });
 
-        tx();
+        await tx();
         return true;
     }
 }

@@ -1,9 +1,9 @@
 const { connect } = require('../db/database');
 
 class RfidRepository {
-    findAll(orgId) {
+    async findAll(orgId) {
         const db = connect();
-        return db.prepare(`
+        return await db.prepare(`
             SELECT r.*, l.name as location_name
             FROM rfid_devices r
             LEFT JOIN locations l ON r.location_id = l.id
@@ -13,9 +13,9 @@ class RfidRepository {
         `).all(orgId);
     }
 
-    create(orgId, name, locationId) {
+    async create(orgId, name, locationId) {
         const db = connect();
-        const result = db.prepare(`
+        const result = await db.prepare(`
             INSERT INTO rfid_devices (organization_id, name, location_id, status)
             VALUES (?, ?, ?, 'PLANNED')
         `).run(orgId, name, locationId ? Number(locationId) : null);

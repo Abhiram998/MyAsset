@@ -1,11 +1,11 @@
 const activityRepository = require('../repositories/activity.repository');
 
 class ActivityService {
-    logActivity(user, action, asset_id = null, task_id = null, zone_id = null, details = null) {
+    async logActivity(user, action, asset_id = null, task_id = null, zone_id = null, details = null) {
         if (!user || !user.organization_id || !user.employee_id) return;
 
         try {
-            activityRepository.logActivity({
+            await activityRepository.logActivity({
                 organization_id: user.organization_id,
                 employee_id: user.employee_id,
                 action,

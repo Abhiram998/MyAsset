@@ -281,14 +281,15 @@
     try {
       const res = await fetch('/api/v1/employees');
       if (res.ok) {
-        allEmployees = await res.json();
+        const raw = await res.json();
+        allEmployees = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         
         // Populate Role Filter dropdown based on actual data
         const roles = [...new Set(allEmployees.map(e => e.role_name || e.job_title))].filter(Boolean);
         const roleSelect = document.getElementById('roleFilterSelect');
         roleSelect.innerHTML = '<option value="all">All Roles</option>';
         roles.forEach(role => {
-          roleSelect.innerHTML += `<option value="${role}">${role}</option>`;
+          roleSelect.innerHTML += `<option value="${escapeHtml(role)}">${escapeHtml(role)}</option>`;
         });
 
         renderEmployees();
@@ -305,9 +306,10 @@
     try {
       const res = await fetch('/api/v1/zones');
       if (res.ok) {
-        const zones = await res.json();
+        const raw = await res.json();
+        const zones = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
         zoneSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
-          zones.map(z => `<option value="${z.id}">${z.name}</option>`).join('');
+          zones.map(z => `<option value="${z.id}">${escapeHtml(z.name)}</option>`).join('');
       }
     } catch (e) {
       console.error(e);
