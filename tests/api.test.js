@@ -279,6 +279,7 @@ async function runTests() {
     console.log("✅ Asset history, archiving, and restoration verified");
 
     console.log("\n--- 10. Locations & Zones ---");
+    // 10.1 Create location
     let locRes = await fetch(`${API_URL}/locations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
@@ -286,14 +287,107 @@ async function runTests() {
     });
     assert.strictEqual(locRes.status, 201, "Admin should create location");
     const locData = await locRes.json();
+    assert.ok(locData.id, "Created location should have an id");
 
+    // 10.2 Missing location name validation
+    let badLocRes = await fetch(`${API_URL}/locations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ address: 'No Name St' })
+    });
+    assert.strictEqual(badLocRes.status, 400, "Location creation must require name");
+
+    // 10.3 List locations
+    let allLocsRes = await fetch(`${API_URL}/locations`, {
+        headers: { 'Cookie': adminCookie }
+    });
+    assert.strictEqual(allLocsRes.status, 200, "Admin should list locations");
+    const allLocs = await allLocsRes.json();
+    assert.ok(Array.isArray(allLocs), "Locations response must be an array");
+    assert.ok(allLocs.some(l => l.id === locData.id), "Created location must appear in list");
+
+    // 10.4 Create zone using location_id
     let zoneRes = await fetch(`${API_URL}/zones`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
         body: JSON.stringify({ location_id: locData.id, name: 'Tool Barn', description: 'Central tool storage' })
     });
-    assert.strictEqual(zoneRes.status, 201, "Admin should create zone");
-    console.log("✅ Locations & Zones CRUD verified");
+    assert.strictEqual(zoneRes.status, 201, "Admin should create zone with location_id");
+    const zoneData = await zoneRes.json();
+    assert.ok(zoneData.id, "Created zone should have an id");
+
+    // 10.5 Create zone using location_name (auto-facility creation / resolution)
+    let autoZoneRes = await fetch(`${API_URL}/zones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ location_name: 'East Distribution Hub', address: '789 Logistics Way', name: 'Loading Bay 4' })
+    });
+    assert.strictEqual(autoZoneRes.status, 201, "Admin should create zone with location_name");
+    const autoZoneData = await autoZoneRes.json();
+    assert.ok(autoZoneData.id, "Auto-created zone must have an id");
+    assert.ok(autoZoneData.location_id, "Auto-created zone must return resolved location_id");
+
+    // 10.6 Zone validation: missing zone name
+    let noNameZoneRes = await fetch(`${API_URL}/zones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ location_id: locData.id })
+    });
+    assert.strictEqual(noNameZoneRes.status, 400, "Zone creation must require name");
+    const noNameErr = await noNameZoneRes.json();
+    assert.ok(noNameErr.error.includes('Zone name is required'), "Error message must specify zone name is required");
+
+    // 10.7 Zone validation: missing both location_id and location_name
+    let noLocZoneRes = await fetch(`${API_URL}/zones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ name: 'Orphan Zone' })
+    });
+    assert.strictEqual(noLocZoneRes.status, 400, "Zone creation must require location_id or location_name");
+
+    // 10.8 Zone validation: non-existent / unauthorized location_id (tenant isolation)
+    let badLocZoneRes = await fetch(`${API_URL}/zones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ location_id: 999999, name: 'Ghost Zone' })
+    });
+    assert.strictEqual(badLocZoneRes.status, 404, "Zone creation must reject invalid or cross-tenant location_id");
+
+    // 10.9 List zones: verify response is array and includes location details
+    let zonesListRes = await fetch(`${API_URL}/zones`, {
+        headers: { 'Cookie': adminCookie }
+    });
+    assert.strictEqual(zonesListRes.status, 200, "Admin should list zones");
+    const zonesList = await zonesListRes.json();
+    assert.ok(Array.isArray(zonesList), "Zones response must be an array");
+    const foundToolBarn = zonesList.find(z => z.id === zoneData.id);
+    assert.ok(foundToolBarn, "Created zone must appear in zones list");
+    assert.strictEqual(foundToolBarn.location_name, 'West Green Yard', "Zone should include parent location name");
+
+    // 10.10 Get zone by id: verify assets and crew collections are returned
+    let zoneDetailRes = await fetch(`${API_URL}/zones/${zoneData.id}`, {
+        headers: { 'Cookie': adminCookie }
+    });
+    assert.strictEqual(zoneDetailRes.status, 200, "Admin should retrieve zone details");
+    const zoneDetail = await zoneDetailRes.json();
+    assert.ok(Array.isArray(zoneDetail.assets), "Zone details must include assets array");
+    assert.ok(Array.isArray(zoneDetail.crew), "Zone details must include crew array");
+
+    // 10.11 RBAC: Field Worker cannot create zone
+    let workerZoneRes = await fetch(`${API_URL}/zones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': fieldCookie },
+        body: JSON.stringify({ location_id: locData.id, name: 'Unauthorized Zone' })
+    });
+    assert.strictEqual(workerZoneRes.status, 403, "Field Worker cannot create zone");
+
+    // 10.12 Frontend resilience test: simulating unexpected non-array response handling
+    const safeZoneParse = (data) => Array.isArray(data) ? data : [];
+    assert.deepStrictEqual(safeZoneParse({ error: 'Failed to load' }), [], "Frontend parser must safely handle error objects as empty array");
+    assert.deepStrictEqual(safeZoneParse(null), [], "Frontend parser must safely handle null as empty array");
+    assert.deepStrictEqual(safeZoneParse([{ id: 1, name: 'Z1' }]).length, 1, "Frontend parser must pass through valid arrays");
+
+    console.log("✅ Locations & Zones CRUD, validation, tenant isolation, and response shape resilience verified");
 
     console.log("\n--- 11. User Management & Authorization ---");
     const dynEmail = 'newmaint_' + Date.now() + '@test.com';

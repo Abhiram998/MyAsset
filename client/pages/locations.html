@@ -96,29 +96,52 @@
   <div class="modal-card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <h3 style="font-size: 18px; font-weight: 800;">Register New Site / Zone</h3>
-      <button onclick="closeAddSiteModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+      <button type="button" onclick="closeAddSiteModal()" style="border:none; background:none; font-size:20px; cursor:pointer;" aria-label="Close modal">✕</button>
     </div>
+    
+    <div id="addSiteError" style="display: none; padding: 10px 14px; background: rgba(220, 38, 38, 0.1); border: 1px solid var(--rose-crimson); border-radius: 8px; color: var(--rose-crimson); font-size: 13px; font-weight: 600; margin-bottom: 14px;"></div>
+
     <form onsubmit="handleAddSiteSubmit(event)">
       <div class="modal-field">
-        <label>Zone / Site Name *</label>
+        <label for="newZoneName">Zone / Site Name *</label>
         <div class="neu-inset" style="padding: 8px 14px;">
           <input type="text" id="newZoneName" required placeholder="e.g. Zone B - North Yard" style="border:none; background:transparent; width:100%; outline:none;">
         </div>
       </div>
+
       <div class="modal-field">
-        <label>Facility / Location</label>
+        <label for="locationSelect">Facility / Parent Location *</label>
         <div class="neu-inset" style="padding: 8px 14px;">
-          <input type="text" id="newLocationName" placeholder="e.g. Seattle Central Depot" style="border:none; background:transparent; width:100%; outline:none;">
+          <select id="locationSelect" onchange="handleLocationSelectChange()" style="border:none; background:transparent; width:100%; outline:none; font-size: 13.5px; color: var(--text-primary); cursor: pointer;">
+            <option value="__NEW__">+ Create New Facility / Location...</option>
+          </select>
         </div>
       </div>
-      <div class="modal-field">
-        <label>Address / Geo Coordinates</label>
-        <div class="neu-inset" style="padding: 8px 14px;">
-          <input type="text" id="newAddress" placeholder="e.g. 1042 Industrial Parkway" style="border:none; background:transparent; width:100%; outline:none;">
+
+      <div id="newLocationFields">
+        <div class="modal-field">
+          <label for="newLocationName">New Facility Name *</label>
+          <div class="neu-inset" style="padding: 8px 14px;">
+            <input type="text" id="newLocationName" placeholder="e.g. Seattle Central Depot" style="border:none; background:transparent; width:100%; outline:none;">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="newAddress">Address / Geo Coordinates (Optional)</label>
+          <div class="neu-inset" style="padding: 8px 14px;">
+            <input type="text" id="newAddress" placeholder="e.g. 1042 Industrial Parkway" style="border:none; background:transparent; width:100%; outline:none;">
+          </div>
         </div>
       </div>
+
+      <div class="modal-field">
+        <label for="newDescription">Description / Operational Purpose (Optional)</label>
+        <div class="neu-inset" style="padding: 8px 14px;">
+          <input type="text" id="newDescription" placeholder="e.g. Equipment staging, repairs, or primary laydown yard" style="border:none; background:transparent; width:100%; outline:none;">
+        </div>
+      </div>
+
       <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button type="submit" class="pill-btn pill-btn-emerald" style="flex: 1; justify-content: center;">Save Site</button>
+        <button type="submit" id="submitSiteBtn" class="pill-btn pill-btn-emerald" style="flex: 1; justify-content: center;">Save Site</button>
         <button type="button" class="pill-btn pill-btn-light" onclick="closeAddSiteModal()">Cancel</button>
       </div>
     </form>
@@ -130,7 +153,7 @@
   <div class="modal-card" style="max-width: 640px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <h3 style="font-size: 18px; font-weight: 800;" id="modalSiteTitle">Site Details</h3>
-      <button onclick="closeSiteDetailsModal()" style="border:none; background:none; font-size:20px; cursor:pointer;">✕</button>
+      <button type="button" onclick="closeSiteDetailsModal()" style="border:none; background:none; font-size:20px; cursor:pointer;" aria-label="Close modal">✕</button>
     </div>
     
     <div id="modalSiteContent">
@@ -141,101 +164,245 @@
 
 <script>
   let allZones = [];
+  let availableLocations = [];
+
+  async function loadLocationsForSelect() {
+    const select = document.getElementById('locationSelect');
+    if (!select) return;
+
+    try {
+      const res = await fetch('/api/v1/locations');
+      if (res.ok) {
+        const data = await res.json();
+        availableLocations = Array.isArray(data) ? data : [];
+      } else {
+        availableLocations = [];
+      }
+    } catch (e) {
+      console.warn('Could not load locations:', e);
+      availableLocations = [];
+    }
+
+    select.innerHTML = '';
+    if (availableLocations.length > 0) {
+      availableLocations.forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc.id;
+        opt.textContent = loc.name + (loc.address ? ` (${loc.address})` : '');
+        select.appendChild(opt);
+      });
+      const newOpt = document.createElement('option');
+      newOpt.value = '__NEW__';
+      newOpt.textContent = '+ Create New Facility / Location...';
+      select.appendChild(newOpt);
+    } else {
+      const newOpt = document.createElement('option');
+      newOpt.value = '__NEW__';
+      newOpt.textContent = '+ Create New Facility / Location...';
+      select.appendChild(newOpt);
+    }
+
+    handleLocationSelectChange();
+  }
+
+  function handleLocationSelectChange() {
+    const select = document.getElementById('locationSelect');
+    const fields = document.getElementById('newLocationFields');
+    const locNameInput = document.getElementById('newLocationName');
+    if (!select || !fields) return;
+
+    if (select.value === '__NEW__') {
+      fields.style.display = 'block';
+      if (locNameInput) locNameInput.required = true;
+    } else {
+      fields.style.display = 'none';
+      if (locNameInput) locNameInput.required = false;
+    }
+  }
 
   async function loadZones() {
+    const container = document.getElementById('zonesContainer');
     try {
       const res = await fetch('/api/v1/zones');
-      if (!res.ok) throw new Error("Failed to load");
-      allZones = await res.json();
+      if (res.status === 401) {
+        window.location.href = '/pages/login.html';
+        return;
+      }
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        const errorMsg = (data && data.error) ? data.error : `Failed to load job sites (HTTP ${res.status})`;
+        allZones = [];
+        renderZoneError(errorMsg);
+        return;
+      }
+
+      if (!Array.isArray(data)) {
+        allZones = [];
+        const errorMsg = (data && data.error) ? data.error : 'Unexpected response format from server';
+        renderZoneError(errorMsg);
+        return;
+      }
+
+      allZones = data;
       renderZones(allZones);
     } catch(e) {
-      console.error(e);
-      document.getElementById('zonesContainer').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--rose-crimson);">Error loading job sites</div>';
+      console.error('Error loading zones:', e);
+      allZones = [];
+      renderZoneError('Network error loading job sites. Please check your connection.');
     }
+  }
+
+  function renderZoneError(message) {
+    const container = document.getElementById('zonesContainer');
+    if (!container) return;
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px;">
+        <div style="color: var(--rose-crimson); font-weight: 700; margin-bottom: 8px;">⚠️ ${escapeHtml(message)}</div>
+        <button class="pill-btn pill-btn-light" onclick="loadZones()" style="margin-top: 10px;">Retry</button>
+      </div>
+    `;
   }
 
   function renderZones(zones) {
     const container = document.getElementById('zonesContainer');
-    if (!zones || zones.length === 0) {
+    if (!container) return;
+
+    if (!Array.isArray(zones)) {
+      renderZoneError((zones && zones.error) || 'Invalid data received');
+      return;
+    }
+
+    if (zones.length === 0) {
       container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-tertiary); padding: 30px;">No job sites registered yet. Click "+ Add Site" to create one.</div>';
       return;
     }
 
     container.innerHTML = zones.map(zone => {
+      const zoneName = zone.name || 'Unnamed Site';
+      const locName = zone.location_name || 'Primary Facility';
+      const coords = zone.location_address || zone.coordinates || 'Configured';
       return `
-        <div class="neu-panel site-card" data-name="${escapeHtml(zone.name.toLowerCase())}" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="neu-panel site-card" data-name="${escapeHtml(zoneName.toLowerCase())}" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <div>
-                <h3 style="font-size: 18px; font-family: 'Outfit', sans-serif;">${escapeHtml(zone.name)}</h3>
-                <div style="font-size: 11.5px; color: var(--text-tertiary);">${escapeHtml(zone.location_name || 'Primary Facility')}</div>
+                <h3 style="font-size: 18px; font-family: 'Outfit', sans-serif;">${escapeHtml(zoneName)}</h3>
+                <div style="font-size: 11.5px; color: var(--text-tertiary);">${escapeHtml(locName)}</div>
               </div>
               <span class="pill-badge pill-ok">Active</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
               <div class="stat-badge"><span>📦 Asset Units</span><span><strong>${zone.asset_count || 0} Assets</strong></span></div>
               <div class="stat-badge"><span>👥 Assigned Crew</span><span><strong>${zone.employee_count || 0} Members</strong></span></div>
-              <div class="stat-badge"><span>📍 Coordinates</span><span style="font-size:11px; color:var(--text-secondary);">${zone.coordinates ? escapeHtml(zone.coordinates) : 'Configured'}</span></div>
+              <div class="stat-badge"><span>📍 Facility / Address</span><span style="font-size:11px; color:var(--text-secondary); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(coords)}">${escapeHtml(coords)}</span></div>
             </div>
           </div>
-          <button class="pill-btn pill-btn-light" style="width: 100%; justify-content: center;" onclick="viewZoneDetails(${zone.id}, '${escapeHtml(zone.name)}')">View Site Inventory →</button>
+          <button class="pill-btn pill-btn-light" style="width: 100%; justify-content: center;" onclick="viewZoneDetails(${zone.id}, '${escapeHtml(zoneName)}')">View Site Inventory →</button>
         </div>
       `;
     }).join('');
   }
 
   function filterZones() {
+    if (!Array.isArray(allZones)) return;
     const q = (document.getElementById('siteSearchInput')?.value || '').toLowerCase();
-    const filtered = allZones.filter(z => z.name.toLowerCase().includes(q) || (z.location_name || '').toLowerCase().includes(q));
+    const filtered = allZones.filter(z => (z.name || '').toLowerCase().includes(q) || (z.location_name || '').toLowerCase().includes(q));
     renderZones(filtered);
   }
 
-  function openAddSiteModal() {
+  async function openAddSiteModal() {
+    const errorBanner = document.getElementById('addSiteError');
+    if (errorBanner) errorBanner.style.display = 'none';
+
+    document.getElementById('newZoneName').value = '';
+    const locNameEl = document.getElementById('newLocationName');
+    if (locNameEl) locNameEl.value = '';
+    const addrEl = document.getElementById('newAddress');
+    if (addrEl) addrEl.value = '';
+    const descEl = document.getElementById('newDescription');
+    if (descEl) descEl.value = '';
+
+    await loadLocationsForSelect();
     document.getElementById('addSiteModal').classList.add('open');
   }
 
   function closeAddSiteModal() {
+    const errorBanner = document.getElementById('addSiteError');
+    if (errorBanner) errorBanner.style.display = 'none';
     document.getElementById('addSiteModal').classList.remove('open');
+  }
+
+  function showAddSiteError(msg) {
+    const errorBanner = document.getElementById('addSiteError');
+    if (errorBanner) {
+      errorBanner.textContent = msg;
+      errorBanner.style.display = 'block';
+    }
   }
 
   async function handleAddSiteSubmit(e) {
     e.preventDefault();
+    const errorBanner = document.getElementById('addSiteError');
+    if (errorBanner) errorBanner.style.display = 'none';
+
     const name = document.getElementById('newZoneName').value.trim();
-    const locationName = document.getElementById('newLocationName').value.trim() || name;
-    const address = document.getElementById('newAddress').value.trim();
+    const select = document.getElementById('locationSelect');
+    const isNewLocation = !select || select.value === '__NEW__';
+    const locationName = document.getElementById('newLocationName')?.value.trim();
+    const address = document.getElementById('newAddress')?.value.trim();
+    const description = document.getElementById('newDescription')?.value.trim();
+
+    if (!name) {
+      showAddSiteError('Zone / Site name is required');
+      return;
+    }
+
+    const payload = { name, description };
+    if (isNewLocation) {
+      if (!locationName) {
+        showAddSiteError('Please enter a facility name for the new location');
+        return;
+      }
+      payload.location_name = locationName;
+      if (address) payload.address = address;
+    } else {
+      payload.location_id = Number(select.value);
+    }
+
+    const submitBtn = document.getElementById('submitSiteBtn');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+    }
 
     try {
-      // First create location
-      const locRes = await fetch('/api/v1/locations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: locationName, address })
-      });
-
-      let location_id = null;
-      if (locRes.ok) {
-        const locData = await locRes.json();
-        location_id = locData.id;
-      }
-
-      // Then create zone
       const zoneRes = await fetch('/api/v1/zones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, location_id })
+        body: JSON.stringify(payload)
       });
 
+      const zoneData = await zoneRes.json().catch(() => ({}));
       if (zoneRes.ok) {
         window.showToast?.('Site & Zone created successfully', 'success');
         closeAddSiteModal();
-        await loadZones();
+        await Promise.all([loadZones(), loadLocationsForSelect()]);
       } else {
-        const err = await zoneRes.json();
-        window.showToast?.(err.error || 'Failed to create site', 'error');
+        const errorMsg = zoneData.error || ('Failed to create site (HTTP ' + zoneRes.status + ')');
+        showAddSiteError(errorMsg);
+        window.showToast?.(errorMsg, 'error');
       }
     } catch (err) {
-      console.error(err);
-      window.showToast?.('Network error registering site', 'error');
+      console.error('Error registering site:', err);
+      const msg = 'Network error registering site. Please check your connection.';
+      showAddSiteError(msg);
+      window.showToast?.(msg, 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Site';
+      }
     }
   }
 
@@ -300,7 +467,10 @@
       tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
   }
 
-  window.addEventListener('shell-ready', loadZones);
+  window.addEventListener('shell-ready', () => {
+    loadZones();
+    loadLocationsForSelect();
+  });
 </script>
 <script src="../js/shell.js"></script>
 </body>

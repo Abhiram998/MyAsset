@@ -1,8 +1,9 @@
 const { connect } = require('../db/database');
 
 class LocationRepository {
-    findAll(user) {
+    async findAll(user) {
         const db = connect();
+        const orgId = typeof user === 'object' && user !== null ? user.organization_id : user;
         let query = `
             SELECT l.*,
                    (SELECT COUNT(*) FROM zones z WHERE z.location_id = l.id) as zone_count,
@@ -22,17 +23,18 @@ class LocationRepository {
             WHERE l.organization_id = ?
             ORDER BY l.name ASC
         `;
-        return db.prepare(query).all(user.organization_id);
+        return await db.prepare(query).all(orgId);
     }
 
-    findById(id, user) {
+    async findById(id, user) {
         const db = connect();
-        const location = db.prepare(`
+        const orgId = typeof user === 'object' && user !== null ? user.organization_id : user;
+        const location = await db.prepare(`
             SELECT * FROM locations WHERE id = ? AND organization_id = ?
-        `).get(id, user.organization_id);
+        `).get(id, orgId);
 
         if (location) {
-            location.zones = db.prepare(`
+            location.zones = await db.prepare(`
                 SELECT z.*,
                        (SELECT COUNT(*) FROM assets WHERE zone_id = z.id AND (status != 'ARCHIVED' OR status IS NULL)) as asset_count,
                        (SELECT COUNT(*) FROM employee_zones WHERE zone_id = z.id) as employee_count
@@ -45,13 +47,23 @@ class LocationRepository {
         return location;
     }
 
-    create(locationData) {
+    async findByName(name, organizationId) {
+        if (!name || typeof name !== 'string') return null;
+        const db = connect();
+        return await db.prepare(`
+            SELECT * FROM locations 
+            WHERE organization_id = ? AND LOWER(name) = LOWER(?)
+            LIMIT 1
+        `).get(organizationId, name.trim());
+    }
+
+    async create(locationData) {
         const db = connect();
         const { organization_id, name, address } = locationData;
-        const result = db.prepare(`
+        const result = await db.prepare(`
             INSERT INTO locations (organization_id, name, address)
             VALUES (?, ?, ?)
-        `).run(organization_id, name, address || null);
+        `).run(organization_id, name.trim(), address ? address.trim() : null);
         return result.lastInsertRowid;
     }
 }
