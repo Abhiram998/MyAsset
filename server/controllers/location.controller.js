@@ -1,9 +1,25 @@
 const locationRepository = require('../repositories/location.repository');
+const zoneRepository = require('../repositories/zone.repository');
 
 class LocationController {
     async getAllLocations(req, res) {
         try {
-            const locations = await locationRepository.findAll(req.user);
+            let locations = await locationRepository.findAll(req.user);
+            if ((!locations || locations.length === 0) && req.user && req.user.organization_id) {
+                const locId = await locationRepository.create({
+                    organization_id: req.user.organization_id,
+                    name: 'Primary Operating Depot',
+                    address: 'Headquarters / Main Yard'
+                });
+                if (locId) {
+                    await zoneRepository.create({
+                        location_id: locId,
+                        name: 'Main Equipment Yard',
+                        description: 'Primary staging area for all fleet units'
+                    });
+                    locations = await locationRepository.findAll(req.user);
+                }
+            }
             res.json(locations || []);
         } catch (error) {
             res.status(500).json({ error: error.message });

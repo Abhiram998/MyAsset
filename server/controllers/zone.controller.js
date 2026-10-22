@@ -4,7 +4,28 @@ const locationRepository = require('../repositories/location.repository');
 class ZoneController {
     async getAllZones(req, res) {
         try {
-            const zones = await zoneRepository.findAll(req.user);
+            let zones = await zoneRepository.findAll(req.user);
+            if ((!zones || zones.length === 0) && req.user && req.user.organization_id) {
+                let locs = await locationRepository.findAll(req.user);
+                let locId;
+                if (!locs || locs.length === 0) {
+                    locId = await locationRepository.create({
+                        organization_id: req.user.organization_id,
+                        name: 'Primary Operating Depot',
+                        address: 'Headquarters / Main Yard'
+                    });
+                } else {
+                    locId = locs[0].id;
+                }
+                if (locId) {
+                    await zoneRepository.create({
+                        location_id: locId,
+                        name: 'Main Equipment Yard',
+                        description: 'Primary staging area for all fleet units'
+                    });
+                    zones = await zoneRepository.findAll(req.user);
+                }
+            }
             res.json(zones || []);
         } catch (error) {
             res.status(500).json({ error: error.message });
