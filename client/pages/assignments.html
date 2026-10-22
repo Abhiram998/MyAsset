@@ -89,7 +89,7 @@
           <span class="app-avatar" aria-hidden="true"></span>
           <span class="app-user-name"></span>
         </div>
-        <button class="pill-btn pill-btn-emerald app-cta" onclick="openCheckoutModal()" aria-label="Assign Equipment">
+        <button class="pill-btn pill-btn-emerald app-cta" id="appCheckoutBtn" onclick="openCheckoutModal()" aria-label="Assign Equipment">
           <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Check Out Asset</span>
         </button>
       </div>
@@ -102,7 +102,7 @@
           <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Track active equipment checkouts, expected returns, and personnel accountability.</p>
         </div>
 
-        <button class="pill-btn pill-btn-emerald" onclick="openCheckoutModal()">
+        <button class="pill-btn pill-btn-emerald" id="pageCheckoutBtn" onclick="openCheckoutModal()">
           <span>+ Check Out Asset</span>
         </button>
       </div>
@@ -210,7 +210,20 @@
   let allAssignments = [];
   let currentFilter = 'all';
 
+  function checkRolePermissions() {
+    const canCheckout = window.currentUser && (
+      window.currentUser.role_name === 'ADMIN' || 
+      window.currentUser.role_name === 'OPERATIONS MANAGER' || 
+      window.currentUser.role_name === 'SITE / CREW SUPERVISOR'
+    );
+    const appBtn = document.getElementById('appCheckoutBtn');
+    const pageBtn = document.getElementById('pageCheckoutBtn');
+    if (appBtn) appBtn.style.display = canCheckout ? '' : 'none';
+    if (pageBtn) pageBtn.style.display = canCheckout ? '' : 'none';
+  }
+
   async function loadData() {
+    checkRolePermissions();
     await Promise.all([loadStats(), loadAssignments()]);
   }
 

@@ -130,10 +130,17 @@ class UserRepository {
             `).run(organizationId);
             const locationId = locResult.lastInsertRowid;
 
-            await db.prepare(`
+            const zoneResult = await db.prepare(`
                 INSERT INTO zones (location_id, name, description)
                 VALUES (?, 'Main Equipment Yard', 'Primary staging area for all fleet units')
             `).run(locationId);
+            const zoneId = zoneResult.lastInsertRowid;
+
+            // Link initial admin employee to default zone so they are not Unassigned
+            await db.prepare(`
+                INSERT INTO employee_zones (employee_id, zone_id)
+                VALUES (?, ?)
+            `).run(employeeId, zoneId);
 
             // 8. Log system activity
             await db.prepare(`

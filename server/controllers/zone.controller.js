@@ -1,31 +1,32 @@
 const zoneRepository = require('../repositories/zone.repository');
 const locationRepository = require('../repositories/location.repository');
 
+const { connect } = require('../db/database');
+
 class ZoneController {
     async getAllZones(req, res) {
         try {
-            let zones = await zoneRepository.findAll(req.user);
-            if ((!zones || zones.length === 0) && req.user && req.user.organization_id) {
-                let locs = await locationRepository.findAll(req.user);
-                let locId;
-                if (!locs || locs.length === 0) {
-                    locId = await locationRepository.create({
+            if (req.user && req.user.organization_id) {
+                const db = connect();
+                const orgLoc = await db.prepare('SELECT id FROM locations WHERE organization_id = ? LIMIT 1').get(req.user.organization_id);
+                if (!orgLoc) {
+                    const locId = await locationRepository.create({
                         organization_id: req.user.organization_id,
                         name: 'Primary Operating Depot',
                         address: 'Headquarters / Main Yard'
                     });
-                } else {
-                    locId = locs[0].id;
-                }
-                if (locId) {
-                    await zoneRepository.create({
+                    const zoneId = await zoneRepository.create({
                         location_id: locId,
                         name: 'Main Equipment Yard',
                         description: 'Primary staging area for all fleet units'
                     });
-                    zones = await zoneRepository.findAll(req.user);
+                    if (req.user.employee_id) {
+                        await db.prepare('INSERT INTO employee_zones (employee_id, zone_id) VALUES (?, ?) ON CONFLICT DO NOTHING')
+                            .run(req.user.employee_id, zoneId);
+                    }
                 }
             }
+            const zones = await zoneRepository.findAll(req.user);
             res.json(zones || []);
         } catch (error) {
             res.status(500).json({ error: error.message });

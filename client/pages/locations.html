@@ -68,7 +68,7 @@
           <span class="app-avatar" aria-hidden="true"></span>
           <span class="app-user-name"></span>
         </div>
-        <button class="pill-btn pill-btn-emerald app-cta" onclick="openAddSiteModal()" aria-label="Add Job Site">
+        <button class="pill-btn pill-btn-emerald app-cta" id="appAddSiteBtn" onclick="openAddSiteModal()" aria-label="Add Job Site">
           <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Add Job Site</span>
         </button>
       </div>
@@ -80,7 +80,7 @@
           <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Job Sites &amp; Locations</h1>
           <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Monitor active site zones, equipment distribution, and local gate alerts.</p>
         </div>
-        <button class="pill-btn pill-btn-emerald" onclick="openAddSiteModal()">+ Add Site / Zone</button>
+        <button class="pill-btn pill-btn-emerald" id="pageAddSiteBtn" onclick="openAddSiteModal()">+ Add Site / Zone</button>
       </div>
 
       <!-- LOCATION CARDS GRID -->
@@ -274,7 +274,14 @@
     }
 
     if (zones.length === 0) {
-      container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-tertiary); padding: 30px;">No job sites registered yet. Click "+ Add Site" to create one.</div>';
+      const userRole = window.currentUser ? (window.currentUser.role_name || window.currentUser.role || '').toUpperCase() : '';
+      let emptyMsg = 'No job sites registered yet. Click "+ Add Site" to create one.';
+      if (userRole === 'SITE / CREW SUPERVISOR' || userRole === 'FIELD WORKER') {
+        emptyMsg = 'No job sites or zones have been assigned to your crew profile yet. Please contact an Operations Manager or Administrator.';
+      } else if (userRole === 'MAINTENANCE STAFF') {
+        emptyMsg = 'No job sites currently associated with scheduled maintenance.';
+      }
+      container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-tertiary); padding: 30px;">${escapeHtml(emptyMsg)}</div>`;
       return;
     }
 
@@ -467,7 +474,16 @@
       tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
   }
 
+  function checkRolePermissions() {
+    const canManage = window.currentUser && (window.currentUser.role_name === 'ADMIN' || window.currentUser.role_name === 'OPERATIONS MANAGER');
+    const appBtn = document.getElementById('appAddSiteBtn');
+    const pageBtn = document.getElementById('pageAddSiteBtn');
+    if (appBtn) appBtn.style.display = canManage ? '' : 'none';
+    if (pageBtn) pageBtn.style.display = canManage ? '' : 'none';
+  }
+
   window.addEventListener('shell-ready', () => {
+    checkRolePermissions();
     loadZones();
     loadLocationsForSelect();
   });

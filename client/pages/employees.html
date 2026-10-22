@@ -70,7 +70,7 @@
           <span class="app-avatar" aria-hidden="true"></span>
           <span class="app-user-name"></span>
         </div>
-        <button class="pill-btn pill-btn-emerald app-cta" onclick="openAddEmployeeModal()" aria-label="Add Employee">
+        <button class="pill-btn pill-btn-emerald app-cta" id="appAddEmployeeBtn" onclick="openAddEmployeeModal()" aria-label="Add Employee">
           <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Add Employee</span>
         </button>
       </div>
@@ -89,7 +89,7 @@
           </select>
 
           <button class="pill-btn pill-btn-light" id="viewToggleBtn" onclick="toggleViewMode()">Switch to Table View</button>
-          <button class="pill-btn pill-btn-emerald" onclick="openAddEmployeeModal()">+ Add Employee</button>
+          <button class="pill-btn pill-btn-emerald" id="pageAddEmployeeBtn" onclick="openAddEmployeeModal()">+ Add Employee</button>
         </div>
       </div>
 
@@ -109,10 +109,11 @@
               <th style="padding: 14px 18px;">Status</th>
               <th style="padding: 14px 18px;">Active Tasks</th>
               <th style="padding: 14px 18px;">Joined</th>
+              <th style="padding: 14px 18px; text-align: right;" id="actionsColHeader">Actions</th>
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="6" class="empty-state">Loading employees...</td></tr>
+            <tr><td colspan="7" class="empty-state">Loading employees...</td></tr>
           </tbody>
         </table>
       </div>
@@ -196,9 +197,71 @@
   </div>
 </div>
 
+<!-- EDIT EMPLOYEE MODAL -->
+<div class="modal-overlay" id="editEmployeeModal">
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800;">Edit Employee &amp; Site Assignment</h3>
+      <button type="button" onclick="closeEditEmployeeModal()" style="border:none; background:none; font-size:20px; cursor:pointer;" aria-label="Close modal">✕</button>
+    </div>
+    <form onsubmit="handleEditEmployeeSubmit(event)">
+      <input type="hidden" id="editEmployeeId">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="modal-field">
+          <label>First Name *</label>
+          <div class="neu-inset" style="padding: 8px 14px;">
+            <input type="text" id="editFirstName" required style="border:none; background:transparent; width:100%; outline:none;">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label>Last Name *</label>
+          <div class="neu-inset" style="padding: 8px 14px;">
+            <input type="text" id="editLastName" required style="border:none; background:transparent; width:100%; outline:none;">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="modal-field">
+          <label>Status</label>
+          <select class="filter-select" id="editStatus" style="width: 100%;">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="IDLE">IDLE</option>
+            <option value="ON_LEAVE">ON_LEAVE</option>
+            <option value="OFFLINE">OFFLINE</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Operational Role</label>
+          <select class="filter-select" id="editRoleName" style="width: 100%;">
+            <option value="FIELD WORKER">FIELD WORKER</option>
+            <option value="SITE / CREW SUPERVISOR">SITE / CREW SUPERVISOR</option>
+            <option value="MAINTENANCE STAFF">MAINTENANCE STAFF</option>
+            <option value="OPERATIONS MANAGER">OPERATIONS MANAGER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label>Assigned Zone / Site</label>
+        <select class="filter-select" id="editZoneId" style="width: 100%;">
+          <option value="">— Unassigned —</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button type="submit" class="pill-btn pill-btn-emerald" style="flex: 1; justify-content: center;">Save Changes</button>
+        <button type="button" class="pill-btn pill-btn-light" onclick="closeEditEmployeeModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   let isTableView = false;
   let allEmployees = [];
+  let cachedZones = [];
 
   function toggleViewMode() {
     isTableView = !isTableView;
@@ -213,13 +276,24 @@
     return (f + l).toUpperCase() || 'EM';
   }
 
+  function checkRolePermissions() {
+    const canManage = window.currentUser && (window.currentUser.role_name === 'ADMIN' || window.currentUser.role_name === 'OPERATIONS MANAGER');
+    const appAddBtn = document.getElementById('appAddEmployeeBtn');
+    const pageAddBtn = document.getElementById('pageAddEmployeeBtn');
+    const actionsHeader = document.getElementById('actionsColHeader');
+    if (appAddBtn) appAddBtn.style.display = canManage ? '' : 'none';
+    if (pageAddBtn) pageAddBtn.style.display = canManage ? '' : 'none';
+    if (actionsHeader) actionsHeader.style.display = canManage ? '' : 'none';
+  }
+
   function renderEmployees() {
     const cardContainer = document.getElementById('cardViewContainer');
     const tableBody = document.getElementById('tableBody');
+    const canManage = window.currentUser && (window.currentUser.role_name === 'ADMIN' || window.currentUser.role_name === 'OPERATIONS MANAGER');
     
     if (allEmployees.length === 0) {
       cardContainer.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;">No employees registered yet.</div>';
-      tableBody.innerHTML = '<tr><td colspan="6" class="empty-state" style="text-align: center; padding: 20px;">No employees found.</td></tr>';
+      tableBody.innerHTML = '<tr><td colspan="7" class="empty-state" style="text-align: center; padding: 20px;">No employees found.</td></tr>';
       return;
     }
 
@@ -233,7 +307,21 @@
       const badgeClass = role === 'ADMIN' ? 'pill-alert' : 
         (role === 'SITE / CREW SUPERVISOR' ? 'pill-ok' : 
         (role === 'MAINTENANCE STAFF' ? 'pill-attn' : 'pill-neutral'));
-      const zones = emp.assigned_zones && emp.assigned_zones.length > 0 ? emp.assigned_zones.join(', ') : 'Unassigned';
+
+      // Defensively parse assigned_zones whether it is array, string, or comma list
+      let zones = 'Unassigned';
+      if (emp.assigned_zone_names && typeof emp.assigned_zone_names === 'string' && emp.assigned_zone_names.trim()) {
+        zones = emp.assigned_zone_names.trim();
+      } else if (emp.assigned_zones) {
+        if (Array.isArray(emp.assigned_zones) && emp.assigned_zones.length > 0) {
+          zones = emp.assigned_zones.map(z => typeof z === 'object' && z !== null ? (z.name || z.zone_name) : z).filter(Boolean).join(', ');
+        } else if (typeof emp.assigned_zones === 'string' && emp.assigned_zones.trim()) {
+          zones = emp.assigned_zones.trim();
+        }
+      } else if (emp.zones && Array.isArray(emp.zones) && emp.zones.length > 0) {
+        zones = emp.zones.map(z => z.name || z.zone_name || z).filter(Boolean).join(', ');
+      }
+      if (!zones) zones = 'Unassigned';
 
       // Render Card
       const card = document.createElement('div');
@@ -255,6 +343,11 @@
           <div>📋 <strong>Tasks:</strong> ${emp.task_count || 0} Assigned</div>
           <div>⏱️ <strong>Joined:</strong> ${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : '—'}</div>
         </div>
+        ${canManage ? `
+          <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--status-neutral-bg); display: flex; justify-content: flex-end;">
+            <button class="pill-btn pill-btn-light" style="padding: 4px 12px; font-size: 11.5px;" onclick="openEditEmployeeModal(${emp.id})">Edit / Assign Site ✎</button>
+          </div>
+        ` : ''}
       `;
       cardContainer.appendChild(card);
 
@@ -272,12 +365,30 @@
         <td style="padding: 14px 18px;">${escapeHtml(emp.status || 'ACTIVE')}</td>
         <td style="padding: 14px 18px;">${emp.task_count || 0}</td>
         <td style="padding: 14px 18px;">${emp.created_at ? new Date(emp.created_at).toLocaleDateString() : '—'}</td>
+        ${canManage ? `
+          <td style="padding: 14px 18px; text-align: right;">
+            <button class="pill-btn pill-btn-light" style="padding: 4px 10px; font-size: 11.5px;" onclick="openEditEmployeeModal(${emp.id})">Edit ✎</button>
+          </td>
+        ` : '<td></td>'}
       `;
       tableBody.appendChild(tr);
     });
   }
 
+  async function loadZonesForSelect() {
+    try {
+      const res = await fetch('/api/v1/zones');
+      if (res.ok) {
+        const raw = await res.json();
+        cachedZones = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
+      }
+    } catch(e) {
+      console.warn('Could not cache zones:', e);
+    }
+  }
+
   async function loadEmployees() {
+    checkRolePermissions();
     try {
       const res = await fetch('/api/v1/employees');
       if (res.ok) {
@@ -303,21 +414,91 @@
   async function openAddEmployeeModal() {
     document.getElementById('addEmployeeModal').classList.add('open');
     const zoneSelect = document.getElementById('newZoneId');
-    try {
-      const res = await fetch('/api/v1/zones');
-      if (res.ok) {
-        const raw = await res.json();
-        const zones = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
-        zoneSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
-          zones.map(z => `<option value="${z.id}">${escapeHtml(z.name)}</option>`).join('');
-      }
-    } catch (e) {
-      console.error(e);
+    if (cachedZones.length === 0) {
+      await loadZonesForSelect();
     }
+    zoneSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
+      cachedZones.map(z => `<option value="${z.id}">${escapeHtml(z.name)}</option>`).join('');
   }
 
   function closeAddEmployeeModal() {
     document.getElementById('addEmployeeModal').classList.remove('open');
+  }
+
+  async function openEditEmployeeModal(empId) {
+    const emp = allEmployees.find(e => e.id === empId);
+    if (!emp) return;
+
+    document.getElementById('editEmployeeId').value = emp.id;
+    document.getElementById('editFirstName').value = emp.first_name || '';
+    document.getElementById('editLastName').value = emp.last_name || '';
+    document.getElementById('editStatus').value = emp.status || 'ACTIVE';
+
+    const roleSelect = document.getElementById('editRoleName');
+    const currentRole = emp.role_name || emp.job_title || 'FIELD WORKER';
+    roleSelect.value = currentRole;
+
+    const isAdmin = window.currentUser && window.currentUser.role_name === 'ADMIN';
+    roleSelect.disabled = !isAdmin;
+
+    const zoneSelect = document.getElementById('editZoneId');
+    if (cachedZones.length === 0) {
+      await loadZonesForSelect();
+    }
+
+    zoneSelect.innerHTML = '<option value="">— Unassigned —</option>' + 
+      cachedZones.map(z => `<option value="${z.id}">${escapeHtml(z.name)}</option>`).join('');
+
+    // Pre-select current zone if assigned
+    if (emp.assigned_zones && Array.isArray(emp.assigned_zones) && emp.assigned_zones.length > 0) {
+      const currentZoneName = emp.assigned_zones[0];
+      const match = cachedZones.find(z => z.name === currentZoneName);
+      if (match) zoneSelect.value = match.id;
+    }
+
+    document.getElementById('editEmployeeModal').classList.add('open');
+  }
+
+  function closeEditEmployeeModal() {
+    document.getElementById('editEmployeeModal').classList.remove('open');
+  }
+
+  async function handleEditEmployeeSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById('editEmployeeId').value;
+    const first_name = document.getElementById('editFirstName').value.trim();
+    const last_name = document.getElementById('editLastName').value.trim();
+    const status = document.getElementById('editStatus').value;
+    const role_name = document.getElementById('editRoleName').value;
+    const zone_id = document.getElementById('editZoneId').value ? Number(document.getElementById('editZoneId').value) : null;
+
+    const payload = {
+      first_name,
+      last_name,
+      status,
+      role_name,
+      zone_ids: zone_id ? [zone_id] : []
+    };
+
+    try {
+      const res = await fetch(`/api/v1/employees/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        window.showToast?.('Employee details and site assignment updated', 'success');
+        closeEditEmployeeModal();
+        await loadEmployees();
+      } else {
+        const err = await res.json();
+        window.showToast?.(err.error || 'Failed to update employee', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showToast?.('Network error updating employee', 'error');
+    }
   }
 
   async function handleAddEmployeeSubmit(e) {

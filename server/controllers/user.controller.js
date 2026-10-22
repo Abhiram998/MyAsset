@@ -87,10 +87,35 @@ class UserController {
                     ? last_name.trim() 
                     : '';
 
-                await db.prepare(`
+                const empRes = await db.prepare(`
                     INSERT INTO employees (user_id, organization_id, first_name, last_name, status)
                     VALUES (?, ?, ?, ?, 'ACTIVE')
                 `).run(userId, req.user.organization_id, firstNameToSave, lastNameToSave);
+                const employeeId = empRes.lastInsertRowid;
+
+                // Support optional zone_id / zone_ids, or assign default primary zone if available
+                const targetZoneId = req.body.zone_id || (Array.isArray(req.body.zone_ids) ? req.body.zone_ids[0] : null);
+                if (targetZoneId) {
+                    await db.prepare(`
+                        INSERT INTO employee_zones (employee_id, zone_id)
+                        VALUES (?, ?)
+                        ON CONFLICT DO NOTHING
+                    `).run(employeeId, Number(targetZoneId));
+                } else {
+                    const defZone = await db.prepare(`
+                        SELECT z.id FROM zones z
+                        JOIN locations l ON z.location_id = l.id
+                        WHERE l.organization_id = ?
+                        ORDER BY z.id ASC LIMIT 1
+                    `).get(req.user.organization_id);
+                    if (defZone && defZone.id) {
+                        await db.prepare(`
+                            INSERT INTO employee_zones (employee_id, zone_id)
+                            VALUES (?, ?)
+                            ON CONFLICT DO NOTHING
+                        `).run(employeeId, defZone.id);
+                    }
+                }
             });
             await tx();
 

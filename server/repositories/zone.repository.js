@@ -6,12 +6,14 @@ class ZoneRepository {
         const orgId = typeof user === 'object' && user !== null ? user.organization_id : user;
         
         let query = `
-            SELECT z.*, l.name as location_name, l.address as location_address,
+            SELECT z.*, 
+                   COALESCE(l.name, 'Primary Facility') as location_name, 
+                   COALESCE(l.address, 'Main Address') as location_address,
                    (SELECT COUNT(*) FROM assets WHERE zone_id = z.id AND (status != 'ARCHIVED' OR status IS NULL)) as asset_count,
                    (SELECT COUNT(*) FROM employee_zones WHERE zone_id = z.id) as employee_count,
                    (SELECT COUNT(*) FROM alerts WHERE related_entity_id = z.id AND is_resolved = 0) as alert_count
             FROM zones z
-            JOIN locations l ON z.location_id = l.id
+            LEFT JOIN locations l ON z.location_id = l.id
             WHERE l.organization_id = ?
         `;
         const params = [orgId];
@@ -29,13 +31,20 @@ class ZoneRepository {
         const db = connect();
         const orgId = typeof user === 'object' && user !== null ? user.organization_id : user;
         const query = `
-            SELECT z.*, l.name as location_name, l.address as location_address
+            SELECT z.*, 
+                   COALESCE(l.name, 'Primary Facility') as location_name, 
+                   COALESCE(l.address, 'Main Address') as location_address
             FROM zones z
-            JOIN locations l ON z.location_id = l.id
+            LEFT JOIN locations l ON z.location_id = l.id
             WHERE z.id = ? AND l.organization_id = ?
         `;
         const zone = await db.prepare(query).get(id, orgId);
         if (!zone) return null;
+
+        if (user && (user.role_name === 'SITE / CREW SUPERVISOR' || user.role_name === 'FIELD WORKER')) {
+            const hasAccess = await db.prepare(`SELECT 1 FROM employee_zones WHERE employee_id = ? AND zone_id = ?`).get(user.employee_id, id);
+            if (!hasAccess) return null;
+        }
 
         zone.assets = await db.prepare(`
             SELECT a.id, a.name, a.tag_id, a.status, at.name as type_name

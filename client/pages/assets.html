@@ -292,7 +292,7 @@
           <span class="app-avatar" aria-hidden="true"></span>
           <span class="app-user-name"></span>
         </div>
-      <button class="pill-btn pill-btn-emerald app-cta" onclick="openAddDrawer()" aria-label="Add Asset">
+      <button class="pill-btn pill-btn-emerald app-cta" id="appAddAssetBtn" onclick="openAddDrawer()" aria-label="Add Asset">
         <span class="app-cta-icon" aria-hidden="true">+</span><span class="app-cta-label">Add Asset</span>
       </button>
       </div>
@@ -307,7 +307,7 @@
           <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Manage and monitor all registered assets.</p>
         </div>
 
-        <button class="pill-btn pill-btn-emerald" onclick="openAddDrawer()">
+        <button class="pill-btn pill-btn-emerald" id="pageAddAssetBtn" onclick="openAddDrawer()">
           <span>+ Add Asset</span>
         </button>
       </div>
@@ -517,7 +517,16 @@
   let allZones = [];
   let currentStatusFilter = 'all';
 
+  function checkRolePermissions() {
+    const canManage = window.currentUser && (window.currentUser.role_name === 'ADMIN' || window.currentUser.role_name === 'OPERATIONS MANAGER');
+    const appBtn = document.getElementById('appAddAssetBtn');
+    const pageBtn = document.getElementById('pageAddAssetBtn');
+    if (appBtn) appBtn.style.display = canManage ? '' : 'none';
+    if (pageBtn) pageBtn.style.display = canManage ? '' : 'none';
+  }
+
   window.addEventListener('shell-ready', async () => {
+    checkRolePermissions();
     await Promise.all([loadAssetTypes(), loadZones()]);
     await loadAssets();
   });
@@ -589,7 +598,16 @@
     tableBody.innerHTML = '';
     
     if (!assets || assets.length === 0) {
-      tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--text-tertiary);">No assets found matching the criteria. Click "+ Add Asset" to register one.</td></tr>';
+      const userRole = window.currentUser ? (window.currentUser.role_name || window.currentUser.role || '').toUpperCase() : '';
+      let emptyMsg = 'No assets found matching the criteria. Click "+ Add Asset" to register one.';
+      if (userRole === 'FIELD WORKER') {
+        emptyMsg = 'No equipment currently assigned to your account or assigned tasks.';
+      } else if (userRole === 'SITE / CREW SUPERVISOR') {
+        emptyMsg = 'No assets currently registered or stationed in your authorized site zones.';
+      } else if (userRole === 'MAINTENANCE STAFF') {
+        emptyMsg = 'No assets currently assigned to maintenance queue.';
+      }
+      tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--text-tertiary);">${escapeHtml(emptyMsg)}</td></tr>`;
       document.getElementById('paginationSummary').innerHTML = 'Showing <strong>0</strong> registered assets';
       return;
     }

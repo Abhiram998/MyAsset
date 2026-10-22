@@ -614,6 +614,116 @@ async function runTests() {
     const isIntegrityOk = verifyBackup(backupFile);
     assert.strictEqual(isIntegrityOk, true, "Backup file integrity check must pass");
     console.log("✅ OpenAPI contract and database online backup integrity verified");
+    console.log("\n--- 19. Full 5-Role Matrix & Employee Zone Assignment Regression Suite ---");
+    // 19.1 Employee creation with zone_ids must return assigned_zones as Array
+    let s19ZonesRes = await fetch(`${API_URL}/zones`, { headers: { 'Cookie': adminCookie } });
+    let s19ZonesList = await s19ZonesRes.json();
+    assert.ok(s19ZonesList.length > 0, "Organization should have at least one zone");
+    let zone1 = s19ZonesList[0];
+
+    // Create a secondary zone
+    let newZoneRes = await fetch(`${API_URL}/zones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            location_id: zone1.location_id,
+            name: 'Secondary Fleet Zone ' + Date.now()
+        })
+    });
+    assert.strictEqual(newZoneRes.status, 201, "Should create secondary zone");
+    let newZoneData = await newZoneRes.json();
+
+    let createEmpWithZoneRes = await fetch(`${API_URL}/employees`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            first_name: 'ZoneTest',
+            last_name: 'Worker',
+            job_title: 'Field Tech',
+            role_name: 'FIELD WORKER',
+            zone_ids: [zone1.id]
+        })
+    });
+    assert.strictEqual(createEmpWithZoneRes.status, 201, "Should create employee with zone");
+    const { id: createdEmpWithZoneId } = await createEmpWithZoneRes.json();
+
+    // Check employee details
+    let getEmpRes = await fetch(`${API_URL}/employees/${createdEmpWithZoneId}`, {
+        headers: { 'Cookie': adminCookie }
+    });
+    assert.strictEqual(getEmpRes.status, 200);
+    let empDetails = await getEmpRes.json();
+    assert.ok(Array.isArray(empDetails.assigned_zones), "assigned_zones must be an Array");
+    assert.ok(empDetails.assigned_zones.includes(zone1.name), "Must include assigned zone name");
+
+    // 19.2 Patch employee site assignment (reassign to secondary zone)
+    let patchEmpRes = await fetch(`${API_URL}/employees/${createdEmpWithZoneId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            status: 'ACTIVE',
+            zone_ids: [newZoneData.id]
+        })
+    });
+    assert.strictEqual(patchEmpRes.status, 200, "Should update employee site assignment");
+
+    // Verify reassignment
+    let getReassignedEmpRes = await fetch(`${API_URL}/employees/${createdEmpWithZoneId}`, {
+        headers: { 'Cookie': adminCookie }
+    });
+    let reassignedEmp = await getReassignedEmpRes.json();
+    assert.ok(!reassignedEmp.assigned_zones.includes(zone1.name), "Previous zone should be replaced");
+    assert.ok(reassignedEmp.assigned_zones.length === 1, "Must have exactly 1 assigned zone");
+
+    // 19.3 Role-Based Security: Settings enforcement
+    // Operations Manager can view settings (200), but cannot modify settings (403)
+    let opsGetSettings = await fetch(`${API_URL}/settings`, { headers: { 'Cookie': opsCookie } });
+    assert.strictEqual(opsGetSettings.status, 200, "Ops Manager can view settings");
+    let opsPutSettings = await fetch(`${API_URL}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Cookie': opsCookie },
+        body: JSON.stringify({ company_name: 'Hacked Org' })
+    });
+    assert.strictEqual(opsPutSettings.status, 403, "Ops Manager cannot modify settings (403 Forbidden)");
+
+    // Supervisor, Maintenance Staff, Field Worker cannot access settings at all (403)
+    let supSettings = await fetch(`${API_URL}/settings`, { headers: { 'Cookie': supCookie } });
+    assert.strictEqual(supSettings.status, 403, "Supervisor cannot access settings");
+    let maintSettings = await fetch(`${API_URL}/settings`, { headers: { 'Cookie': maintCookie } });
+    assert.strictEqual(maintSettings.status, 403, "Maintenance Staff cannot access settings");
+    let workerSettings = await fetch(`${API_URL}/settings`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerSettings.status, 403, "Field Worker cannot access settings");
+
+    // 19.4 Role-Based Security: Reports enforcement
+    // Maintenance Staff & Field Worker cannot access detailed reports (403)
+    let maintReports = await fetch(`${API_URL}/reports/asset-register`, { headers: { 'Cookie': maintCookie } });
+    assert.strictEqual(maintReports.status, 403, "Maintenance Staff cannot access reports (403 Forbidden)");
+    let workerReports = await fetch(`${API_URL}/reports/asset-register`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerReports.status, 403, "Field Worker cannot access reports (403 Forbidden)");
+
+    // Supervisor CAN access reports (scoped to own crew/zones)
+    let supReports = await fetch(`${API_URL}/reports/asset-register`, { headers: { 'Cookie': supCookie } });
+    assert.strictEqual(supReports.status, 200, "Supervisor can access scoped reports");
+
+    // 19.5 Role-Based Security: User Management enforcement
+    // Ops Manager can list users (200), cannot create users (403), cannot update user roles (403)
+    let opsListUsers = await fetch(`${API_URL}/users`, { headers: { 'Cookie': opsCookie } });
+    assert.strictEqual(opsListUsers.status, 200, "Ops Manager can list users");
+    let opsCreateUser = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': opsCookie },
+        body: JSON.stringify({ email: 'test@unauth.com', password: 'password123', role: 'ADMIN' })
+    });
+    assert.strictEqual(opsCreateUser.status, 403, "Ops Manager cannot create users");
+
+    // Lower roles cannot list or create users (403)
+    let supListUsers = await fetch(`${API_URL}/users`, { headers: { 'Cookie': supCookie } });
+    assert.strictEqual(supListUsers.status, 403, "Supervisor cannot access user management");
+    let workerListUsers = await fetch(`${API_URL}/users`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerListUsers.status, 403, "Field Worker cannot access user management");
+
+    console.log("✅ All 5 roles verified against permission matrix and site assignments");
+
     if (testServer) {
         testServer.close();
     }

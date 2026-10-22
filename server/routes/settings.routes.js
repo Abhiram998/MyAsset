@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.get('/', settingsController.getSettings);
-router.put('/', requireRole(['ADMIN', 'OPERATIONS MANAGER']), settingsController.updateSettings);
+router.get('/', requireRole(['ADMIN', 'OPERATIONS MANAGER']), settingsController.getSettings);
+router.put('/', requireRole(['ADMIN']), settingsController.updateSettings);
 
 module.exports = router;

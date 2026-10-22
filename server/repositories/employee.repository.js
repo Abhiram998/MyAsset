@@ -55,7 +55,22 @@ class EmployeeRepository {
         }
 
         query += ` ORDER BY e.created_at DESC`;
-        return await db.prepare(query).all(...params);
+        const employees = await db.prepare(query).all(...params);
+        return employees.map(emp => {
+            let zones = [];
+            if (emp.assigned_zones) {
+                if (Array.isArray(emp.assigned_zones)) {
+                    zones = emp.assigned_zones;
+                } else if (typeof emp.assigned_zones === 'string') {
+                    zones = emp.assigned_zones.split(',').map(s => s.trim()).filter(Boolean);
+                }
+            }
+            return {
+                ...emp,
+                assigned_zones: zones,
+                assigned_zone_names: zones.length > 0 ? zones.join(', ') : 'Unassigned'
+            };
+        });
     }
 
     async findById(id, user) {
@@ -84,17 +99,32 @@ class EmployeeRepository {
             WHERE ez.employee_id = ?
         `).all(id);
 
+        employee.assigned_zones = (employee.zones || []).map(z => z.name);
+        employee.assigned_zone_names = employee.assigned_zones.length > 0 ? employee.assigned_zones.join(', ') : 'Unassigned';
+
         return employee;
     }
 
     async create(employeeData, user) {
         const db = connect();
-        const { first_name, last_name, status, email, password, role_id, zone_ids } = employeeData;
+        let { first_name, last_name, status, email, password, role_id, role_name, zone_ids, zone_id } = employeeData;
 
         let employeeId;
         const tx = db.transaction(async () => {
             let userId = null;
-            if (email && password && role_id) {
+
+            // Resolve role_id if role_name provided
+            let resolvedRoleId = role_id !== undefined && role_id !== null && role_id !== '' ? Number(role_id) : null;
+            if (!resolvedRoleId && role_name) {
+                const r = await db.prepare('SELECT id FROM roles WHERE UPPER(name) = UPPER(?)').get(String(role_name).trim());
+                if (r) resolvedRoleId = r.id;
+            }
+
+            if (email && password) {
+                if (!resolvedRoleId) {
+                    const defaultRole = await db.prepare("SELECT id FROM roles WHERE name = 'FIELD WORKER'").get();
+                    resolvedRoleId = defaultRole ? defaultRole.id : 5;
+                }
                 const existing = await db.prepare('SELECT id FROM users WHERE email = ?').get(email);
                 if (existing) {
                     throw new Error('A user account with this email already exists');
@@ -103,7 +133,7 @@ class EmployeeRepository {
                 const userRes = await db.prepare(`
                     INSERT INTO users (organization_id, email, password_hash, role_id)
                     VALUES (?, ?, ?, ?)
-                `).run(user.organization_id, email, password_hash, Number(role_id));
+                `).run(user.organization_id, email, password_hash, resolvedRoleId);
                 userId = userRes.lastInsertRowid;
             }
 
@@ -114,8 +144,15 @@ class EmployeeRepository {
 
             employeeId = empRes.lastInsertRowid;
 
+            const targets = [];
             if (zone_ids && Array.isArray(zone_ids)) {
-                for (const zid of zone_ids) {
+                targets.push(...zone_ids);
+            } else if (zone_id) {
+                targets.push(zone_id);
+            }
+
+            for (const zid of targets) {
+                if (zid) {
                     await db.prepare(`
                         INSERT INTO employee_zones (employee_id, zone_id)
                         VALUES (?, ?)
@@ -131,7 +168,7 @@ class EmployeeRepository {
 
     async update(id, employeeData, user) {
         const db = connect();
-        const { first_name, last_name, status, zone_ids } = employeeData;
+        const { first_name, last_name, status, role_id, role_name, zone_ids, zone_id } = employeeData;
 
         const employee = await this.findById(id, user);
         if (!employee) return false;
@@ -145,13 +182,36 @@ class EmployeeRepository {
                 WHERE id = ? AND organization_id = ?
             `).run(first_name || null, last_name || null, status || null, id, user.organization_id);
 
+            // Update user role if user account exists and caller has ADMIN permission
+            if (employee.user_id && user.role_name === 'ADMIN') {
+                let targetRoleId = role_id !== undefined && role_id !== null && role_id !== '' ? Number(role_id) : null;
+                if (!targetRoleId && role_name) {
+                    const r = await db.prepare('SELECT id FROM roles WHERE UPPER(name) = UPPER(?)').get(String(role_name).trim());
+                    if (r) targetRoleId = r.id;
+                }
+                if (targetRoleId) {
+                    await db.prepare('UPDATE users SET role_id = ? WHERE id = ? AND organization_id = ?')
+                        .run(targetRoleId, employee.user_id, user.organization_id);
+                }
+            }
+
+            const targets = [];
             if (zone_ids && Array.isArray(zone_ids)) {
+                targets.push(...zone_ids);
+            } else if (zone_id !== undefined && zone_id !== null) {
+                if (zone_id) targets.push(zone_id);
+            }
+
+            if (zone_ids !== undefined || zone_id !== undefined) {
                 await db.prepare('DELETE FROM employee_zones WHERE employee_id = ?').run(id);
-                for (const zid of zone_ids) {
-                    await db.prepare(`
-                        INSERT INTO employee_zones (employee_id, zone_id)
-                        VALUES (?, ?)
-                    `).run(id, Number(zid));
+                for (const zid of targets) {
+                    if (zid) {
+                        await db.prepare(`
+                            INSERT INTO employee_zones (employee_id, zone_id)
+                            VALUES (?, ?)
+                            ON CONFLICT DO NOTHING
+                        `).run(id, Number(zid));
+                    }
                 }
             }
         });
