@@ -274,12 +274,12 @@
   }
 
   async function loadUsers() {
+    const tbody = document.getElementById('settingsUsersBody');
     try {
       const res = await fetch('/api/v1/users');
       if (res.ok) {
         const raw = await res.json();
         allUsers = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.data) ? raw.data : []);
-        const tbody = document.getElementById('settingsUsersBody');
         if (allUsers.length === 0) {
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px;">No users found.</td></tr>';
           return;
@@ -288,14 +288,18 @@
         tbody.innerHTML = allUsers.map(u => `
           <tr style="border-bottom: 1px solid var(--status-neutral-bg);">
             <td style="padding: 14px 18px;"><strong>${escapeHtml(u.email)}</strong></td>
-            <td style="padding: 14px 18px;"><span class="pill-badge pill-neutral">${escapeHtml(u.role_name)}</span></td>
+            <td style="padding: 14px 18px;"><span class="pill-badge pill-neutral">${escapeHtml(u.role_name || u.role)}</span></td>
             <td style="padding: 14px 18px;">${u.employee_name ? escapeHtml(u.employee_name) : '<span style="color:var(--text-tertiary);">Direct Account</span>'}</td>
-            <td style="padding: 14px 18px;">${new Date(u.created_at).toLocaleDateString()}</td>
+            <td style="padding: 14px 18px;">${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}</td>
           </tr>
         `).join('');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--rose-crimson);">${escapeHtml(err.error || 'Failed to load system users')}</td></tr>`;
       }
     } catch (e) {
       console.error(e);
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px; color:var(--rose-crimson);">Error connecting to server</td></tr>';
     }
   }
 
@@ -313,13 +317,27 @@
     const password = document.getElementById('newUserPassword').value;
     const role_name = document.getElementById('newUserRole').value;
 
+    if (!email) {
+      window.showToast?.('Please enter an email address', 'error');
+      return;
+    }
+    if (!password || password.length < 6) {
+      window.showToast?.('Password must be at least 6 characters', 'error');
+      return;
+    }
+    if (!role_name) {
+      window.showToast?.('Please select a role', 'error');
+      return;
+    }
+
     try {
       const res = await fetch('/api/v1/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role_name })
+        body: JSON.stringify({ email, password, role_name, role: role_name })
       });
 
+      const data = await res.json();
       if (res.ok) {
         window.showToast?.('User created successfully', 'success');
         closeAddUserModal();
@@ -327,8 +345,7 @@
         document.getElementById('newUserPassword').value = '';
         await loadUsers();
       } else {
-        const err = await res.json();
-        window.showToast?.(err.error || 'Failed to create user', 'error');
+        window.showToast?.(data.error || 'Failed to create user', 'error');
       }
     } catch (err) {
       console.error(err);

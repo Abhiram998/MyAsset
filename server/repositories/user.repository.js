@@ -27,9 +27,9 @@ class UserRepository {
         return await stmt.get(id);
     }
 
-    async findAll(orgId) {
+    async findAll(orgId, filters = {}) {
         const db = connect();
-        return await db.prepare(`
+        let query = `
             SELECT u.id, u.organization_id, u.email, u.role_id, r.name as role_name,
                    e.id as employee_id, e.first_name, e.last_name, e.status as employee_status,
                    u.created_at
@@ -37,8 +37,23 @@ class UserRepository {
             JOIN roles r ON u.role_id = r.id
             LEFT JOIN employees e ON u.id = e.user_id
             WHERE u.organization_id = ?
-            ORDER BY u.created_at DESC
-        `).all(orgId);
+        `;
+        const params = [orgId];
+
+        if (filters && filters.role) {
+            query += ' AND (r.name = ? OR r.id = ?)';
+            const rVal = filters.role;
+            params.push(rVal, isNaN(Number(rVal)) ? -1 : Number(rVal));
+        }
+
+        if (filters && filters.search) {
+            query += ' AND (LOWER(u.email) LIKE ? OR LOWER(e.first_name) LIKE ? OR LOWER(e.last_name) LIKE ?)';
+            const s = `%${filters.search.toLowerCase()}%`;
+            params.push(s, s, s);
+        }
+
+        query += ' ORDER BY u.created_at DESC';
+        return await db.prepare(query).all(...params);
     }
 
     async create(userData) {

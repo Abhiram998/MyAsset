@@ -390,22 +390,93 @@ async function runTests() {
     console.log("✅ Locations & Zones CRUD, validation, tenant isolation, and response shape resilience verified");
 
     console.log("\n--- 11. User Management & Authorization ---");
-    const dynEmail = 'newmaint_' + Date.now() + '@test.com';
-    let userRes = await fetch(`${API_URL}/users`, {
+    // 11.1 Create user with role_id (as from admin.html)
+    const dynEmail1 = 'newmaint_' + Date.now() + '@test.com';
+    let userRes1 = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
-        body: JSON.stringify({ email: dynEmail, password: 'password123', role_id: 4, first_name: 'Bob', last_name: 'Builder' })
+        body: JSON.stringify({ email: dynEmail1, password: 'password123', role_id: 4, first_name: 'Bob', last_name: 'Builder' })
     });
-    assert.strictEqual(userRes.status, 201, "Admin should create user account");
+    assert.strictEqual(userRes1.status, 201, "Admin should create user account with role_id");
+    const userJson1 = await userRes1.json();
+    assert.strictEqual(userJson1.role_name, 'MAINTENANCE STAFF');
 
-    // Supervisor attempting to create user must receive 403
+    // 11.2 Create user with role_name (as from settings.html)
+    const dynEmail2 = 'fieldworker_' + Date.now() + '@test.com';
+    let userRes2 = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ email: dynEmail2, password: 'password123', role_name: 'FIELD WORKER' })
+    });
+    assert.strictEqual(userRes2.status, 201, "Admin should create user account with role_name");
+    const userJson2 = await userRes2.json();
+    assert.strictEqual(userJson2.role_name, 'FIELD WORKER');
+
+    // 11.3 Missing fields validation
+    let missEmailRes = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ password: 'password123', role_name: 'FIELD WORKER' })
+    });
+    assert.strictEqual(missEmailRes.status, 400, "Missing email should return 400");
+
+    let missPassRes = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ email: 'nopass@test.com', role_name: 'FIELD WORKER' })
+    });
+    assert.strictEqual(missPassRes.status, 400, "Missing password should return 400");
+
+    let shortPassRes = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ email: 'shortpass@test.com', password: '123', role_name: 'FIELD WORKER' })
+    });
+    assert.strictEqual(shortPassRes.status, 400, "Password < 6 chars should return 400");
+
+    let missRoleRes = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ email: 'norole@test.com', password: 'password123' })
+    });
+    assert.strictEqual(missRoleRes.status, 400, "Missing role should return 400");
+
+    // 11.4 Duplicate email validation
+    let dupEmailRes = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ email: dynEmail1, password: 'password123', role_name: 'FIELD WORKER' })
+    });
+    assert.strictEqual(dupEmailRes.status, 409, "Duplicate email should return 409");
+
+    // 11.5 Invalid role validation
+    let invRoleRes = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({ email: 'invrole@test.com', password: 'password123', role_name: 'NON_EXISTENT_ROLE' })
+    });
+    assert.strictEqual(invRoleRes.status, 400, "Invalid role name should return 400");
+
+    // 11.6 Unauthorized user creation (Supervisor attempting to create user must receive 403)
     let supUserRes = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Cookie': supCookie },
         body: JSON.stringify({ email: 'evil@test.com', password: 'password123', role_id: 1 })
     });
     assert.strictEqual(supUserRes.status, 403, "Supervisor cannot create users");
-    console.log("✅ User management RBAC verified");
+
+    // 11.7 User listing (Admin and Operations Manager)
+    let listUsersRes = await fetch(`${API_URL}/users`, {
+        headers: { 'Cookie': adminCookie }
+    });
+    assert.strictEqual(listUsersRes.status, 200, "Admin should list users");
+    const listedUsers = await listUsersRes.json();
+    assert.ok(Array.isArray(listedUsers), "User list must be an array");
+    assert.ok(listedUsers.some(u => u.email === dynEmail1), "Listed users must include created user with role_id");
+    assert.ok(listedUsers.some(u => u.email === dynEmail2), "Listed users must include created user with role_name");
+    assert.ok(listedUsers.every(u => u.role && u.role_name), "Every user must have role and role_name");
+
+    console.log("✅ User management RBAC, contract validation, duplicate checks, and listing verified");
 
     console.log("\n--- 12. Maintenance Schedule & Completion ---");
     let schedRes = await fetch(`${API_URL}/maintenance/schedules`, {
