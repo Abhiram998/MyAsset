@@ -7,7 +7,8 @@ class AssignmentController {
                 filter: req.query.filter,
                 asset_id: req.query.asset_id ? Number(req.query.asset_id) : undefined,
                 employee_id: req.query.employee_id ? Number(req.query.employee_id) : undefined,
-                search: req.query.search
+                search: req.query.search,
+                scope: req.query.scope
             };
             const assignments = await assignmentService.getAllAssignments(req.user, filters);
             res.json(assignments);
@@ -54,6 +55,18 @@ class AssignmentController {
             if (error.message.includes('already been returned')) {
                 return res.status(409).json({ error: error.message });
             }
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async getAssignmentById(req, res) {
+        try {
+            const assignment = await assignmentService.getAssignmentById(Number(req.params.id), req.user);
+            if (!assignment) {
+                return res.status(404).json({ error: 'Assignment not found or access denied' });
+            }
+            res.json(assignment);
+        } catch (error) {
             res.status(500).json({ error: error.message });
         }
     }

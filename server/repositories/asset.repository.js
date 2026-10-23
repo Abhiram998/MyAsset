@@ -76,12 +76,18 @@ class AssetRepository {
                 OR a.status = 'IN_MAINTENANCE'
             )`;
         } else if (user.role_name === 'FIELD WORKER') {
-            // Field Worker sees only explicitly assigned assets or assigned tasks
-            query += ` AND (
-                a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ? AND returned_at IS NULL)
-                OR a.id IN (SELECT asset_id FROM tasks WHERE assignee_id = ? AND status != 'COMPLETED')
-            )`;
-            params.push(user.employee_id, user.employee_id);
+            // Field Worker sees strictly their own currently or previously assigned assets
+            if (filters.scope === 'history') {
+                query += ` AND a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ? AND returned_at IS NOT NULL)`;
+                params.push(user.employee_id);
+            } else if (filters.scope === 'all' || filters.include_history === 'true' || filters.includeHistory) {
+                query += ` AND a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ?)`;
+                params.push(user.employee_id);
+            } else {
+                // Default: current active assigned assets
+                query += ` AND a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ? AND returned_at IS NULL)`;
+                params.push(user.employee_id);
+            }
         }
 
         // Additional filters
@@ -104,7 +110,23 @@ class AssetRepository {
         }
 
         query += ` ORDER BY a.created_at DESC`;
-        return await db.prepare(query).all(...params);
+        const assets = await db.prepare(query).all(...params);
+
+        // For Field Worker, mask current assigned employee name if not assigned to self
+        if (user.role_name === 'FIELD WORKER') {
+            return assets.map(asset => {
+                if (asset.assigned_to_id && asset.assigned_to_id !== user.employee_id) {
+                    return {
+                        ...asset,
+                        assigned_to_name: null,
+                        assigned_to_id: null
+                    };
+                }
+                return asset;
+            });
+        }
+
+        return assets;
     }
 
     async findById(id, user) {
@@ -135,7 +157,13 @@ class AssetRepository {
         if (user.role_name === 'SITE / CREW SUPERVISOR') {
             query += ` AND (
                 a.zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
-                OR a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ? AND returned_at IS NULL)
+                OR a.id IN (
+                    SELECT asset_id FROM assignments 
+                    WHERE employee_id IN (
+                        SELECT employee_id FROM employee_zones 
+                        WHERE zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
+                    ) AND returned_at IS NULL
+                )
             )`;
             params.push(user.employee_id, user.employee_id);
         } else if (user.role_name === 'MAINTENANCE STAFF') {
@@ -145,16 +173,20 @@ class AssetRepository {
                 OR a.status = 'IN_MAINTENANCE'
             )`;
         } else if (user.role_name === 'FIELD WORKER') {
-            query += ` AND (
-                a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ? AND returned_at IS NULL)
-                OR a.id IN (SELECT asset_id FROM tasks WHERE assignee_id = ? AND status != 'COMPLETED')
-            )`;
-            params.push(user.employee_id, user.employee_id);
+            // Field worker can only view asset details if it is currently or previously assigned to them
+            query += ` AND a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ?)`;
+            params.push(user.employee_id);
         }
 
         const asset = await db.prepare(query).get(...params);
 
         if (asset) {
+            // Mask other worker's identity if asset is currently reassigned to another person
+            if (user.role_name === 'FIELD WORKER' && asset.assigned_to_id && asset.assigned_to_id !== user.employee_id) {
+                asset.assigned_to_name = null;
+                asset.assigned_to_id = null;
+            }
+
             asset.customValues = await db.prepare(`
                 SELECT acf.id as field_id, acf.name, acf.field_type, acv.value 
                 FROM asset_custom_values acv
@@ -269,7 +301,7 @@ class AssetRepository {
         const asset = await this.findById(id, user);
         if (!asset) return null;
 
-        const assignments = await db.prepare(`
+        let assignmentsQuery = `
             SELECT asn.*, e.first_name || ' ' || e.last_name as employee_name,
                    u.email as assigned_by_email,
                    z.name as zone_name
@@ -279,38 +311,69 @@ class AssetRepository {
             LEFT JOIN assets a ON asn.asset_id = a.id
             LEFT JOIN zones z ON a.zone_id = z.id
             WHERE asn.asset_id = ?
-            ORDER BY asn.assigned_at DESC
-        `).all(id);
+        `;
+        const assignmentParams = [id];
 
-        const maintenance = await db.prepare(`
-            SELECT mr.*, e.first_name || ' ' || e.last_name as technician_name
-            FROM maintenance_records mr
-            JOIN employees e ON mr.staff_id = e.id
-            WHERE mr.asset_id = ?
-            ORDER BY mr.completed_at DESC
-        `).all(id);
+        if (user.role_name === 'FIELD WORKER') {
+            // Worker sees ONLY their own personal assignment records
+            assignmentsQuery += ` AND asn.employee_id = ?`;
+            assignmentParams.push(user.employee_id);
+        } else if (user.role_name === 'SITE / CREW SUPERVISOR') {
+            assignmentsQuery += ` AND asn.employee_id IN (
+                SELECT employee_id FROM employee_zones 
+                WHERE zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
+            )`;
+            assignmentParams.push(user.employee_id);
+        }
 
-        const schedules = await db.prepare(`
-            SELECT ms.*
-            FROM maintenance_schedules ms
-            WHERE ms.asset_id = ?
-            ORDER BY ms.due_date ASC
-        `).all(id);
+        assignmentsQuery += ` ORDER BY asn.assigned_at DESC`;
+        const assignments = await db.prepare(assignmentsQuery).all(...assignmentParams);
 
-        const activity = await db.prepare(`
+        let maintenance = [];
+        let schedules = [];
+        let alerts = [];
+
+        // Field Workers are strictly excluded from technical maintenance logs and security alerts
+        if (user.role_name !== 'FIELD WORKER') {
+            maintenance = await db.prepare(`
+                SELECT mr.*, e.first_name || ' ' || e.last_name as technician_name
+                FROM maintenance_records mr
+                JOIN employees e ON mr.staff_id = e.id
+                WHERE mr.asset_id = ?
+                ORDER BY mr.completed_at DESC
+            `).all(id);
+
+            schedules = await db.prepare(`
+                SELECT ms.*
+                FROM maintenance_schedules ms
+                WHERE ms.asset_id = ?
+                ORDER BY ms.due_date ASC
+            `).all(id);
+
+            alerts = await db.prepare(`
+                SELECT * FROM alerts
+                WHERE related_entity_id = ? AND organization_id = ?
+                ORDER BY created_at DESC
+            `).all(id, user.organization_id);
+        }
+
+        let activityQuery = `
             SELECT act.*, e.first_name || ' ' || e.last_name as employee_name, z.name as zone_name
             FROM activity act
             LEFT JOIN employees e ON act.employee_id = e.id
             LEFT JOIN zones z ON act.zone_id = z.id
             WHERE act.asset_id = ?
-            ORDER BY act.created_at DESC
-        `).all(id);
+        `;
+        const activityParams = [id];
 
-        const alerts = await db.prepare(`
-            SELECT * FROM alerts
-            WHERE related_entity_id = ? AND organization_id = ?
-            ORDER BY created_at DESC
-        `).all(id, user.organization_id);
+        if (user.role_name === 'FIELD WORKER') {
+            // Worker sees ONLY their own activity events
+            activityQuery += ` AND act.employee_id = ?`;
+            activityParams.push(user.employee_id);
+        }
+
+        activityQuery += ` ORDER BY act.created_at DESC`;
+        const activity = await db.prepare(activityQuery).all(...activityParams);
 
         return {
             asset,

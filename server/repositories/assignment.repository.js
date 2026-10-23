@@ -37,14 +37,17 @@ class AssignmentRepository {
         }
 
         // Filters
-        if (filters.filter === 'checked-out' || filters.activeOnly) {
+        if (filters.filter === 'checked-out' || filters.filter === 'active' || filters.activeOnly || filters.scope === 'current') {
             query += ` AND asn.returned_at IS NULL`;
+        } else if (filters.filter === 'returned' || filters.scope === 'history') {
+            query += ` AND asn.returned_at IS NOT NULL`;
         }
         if (filters.asset_id) {
             query += ` AND asn.asset_id = ?`;
             params.push(filters.asset_id);
         }
-        if (filters.employee_id) {
+        // Only allow filtering by specific employee_id if caller is not a Field Worker
+        if (filters.employee_id && user.role_name !== 'FIELD WORKER') {
             query += ` AND asn.employee_id = ?`;
             params.push(filters.employee_id);
         }
@@ -60,13 +63,26 @@ class AssignmentRepository {
 
     async findById(id, user) {
         const db = connect();
-        const query = `
+        let query = `
             SELECT asn.*, a.organization_id, a.name as asset_name, a.tag_id as asset_tag
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
             WHERE asn.id = ? AND a.organization_id = ?
         `;
-        return await db.prepare(query).get(id, user.organization_id);
+        const params = [id, user.organization_id];
+
+        if (user.role_name === 'FIELD WORKER') {
+            query += ` AND asn.employee_id = ?`;
+            params.push(user.employee_id);
+        } else if (user.role_name === 'SITE / CREW SUPERVISOR') {
+            query += ` AND asn.employee_id IN (
+                SELECT employee_id FROM employee_zones 
+                WHERE zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
+            )`;
+            params.push(user.employee_id);
+        }
+
+        return await db.prepare(query).get(...params);
     }
 
     async checkout(data, user) {
@@ -178,12 +194,26 @@ class AssignmentRepository {
         const db = connect();
         const orgId = user.organization_id;
 
+        let roleFilter = '';
+        const params = [orgId];
+
+        if (user.role_name === 'FIELD WORKER') {
+            roleFilter = ` AND asn.employee_id = ?`;
+            params.push(user.employee_id);
+        } else if (user.role_name === 'SITE / CREW SUPERVISOR') {
+            roleFilter = ` AND asn.employee_id IN (
+                SELECT employee_id FROM employee_zones 
+                WHERE zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
+            )`;
+            params.push(user.employee_id);
+        }
+
         const totalCheckedOutRow = await db.prepare(`
             SELECT COUNT(*) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
-            WHERE a.organization_id = ? AND asn.returned_at IS NULL
-        `).get(orgId);
+            WHERE a.organization_id = ? AND asn.returned_at IS NULL ${roleFilter}
+        `).get(...params);
         const totalCheckedOut = totalCheckedOutRow?.count || 0;
 
         const overdueRow = await db.prepare(`
@@ -193,8 +223,8 @@ class AssignmentRepository {
             WHERE a.organization_id = ? 
               AND asn.returned_at IS NULL 
               AND asn.expected_return IS NOT NULL 
-              AND asn.expected_return < CURRENT_TIMESTAMP
-        `).get(orgId);
+              AND asn.expected_return < CURRENT_TIMESTAMP ${roleFilter}
+        `).get(...params);
         const overdue = overdueRow?.count || 0;
 
         const dueTodayRow = await db.prepare(`
@@ -204,8 +234,8 @@ class AssignmentRepository {
             WHERE a.organization_id = ? 
               AND asn.returned_at IS NULL 
               AND asn.expected_return IS NOT NULL 
-              AND date(asn.expected_return) = date('now')
-        `).get(orgId);
+              AND date(asn.expected_return) = date('now') ${roleFilter}
+        `).get(...params);
         const dueToday = dueTodayRow?.count || 0;
 
         const returnedTodayRow = await db.prepare(`
@@ -214,16 +244,16 @@ class AssignmentRepository {
             JOIN assets a ON asn.asset_id = a.id
             WHERE a.organization_id = ? 
               AND asn.returned_at IS NOT NULL 
-              AND date(asn.returned_at) = date('now')
-        `).get(orgId);
+              AND date(asn.returned_at) = date('now') ${roleFilter}
+        `).get(...params);
         const returnedToday = returnedTodayRow?.count || 0;
 
         const siteCountRow = await db.prepare(`
             SELECT COUNT(DISTINCT a.zone_id) as count 
             FROM assignments asn
             JOIN assets a ON asn.asset_id = a.id
-            WHERE a.organization_id = ? AND asn.returned_at IS NULL AND a.zone_id IS NOT NULL
-        `).get(orgId);
+            WHERE a.organization_id = ? AND asn.returned_at IS NULL AND a.zone_id IS NOT NULL ${roleFilter}
+        `).get(...params);
         const siteCount = siteCountRow?.count || 0;
 
         return {

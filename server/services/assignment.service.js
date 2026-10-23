@@ -5,6 +5,10 @@ class AssignmentService {
         return await assignmentRepository.findAll(user, filters);
     }
 
+    async getAssignmentById(id, user) {
+        return await assignmentRepository.findById(id, user);
+    }
+
     async checkout(data, user) {
         return await assignmentRepository.checkout(data, user);
     }

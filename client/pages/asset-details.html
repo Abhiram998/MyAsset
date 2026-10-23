@@ -242,11 +242,11 @@
 
       <!-- SEGMENTED INFORMATION TABS AREA -->
       <div class="tabs-nav">
-        <button class="tab-btn active" onclick="showTab('activity', this)">Activity</button>
-        <button class="tab-btn" onclick="showTab('assignments', this)">Assignment History</button>
-        <button class="tab-btn" onclick="showTab('maintenance', this)">Maintenance</button>
-        <button class="tab-btn" onclick="showTab('location', this)">Location History</button>
-        <button class="tab-btn" onclick="showTab('alerts', this)">Alerts</button>
+        <button class="tab-btn active" id="activityTabBtn" onclick="showTab('activity', this)">Activity</button>
+        <button class="tab-btn" id="assignmentsTabBtn" onclick="showTab('assignments', this)">Assignment History</button>
+        <button class="tab-btn" id="maintenanceTabBtn" onclick="showTab('maintenance', this)">Maintenance</button>
+        <button class="tab-btn" id="locationTabBtn" onclick="showTab('location', this)">Location History</button>
+        <button class="tab-btn" id="alertsTabBtn" onclick="showTab('alerts', this)">Alerts</button>
       </div>
 
       <!-- TAB 1: ACTIVITY -->
@@ -471,7 +471,32 @@
     try {
       const res = await fetch(`/api/v1/assets/${currentAssetId}/history`);
       if (!res.ok) {
-        document.getElementById('assetHeaderName').textContent = 'Asset Not Found or Access Denied';
+        document.getElementById('assetHeaderName').textContent = 'Asset Not Found or Access Restricted';
+        document.getElementById('assetHeaderTag').textContent = '404';
+        const badge = document.getElementById('assetHeaderBadge');
+        if (badge) {
+          badge.textContent = 'RESTRICTED';
+          badge.className = 'pill-badge pill-alert';
+        }
+        const headerActions = document.getElementById('headerActionButtons');
+        if (headerActions) headerActions.innerHTML = '';
+        const overview = document.querySelector('.two-column-overview');
+        if (overview) {
+          overview.innerHTML = `
+            <div class="neu-panel" style="grid-column: 1 / -1; padding: 40px; text-align: center;">
+              <div style="font-size: 36px; margin-bottom: 12px;">🔒</div>
+              <h3 style="font-size: 18px; color: var(--rose-crimson);">Access Denied or Asset Not Found</h3>
+              <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 8px;">
+                You do not have authorization to view this asset unit or it does not exist in your authorized assignment history.
+              </p>
+              <div style="margin-top: 20px;">
+                <a href="assets.html" class="pill-btn pill-btn-emerald">Return to My Assets</a>
+              </div>
+            </div>
+          `;
+        }
+        const tabsNav = document.querySelector('.tabs-nav');
+        if (tabsNav) tabsNav.style.display = 'none';
         return;
       }
 
@@ -508,23 +533,38 @@
     };
     badge.className = `pill-badge ${statusClasses[asset.status] || 'pill-neutral'}`;
 
-    // Action buttons display
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    const checkinBtn = document.getElementById('checkinBtn');
+    const isFieldWorker = window.currentUser && (window.currentUser.role_name === 'FIELD WORKER' || window.currentUser.role === 'FIELD WORKER');
+    const headerActions = document.getElementById('headerActionButtons');
     const quickCheckinBtn = document.getElementById('quickCheckinBtn');
+    const assignmentsTabBtn = document.getElementById('assignmentsTabBtn');
+    const maintenanceTabBtn = document.getElementById('maintenanceTabBtn');
+    const alertsTabBtn = document.getElementById('alertsTabBtn');
 
-    if (asset.status === 'AVAILABLE') {
-      checkoutBtn.style.display = '';
-      checkinBtn.style.display = 'none';
-      quickCheckinBtn.style.display = 'none';
-    } else if (activeAssignment) {
-      checkoutBtn.style.display = 'none';
-      checkinBtn.style.display = '';
-      quickCheckinBtn.style.display = '';
+    if (isFieldWorker) {
+      if (headerActions) {
+        headerActions.innerHTML = `<span class="pill-badge pill-neutral" style="padding: 6px 14px; font-size: 12px; font-weight: 600;">🔒 Personal Record (Read-Only)</span>`;
+      }
+      if (quickCheckinBtn) quickCheckinBtn.style.display = 'none';
+      if (assignmentsTabBtn) assignmentsTabBtn.textContent = 'My Assignment History';
+      if (maintenanceTabBtn) maintenanceTabBtn.style.display = 'none';
+      if (alertsTabBtn) alertsTabBtn.style.display = 'none';
     } else {
-      checkoutBtn.style.display = 'none';
-      checkinBtn.style.display = 'none';
-      quickCheckinBtn.style.display = 'none';
+      // Normal role action buttons
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      const checkinBtn = document.getElementById('checkinBtn');
+      if (asset.status === 'AVAILABLE') {
+        if (checkoutBtn) checkoutBtn.style.display = '';
+        if (checkinBtn) checkinBtn.style.display = 'none';
+        if (quickCheckinBtn) quickCheckinBtn.style.display = 'none';
+      } else if (activeAssignment) {
+        if (checkoutBtn) checkoutBtn.style.display = 'none';
+        if (checkinBtn) checkinBtn.style.display = '';
+        if (quickCheckinBtn) quickCheckinBtn.style.display = '';
+      } else {
+        if (checkoutBtn) checkoutBtn.style.display = 'none';
+        if (checkinBtn) checkinBtn.style.display = 'none';
+        if (quickCheckinBtn) quickCheckinBtn.style.display = 'none';
+      }
     }
 
     // Card Left

@@ -393,6 +393,71 @@ async function runLiveVerification() {
     const assetRegister = await request('/reports/asset-register', {}, adminCookie);
     recordResult('Verify Asset Register Report', '/reports/asset-register', 'GET', assetRegister.status, 200, `Registered Assets in Report: ${assetRegister.data?.length}`);
 
+    // Step 11: Field Worker Asset Visibility, Direct-ID 404 Protection & Reassignment Isolation
+    console.log('\n--- Step 11: Field Worker Asset Visibility & Reassignment Privacy (Neon PostgreSQL) ---');
+    
+    // 11.1 Worker A current assets vs history
+    const fwCurrentAssets = await request('/assets?scope=current', {}, fieldCookie);
+    recordResult('Field Worker Current Assets Scoping', '/assets?scope=current', 'GET', fwCurrentAssets.status, 200, `Current assets: ${fwCurrentAssets.data?.length}`);
+    const fwHasUnassigned = (fwCurrentAssets.data || []).some(a => a.id === kitAssetId);
+    recordResult('Field Worker Does Not See Unassigned Inventory', '/assets?scope=current', 'GET', fwHasUnassigned ? 500 : 200, 200, `Unassigned equipment excluded: ${!fwHasUnassigned}`);
+
+    const fwHistoryAssets = await request('/assets?scope=history', {}, fieldCookie);
+    recordResult('Field Worker History Scoping', '/assets?scope=history', 'GET', fwHistoryAssets.status, 200, `Historical assets: ${fwHistoryAssets.data?.length}`);
+    const fwHasDrillHistory = (fwHistoryAssets.data || []).some(a => a.id === drillAssetId);
+    recordResult('Field Worker Preserves Returned Asset in History', '/assets?scope=history', 'GET', fwHasDrillHistory ? 200 : 404, 200, `Drill found in history: ${fwHasDrillHistory}`);
+
+    // 11.2 Direct ID Protection: Guessing or tampering with asset ID must return 404
+    const fwDirectTamperAsset = await request(`/assets/${kitAssetId}`, {}, fieldCookie);
+    recordResult('Field Worker Direct ID Asset Tampering Blocked', `/assets/${kitAssetId}`, 'GET', fwDirectTamperAsset.status, 404, 'Correctly returns 404 for unassigned asset');
+
+    const fwDirectTamperHist = await request(`/assets/${kitAssetId}/history`, {}, fieldCookie);
+    recordResult('Field Worker Direct ID History Tampering Blocked', `/assets/${kitAssetId}/history`, 'GET', fwDirectTamperHist.status, 404, 'Correctly returns 404 for unauthorized asset history');
+
+    // 11.3 Field Worker views permitted historical detail of returned drill
+    const fwDrillDetail = await request(`/assets/${drillAssetId}`, {}, fieldCookie);
+    recordResult('Field Worker Views Own Historical Asset Detail', `/assets/${drillAssetId}`, 'GET', fwDrillDetail.status, 200, `Asset: ${fwDrillDetail.data?.name}`);
+
+    const fwDrillHistory = await request(`/assets/${drillAssetId}/history`, {}, fieldCookie);
+    recordResult('Field Worker Views Own Assignment History', `/assets/${drillAssetId}/history`, 'GET', fwDrillHistory.status, 200, `Assignments returned: ${fwDrillHistory.data?.assignments?.length}`);
+    const maintLeaked = (fwDrillHistory.data?.maintenance || []).length > 0;
+    const alertsLeaked = (fwDrillHistory.data?.alerts || []).length > 0;
+    recordResult('Field Worker Technical Maintenance & Alerts Redacted', `/assets/${drillAssetId}/history`, 'GET', (!maintLeaked && !alertsLeaked) ? 200 : 500, 200, `Maintenance & Alerts redacted: ${!maintLeaked && !alertsLeaked}`);
+
+    // 11.4 Reassign drill to Supervisor and verify cross-worker privacy
+    const reassignDrillRes = await request('/assignments/checkout', {
+        method: 'POST',
+        body: JSON.stringify({
+            asset_id: drillAssetId,
+            employee_id: supervisorEmpId,
+            notes: 'Reassigned to Supervisor for inspection'
+        })
+    }, adminCookie);
+    recordResult('Reassign Drill to Another Employee', '/assignments/checkout', 'POST', reassignDrillRes.status, 201, reassignDrillRes.data);
+    const reassignedAsnId = reassignDrillRes.data?.id;
+
+    // Worker A checks drill after reassignment: current assignee name must be masked
+    const fwDrillAfterReassign = await request(`/assets/${drillAssetId}`, {}, fieldCookie);
+    const isMasked = fwDrillAfterReassign.data?.assigned_to_name === null;
+    recordResult('Worker A Identity Masking on Reassigned Asset', `/assets/${drillAssetId}`, 'GET', isMasked ? 200 : 500, 200, `Assigned to name masked: ${isMasked}`);
+
+    // Worker A history must NOT contain Supervisor's new assignment notes
+    const fwDrillHistAfterReassign = await request(`/assets/${drillAssetId}/history`, {}, fieldCookie);
+    const seesSupNotes = (fwDrillHistAfterReassign.data?.assignments || []).some(a => a.id === reassignedAsnId);
+    recordResult('Worker A Cross-Worker Assignment Isolation', `/assets/${drillAssetId}/history`, 'GET', !seesSupNotes ? 200 : 500, 200, `Supervisor notes isolated: ${!seesSupNotes}`);
+
+    // Clean up reassigned drill
+    if (reassignedAsnId) {
+        await request(`/assignments/${reassignedAsnId}/return`, {
+            method: 'POST',
+            body: JSON.stringify({ notes: 'Return post-inspection' })
+        }, adminCookie);
+    }
+
+    // 11.5 Scoped KPIs for Field Worker
+    const fwStats = await request('/reports/stats', {}, fieldCookie);
+    recordResult('Field Worker Scoped Dashboard Stats', '/reports/stats', 'GET', fwStats.status, 200, `Available: ${fwStats.data?.availableAssets}, Alerts: ${fwStats.data?.alerts}`);
+
     // Summary of Results
     console.log('\n======================================================================');
     console.log('LIVE VERIFICATION SUMMARY');

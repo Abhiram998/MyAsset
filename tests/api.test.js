@@ -34,6 +34,11 @@ async function runTests() {
     seedUser('supervisor@test.com', 'SITE / CREW SUPERVISOR');
     seedUser('maintenance@test.com', 'MAINTENANCE STAFF');
 
+    const f2Emp = db.prepare("SELECT e.id FROM employees e JOIN users u ON e.user_id = u.id WHERE u.email = 'field2@test.com'").get();
+    if (f2Emp) {
+        db.prepare("DELETE FROM assignments WHERE employee_id = ?").run(f2Emp.id);
+    }
+
     // 2 Distinct Asset Types
     let typeEq = db.prepare('SELECT id FROM asset_types WHERE name = ?').get('Equipment');
     if (!typeEq) { db.prepare('INSERT INTO asset_types (organization_id, name) VALUES (?, ?)').run(org.id, 'Equipment'); typeEq = db.prepare('SELECT id FROM asset_types WHERE name = ?').get('Equipment'); }
@@ -723,6 +728,161 @@ async function runTests() {
     assert.strictEqual(workerListUsers.status, 403, "Field Worker cannot access user management");
 
     console.log("✅ All 5 roles verified against permission matrix and site assignments");
+
+    console.log("\n--- 20. Field Worker Asset Visibility, Scoping & Privacy Isolation ---");
+    const fieldEmp1 = db.prepare("SELECT e.id FROM employees e JOIN users u ON e.user_id = u.id WHERE u.email = 'field@test.com'").get();
+    const fieldEmp2 = db.prepare("SELECT e.id FROM employees e JOIN users u ON e.user_id = u.id WHERE u.email = 'field2@test.com'").get();
+
+    // 20.1 Create two dedicated test assets for worker A and worker B
+    const createAlphaRes = await fetch(`${API_URL}/assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            name: 'Pneumatic Jackhammer Alpha',
+            asset_type_id: typeEq.id,
+            tag_id: `JACK-A-${Date.now()}`
+        })
+    });
+    assert.strictEqual(createAlphaRes.status, 201);
+    const alphaAsset = await createAlphaRes.json();
+
+    const createBetaRes = await fetch(`${API_URL}/assets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            name: 'Laser Level Beta',
+            asset_type_id: typeEq.id,
+            tag_id: `LASER-B-${Date.now()}`
+        })
+    });
+    assert.strictEqual(createBetaRes.status, 201);
+    const betaAsset = await createBetaRes.json();
+
+    // Checkout Alpha to Worker A (field1)
+    const coAlphaRes = await fetch(`${API_URL}/assignments/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            asset_id: alphaAsset.id,
+            employee_id: fieldEmp1.id,
+            notes: 'Initial assignment to Worker A'
+        })
+    });
+    assert.strictEqual(coAlphaRes.status, 201);
+    const assignmentAlpha = await coAlphaRes.json();
+
+    // Checkout Beta to Worker B (field2)
+    const coBetaRes = await fetch(`${API_URL}/assignments/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            asset_id: betaAsset.id,
+            employee_id: fieldEmp2.id,
+            notes: 'Assignment to Worker B'
+        })
+    });
+    assert.strictEqual(coBetaRes.status, 201);
+    const assignmentBeta = await coBetaRes.json();
+
+    // 20.2 Verify Worker A sees ONLY their current asset
+    const workerAGetAssets = await fetch(`${API_URL}/assets`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerAGetAssets.status, 200);
+    const workerAAssets = await workerAGetAssets.json();
+    assert.ok(workerAAssets.some(a => a.id === alphaAsset.id), "Worker A must see Asset Alpha");
+    assert.ok(!workerAAssets.some(a => a.id === betaAsset.id), "Worker A must NOT see Worker B's Asset Beta");
+
+    // 20.3 Verify Worker B sees ONLY their current asset
+    const workerBGetAssets = await fetch(`${API_URL}/assets`, { headers: { 'Cookie': field2Cookie } });
+    assert.strictEqual(workerBGetAssets.status, 200);
+    const workerBAssets = await workerBGetAssets.json();
+    assert.ok(workerBAssets.some(a => a.id === betaAsset.id), "Worker B must see Asset Beta");
+    assert.ok(!workerBAssets.some(a => a.id === alphaAsset.id), "Worker B must NOT see Worker A's Asset Alpha");
+
+    // 20.4 Direct ID protection: Worker A cannot view Worker B's asset or assignment by ID
+    const workerATryBeta = await fetch(`${API_URL}/assets/${betaAsset.id}`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerATryBeta.status, 404, "Worker A requesting Beta asset by direct ID must be blocked with 404");
+
+    const workerATryBetaHist = await fetch(`${API_URL}/assets/${betaAsset.id}/history`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerATryBetaHist.status, 404, "Worker A requesting Beta history by direct ID must be blocked with 404");
+
+    const workerATryBetaAsn = await fetch(`${API_URL}/assignments/${assignmentBeta.id}`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerATryBetaAsn.status, 404, "Worker A requesting Beta assignment by direct ID must be blocked with 404");
+
+    // 20.5 Worker A returns Asset Alpha
+    const returnAlphaRes = await fetch(`${API_URL}/assignments/${assignmentAlpha.id}/return`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': fieldCookie }
+    });
+    assert.strictEqual(returnAlphaRes.status, 200, "Worker A can return own checked out asset");
+
+    // 20.6 After return: Worker A does NOT see Alpha under scope=current, but DOES see Alpha under scope=history
+    const workerACurrent = await fetch(`${API_URL}/assets?scope=current`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerACurrent.status, 200);
+    const currentList = await workerACurrent.json();
+    assert.ok(!currentList.some(a => a.id === alphaAsset.id), "Returned asset Alpha must NOT appear in current active assets");
+
+    const workerAHistory = await fetch(`${API_URL}/assets?scope=history`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerAHistory.status, 200);
+    const historyList = await workerAHistory.json();
+    assert.ok(historyList.some(a => a.id === alphaAsset.id), "Returned asset Alpha MUST appear in historical assets");
+
+    // 20.7 Reassignment from Worker A to Worker B
+    const coAlphaToBRes = await fetch(`${API_URL}/assignments/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Cookie': adminCookie },
+        body: JSON.stringify({
+            asset_id: alphaAsset.id,
+            employee_id: fieldEmp2.id,
+            notes: 'Reassigned from Worker A to Worker B'
+        })
+    });
+    assert.strictEqual(coAlphaToBRes.status, 201, "Admin reassigns Alpha to Worker B");
+    const assignmentAlphaB = await coAlphaToBRes.json();
+
+    // Worker A can view their historical Alpha detail, but Worker B's identity must be masked
+    const workerAGetAlpha = await fetch(`${API_URL}/assets/${alphaAsset.id}`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerAGetAlpha.status, 200, "Worker A retains read-only access to Alpha detail");
+    const workerAAlphaData = await workerAGetAlpha.json();
+    assert.strictEqual(workerAAlphaData.assigned_to_name, null, "Worker B identity must be masked for Worker A");
+
+    // Worker A timeline/history must contain ONLY Worker A's assignment record, NOT Worker B's record
+    const workerAGetAlphaHist = await fetch(`${API_URL}/assets/${alphaAsset.id}/history`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerAGetAlphaHist.status, 200);
+    const workerAAlphaHist = await workerAGetAlphaHist.json();
+    assert.strictEqual(workerAAlphaHist.assignments.length, 1, "Worker A must see exactly 1 personal assignment");
+    assert.strictEqual(workerAAlphaHist.assignments[0].notes, 'Initial assignment to Worker A');
+    assert.ok(!workerAAlphaHist.assignments.some(a => a.id === assignmentAlphaB.id), "Worker A must NOT see Worker B's reassignment");
+    assert.strictEqual(workerAAlphaHist.maintenance.length, 0, "Technical maintenance must not leak to field worker");
+    assert.strictEqual(workerAAlphaHist.alerts.length, 0, "Security alerts must not leak to field worker");
+
+    // Worker B timeline/history must contain ONLY Worker B's assignment record, NOT Worker A's prior record
+    const workerBGetAlphaHist = await fetch(`${API_URL}/assets/${alphaAsset.id}/history`, { headers: { 'Cookie': field2Cookie } });
+    assert.strictEqual(workerBGetAlphaHist.status, 200);
+    const workerBAlphaHist = await workerBGetAlphaHist.json();
+    assert.strictEqual(workerBAlphaHist.assignments.length, 1, "Worker B must see only their current assignment");
+    assert.strictEqual(workerBAlphaHist.assignments[0].notes, 'Reassigned from Worker A to Worker B');
+    assert.ok(!workerBAlphaHist.assignments.some(a => a.id === assignmentAlpha.id), "Worker B must NOT see Worker A's prior assignment");
+
+    // 20.8 Verify Admin still sees full unmasked history for Asset Alpha
+    const adminGetAlphaHist = await fetch(`${API_URL}/assets/${alphaAsset.id}/history`, { headers: { 'Cookie': adminCookie } });
+    assert.strictEqual(adminGetAlphaHist.status, 200);
+    const adminAlphaHist = await adminGetAlphaHist.json();
+    assert.ok(adminAlphaHist.assignments.length >= 2, "Admin must see both past and present assignments");
+
+    // 20.9 Reporting & dashboard scoping: Worker stats do not leak total inventory
+    const workerAStats = await fetch(`${API_URL}/reports/stats`, { headers: { 'Cookie': fieldCookie } });
+    assert.strictEqual(workerAStats.status, 200);
+    const workerAKPI = await workerAStats.json();
+    assert.strictEqual(workerAKPI.alerts, 0, "Worker must not see system alerts in KPI");
+    assert.strictEqual(workerAKPI.availableAssets, 0, "Worker must not see company available inventory count");
+
+    // Clean up Section 20 assets and assignments
+    try {
+        db.prepare("DELETE FROM assignments WHERE asset_id IN (?, ?)").run(alphaAsset.id, betaAsset.id);
+        db.prepare("DELETE FROM assets WHERE id IN (?, ?)").run(alphaAsset.id, betaAsset.id);
+    } catch (_) {}
+
+    console.log("✅ Section 20: Field Worker asset visibility, direct ID protection, and reassignment isolation verified successfully!");
 
     if (testServer) {
         testServer.close();

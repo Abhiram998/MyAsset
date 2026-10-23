@@ -18,4 +18,7 @@ router.post('/checkout', requireRole(['ADMIN', 'OPERATIONS MANAGER', 'SITE / CRE
 // Return asset (Admin, Ops, Supervisor, Field Worker returning own asset)
 router.post('/:id/return', assignmentController.returnAsset);
 
+// Get assignment by ID (scoped by role & worker ownership)
+router.get('/:id', assignmentController.getAssignmentById);
+
 module.exports = router;

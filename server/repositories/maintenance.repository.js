@@ -14,10 +14,19 @@ class MaintenanceRepository {
         `;
         const params = [user.organization_id];
 
-        if (user.role_name === 'SITE / CREW SUPERVISOR' || user.role_name === 'FIELD WORKER') {
+        if (user.role_name === 'FIELD WORKER') {
+            query += ` AND a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ?)`;
+            params.push(user.employee_id);
+        } else if (user.role_name === 'SITE / CREW SUPERVISOR') {
             query += ` AND (
                 a.zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
-                OR a.id IN (SELECT asset_id FROM assignments WHERE employee_id = ? AND returned_at IS NULL)
+                OR a.id IN (
+                    SELECT asset_id FROM assignments 
+                    WHERE employee_id IN (
+                        SELECT employee_id FROM employee_zones 
+                        WHERE zone_id IN (SELECT zone_id FROM employee_zones WHERE employee_id = ?)
+                    ) AND returned_at IS NULL
+                )
             )`;
             params.push(user.employee_id, user.employee_id);
         }
@@ -116,12 +125,24 @@ class MaintenanceRepository {
         const db = connect();
         const { asset_id, reporter_id, description, priority } = requestData;
 
+        if (user.role_name === 'FIELD WORKER') {
+            const isAssigned = await db.prepare(`
+                SELECT 1 FROM assignments 
+                WHERE asset_id = ? AND employee_id = ? AND returned_at IS NULL
+            `).get(asset_id, user.employee_id);
+            if (!isAssigned) {
+                throw new Error('You can only report maintenance for equipment currently assigned to you');
+            }
+        }
+
+        const effectiveReporterId = user.role_name === 'FIELD WORKER' ? user.employee_id : (reporter_id || user.employee_id);
+
         let requestId;
         const tx = db.transaction(async () => {
             const result = await db.prepare(`
                 INSERT INTO maintenance_requests (asset_id, reporter_id, description, priority, status)
                 VALUES (?, ?, ?, ?, 'OPEN')
-            `).run(asset_id, reporter_id, description, priority || 'MEDIUM');
+            `).run(asset_id, effectiveReporterId, description, priority || 'MEDIUM');
             
             requestId = result.lastInsertRowid;
 

@@ -27,7 +27,9 @@ class AssetController {
                 type_id: req.query.type_id ? Number(req.query.type_id) : undefined,
                 zone_id: req.query.zone_id ? Number(req.query.zone_id) : undefined,
                 search: req.query.search,
-                includeArchived: req.query.includeArchived === 'true'
+                includeArchived: req.query.includeArchived === 'true',
+                scope: req.query.scope,
+                include_history: req.query.include_history
             };
             const assets = await assetService.getAllAssets(req.user, filters);
             res.json(assets);

@@ -303,13 +303,25 @@
       <!-- PAGE HEADER -->
       <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
         <div>
-          <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Assets</h1>
-          <p style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Manage and monitor all registered assets.</p>
+          <h1 id="pageTitle" style="font-size: 26px; font-weight: 800; color: var(--text-primary);">Assets</h1>
+          <p id="pageSubtitle" style="font-size: 13.5px; color: var(--text-secondary); margin-top: 2px;">Manage and monitor all registered assets.</p>
         </div>
 
         <button class="pill-btn pill-btn-emerald" id="pageAddAssetBtn" onclick="openAddDrawer()">
           <span>+ Add Asset</span>
         </button>
+      </div>
+
+      <!-- FIELD WORKER PERSONAL SCOPE TABS -->
+      <div id="fieldWorkerTabs" style="display: none; margin-bottom: 20px;">
+        <div style="display: flex; gap: 8px; padding: 4px; background: #EAE6DC; border-radius: var(--radius-pill); box-shadow: inset 2px 3px 6px var(--inset-dark); width: fit-content;">
+          <button class="filter-chip active" id="scopeBtnCurrent" onclick="switchFieldWorkerScope('current')" style="box-shadow: none;">
+            📦 My Assigned Assets
+          </button>
+          <button class="filter-chip" id="scopeBtnHistory" onclick="switchFieldWorkerScope('history')" style="box-shadow: none;">
+            📜 My Asset History
+          </button>
+        </div>
       </div>
 
       <!-- TOOLBAR CONTAINER -->
@@ -516,13 +528,49 @@
   let assetTypes = [];
   let allZones = [];
   let currentStatusFilter = 'all';
+  let currentFieldWorkerScope = 'current';
+
+  function switchFieldWorkerScope(scope) {
+    currentFieldWorkerScope = scope;
+    const btnCurrent = document.getElementById('scopeBtnCurrent');
+    const btnHistory = document.getElementById('scopeBtnHistory');
+    if (scope === 'current') {
+      if (btnCurrent) btnCurrent.classList.add('active');
+      if (btnHistory) btnHistory.classList.remove('active');
+      document.getElementById('pageTitle').textContent = 'My Assigned Assets';
+      document.getElementById('pageSubtitle').textContent = 'Viewing equipment currently active and assigned to your account.';
+    } else {
+      if (btnCurrent) btnCurrent.classList.remove('active');
+      if (btnHistory) btnHistory.classList.add('active');
+      document.getElementById('pageTitle').textContent = 'My Asset History';
+      document.getElementById('pageSubtitle').textContent = 'Viewing your personal past assignments and returned equipment records (Read-Only).';
+    }
+    loadAssets();
+  }
 
   function checkRolePermissions() {
+    const isFieldWorker = window.currentUser && (window.currentUser.role_name === 'FIELD WORKER' || window.currentUser.role === 'FIELD WORKER');
     const canManage = window.currentUser && (window.currentUser.role_name === 'ADMIN' || window.currentUser.role_name === 'OPERATIONS MANAGER');
     const appBtn = document.getElementById('appAddAssetBtn');
     const pageBtn = document.getElementById('pageAddAssetBtn');
     if (appBtn) appBtn.style.display = canManage ? '' : 'none';
     if (pageBtn) pageBtn.style.display = canManage ? '' : 'none';
+
+    const fwTabs = document.getElementById('fieldWorkerTabs');
+    if (fwTabs) {
+      fwTabs.style.display = isFieldWorker ? 'block' : 'none';
+    }
+
+    if (isFieldWorker) {
+      document.getElementById('pageTitle').textContent = currentFieldWorkerScope === 'history' ? 'My Asset History' : 'My Assigned Assets';
+      document.getElementById('pageSubtitle').textContent = currentFieldWorkerScope === 'history' 
+        ? 'Viewing your personal past assignments and returned equipment records (Read-Only).' 
+        : 'Viewing equipment currently active and assigned to your account.';
+      const statusFiltersRow = document.querySelector('.filters-row');
+      if (statusFiltersRow) statusFiltersRow.style.display = 'none';
+      const bulkBar = document.getElementById('bulkActionsBar');
+      if (bulkBar) bulkBar.style.display = 'none';
+    }
   }
 
   window.addEventListener('shell-ready', async () => {
@@ -578,12 +626,19 @@
 
   async function loadAssets() {
     try {
-      const response = await fetch('/api/v1/assets');
+      const isFieldWorker = window.currentUser && (window.currentUser.role_name === 'FIELD WORKER' || window.currentUser.role === 'FIELD WORKER');
+      let url = '/api/v1/assets';
+      if (isFieldWorker) {
+        url = `/api/v1/assets?scope=${currentFieldWorkerScope}`;
+      }
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         allAssets = Array.isArray(data) ? data : [];
         renderAssetsTable(allAssets);
-        updateStatusFilterCounts();
+        if (!isFieldWorker) {
+          updateStatusFilterCounts();
+        }
       } else {
         document.getElementById('tableBody').innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--rose-crimson); padding: 24px;">Failed to load assets from server.</td></tr>';
       }
@@ -596,19 +651,23 @@
   function renderAssetsTable(assets) {
     const tableBody = document.getElementById('tableBody');
     tableBody.innerHTML = '';
+    const isFieldWorker = window.currentUser && (window.currentUser.role_name === 'FIELD WORKER' || window.currentUser.role === 'FIELD WORKER');
     
     if (!assets || assets.length === 0) {
-      const userRole = window.currentUser ? (window.currentUser.role_name || window.currentUser.role || '').toUpperCase() : '';
       let emptyMsg = 'No assets found matching the criteria. Click "+ Add Asset" to register one.';
-      if (userRole === 'FIELD WORKER') {
-        emptyMsg = 'No equipment currently assigned to your account or assigned tasks.';
-      } else if (userRole === 'SITE / CREW SUPERVISOR') {
+      if (isFieldWorker) {
+        emptyMsg = currentFieldWorkerScope === 'history' 
+          ? 'No past asset history or returned equipment found on your account.' 
+          : 'No equipment currently assigned to your account.';
+      } else if (window.currentUser?.role_name === 'SITE / CREW SUPERVISOR') {
         emptyMsg = 'No assets currently registered or stationed in your authorized site zones.';
-      } else if (userRole === 'MAINTENANCE STAFF') {
+      } else if (window.currentUser?.role_name === 'MAINTENANCE STAFF') {
         emptyMsg = 'No assets currently assigned to maintenance queue.';
       }
       tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 40px; color: var(--text-tertiary);">${escapeHtml(emptyMsg)}</td></tr>`;
-      document.getElementById('paginationSummary').innerHTML = 'Showing <strong>0</strong> registered assets';
+      document.getElementById('paginationSummary').innerHTML = isFieldWorker 
+        ? `Showing <strong>0</strong> assigned items` 
+        : 'Showing <strong>0</strong> registered assets';
       return;
     }
 
@@ -620,15 +679,38 @@
       'MISSING': 'pill-alert'
     };
 
-    assets.forEach(asset => {
+    assets.forEach((asset, idx) => {
       const row = document.createElement('tr');
       row.dataset.id = asset.id;
       row.dataset.status = (asset.status || 'AVAILABLE').toUpperCase();
       row.dataset.location = asset.zone_name || 'Unassigned';
       const badgeClass = statusBadgeClass[asset.status] || 'pill-neutral';
 
+      const firstCell = isFieldWorker 
+        ? `<td style="text-align: center; color: var(--text-tertiary); font-size: 11px;">${idx + 1}</td>`
+        : `<td style="text-align: center;"><input type="checkbox" class="row-checkbox" value="${asset.id}" onchange="updateBulkBar()"></td>`;
+
+      let statusCellHtml = `<span class="pill-badge ${badgeClass}">${asset.status || 'AVAILABLE'}</span>`;
+      if (isFieldWorker && currentFieldWorkerScope === 'history') {
+        statusCellHtml = `<span class="pill-badge pill-neutral">Past (Read-Only)</span>`;
+      }
+
+      let actionsCellHtml = `
+        <div class="dropdown-wrapper">
+          <button class="action-menu-btn" onclick="toggleDropdown(this)">•••</button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item" onclick="viewAssetDetails(${asset.id})">👁️ View Details</div>
+            <div class="dropdown-item" onclick="openEditDrawer(${asset.id})">✏️ Edit Asset</div>
+            <div class="dropdown-item" onclick="archiveAsset(${asset.id}, '${escapeHtml(asset.name)}')">🗑️ Archive Asset</div>
+          </div>
+        </div>
+      `;
+      if (isFieldWorker) {
+        actionsCellHtml = `<button class="pill-btn pill-btn-light" style="padding: 4px 10px; font-size: 11.5px;" onclick="viewAssetDetails(${asset.id})">View</button>`;
+      }
+
       row.innerHTML = `
-        <td style="text-align: center;"><input type="checkbox" class="row-checkbox" value="${asset.id}" onchange="updateBulkBar()"></td>
+        ${firstCell}
         <td>
           <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="viewAssetDetails(${asset.id})">
             <div class="asset-icon-box">📦</div>
@@ -646,22 +728,17 @@
           <div>${asset.updated_at ? new Date(asset.updated_at).toLocaleDateString() : (asset.created_at ? new Date(asset.created_at).toLocaleDateString() : '—')}</div>
           <div style="font-size: 11px; color: var(--text-tertiary);">${asset.condition || 'Operational'}</div>
         </td>
-        <td><span class="pill-badge ${badgeClass}">${asset.status || 'AVAILABLE'}</span></td>
+        <td>${statusCellHtml}</td>
         <td style="text-align: center;">
-          <div class="dropdown-wrapper">
-            <button class="action-menu-btn" onclick="toggleDropdown(this)">•••</button>
-            <div class="dropdown-menu">
-              <div class="dropdown-item" onclick="viewAssetDetails(${asset.id})">👁️ View Details</div>
-              <div class="dropdown-item" onclick="openEditDrawer(${asset.id})">✏️ Edit Asset</div>
-              <div class="dropdown-item" onclick="archiveAsset(${asset.id}, '${escapeHtml(asset.name)}')">🗑️ Archive Asset</div>
-            </div>
-          </div>
+          ${actionsCellHtml}
         </td>
       `;
       tableBody.appendChild(row);
     });
 
-    document.getElementById('paginationSummary').innerHTML = `Showing <strong>${assets.length}</strong> of <strong>${allAssets.length}</strong> registered assets`;
+    document.getElementById('paginationSummary').innerHTML = isFieldWorker 
+      ? `Showing <strong>${assets.length}</strong> items in personal record`
+      : `Showing <strong>${assets.length}</strong> of <strong>${allAssets.length}</strong> registered assets`;
   }
 
   function updateStatusFilterCounts() {
